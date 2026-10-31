@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Team builder – End:Tech</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
+<body data-page="team"><main>
+<h2>Team builder</h2>
+<div class="slots" id="slots"></div>
+<div class="panel" id="an"></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><div class="uidbar" style="flex:1;min-width:200px"><input id="s" placeholder="Search operators" aria-label="Search operators"></div><div class="chips" id="fl"></div><button class="ghost" id="cp">Copy team link</button><button class="ghost" id="cl">Clear</button></div>
+<p class="dim" id="own"></p><div class="grid" id="pool"></div>
+</main><script src="/js/app.js"></script>
+<script>
+let team=(location.hash.slice(1)?decodeURIComponent(location.hash.slice(1)).split('~'):load('et.team',[])).slice(0,4),el='',own=load('et.ops',[]).map(o=>key(o.name));
+const all=[...ROSTER,...load('et.ops',[]).filter(o=>!lookup(o.name)).map(o=>({name:o.name}))];
+const info=n=>lookup(n)||{name:n};
+const set=t=>{team=t;save('et.team',t);history.replaceState(null,'','#'+encodeURIComponent(t.join('~')));draw()};
+function draw(){
+  $('#slots').innerHTML=[0,1,2,3].map(i=>{const o=team[i]&&info(team[i]);return o?`<div class="slot f" style="--c:${COL[o.element]||'var(--line)'}"><button class="x" data-r="${i}" aria-label="Remove ${esc(o.name)}">×</button><b style="font-family:'Chakra Petch';font-size:18px">${esc(o.name)}</b><br><small class="dim">${esc(o.element||'?')} ${esc(o.cls||'')}</small></div>`:`<div class="slot dim">Empty slot</div>`}).join('');
+  const ops=team.map(info),els=[...new Set(ops.map(o=>o.element).filter(Boolean))],cl=ops.map(o=>o.cls).filter(Boolean),notes=[];
+  if(team.length===4){if(!cl.some(c=>/Defender|Guard/.test(c)))notes.push('No Guard or Defender confirmed. Check how the team will take hits.');if(!cl.includes('Supporter'))notes.push('No Supporter confirmed in this team.');if(els.length===1)notes.push(`All ${els[0]}: strong for element reactions, weak to enemies that resist it.`);if(ops.some(o=>!o.cls||!o.element))notes.push('Some operators have unconfirmed element or class, so coverage notes are partial.')}
+  else notes.push(`Pick ${4-team.length} more operator${team.length===3?'':'s'}.`);
+  $('#an').innerHTML=`<div class="stat"><span>Elements: ${els.map(e=>`<b style="color:${COL[e]}">${e}</b>`).join(', ')||'none'}</span><span>Roles: ${esc(cl.join(', ')||'none')}</span><span>Owned: ${team.filter(n=>own.includes(key(n))).length}/${team.length}</span></div>${notes.map(n=>`<div class="note">${esc(n)}</div>`).join('')}`;
+  const q=key($('#s').value);
+  $('#pool').innerHTML=all.filter(o=>(!el||o.element===el)&&key(o.name).includes(q)).map(o=>`<button class="op ${own.includes(key(o.name))?'own':''} ${team.includes(o.name)?'in':''}" style="--c:${COL[o.element]||'var(--line)'}" data-a="${esc(o.name)}"><b>${esc(o.name)}</b><small>${o.rarity?o.rarity+'★ · ':''}${esc(o.element||'?')} ${esc(o.cls||'')}</small></button>`).join('');
+  $('#fl').innerHTML=Object.keys(COL).map(e=>`<button class="chip ${el===e?'on':''}" data-e="${e}">${e}</button>`).join('');
+  $('#own').textContent=own.length?'Outlined operators are on your fetched account.':'Fetch an account to mark the operators you own.';
+}
+document.onclick=e=>{const t=e.target,a=t.closest('[data-a]'),r=t.dataset.r,f=t.dataset.e;
+  if(a&&team.length<4&&!team.includes(a.dataset.a))set([...team,a.dataset.a]);else if(a&&team.includes(a.dataset.a))set(team.filter(n=>n!==a.dataset.a));
+  if(r!=null)set(team.filter((_,i)=>i!=r));if(f){el=el===f?'':f;draw()}};
+$('#s').oninput=draw;$('#cl').onclick=()=>set([]);$('#cp').onclick=()=>{navigator.clipboard?.writeText(location.href);$('#cp').textContent='Link copied';setTimeout(()=>$('#cp').textContent='Copy team link',1500)};
+draw();
+</script></body></html>

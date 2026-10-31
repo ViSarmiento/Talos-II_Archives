@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Account check – End:Tech</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
+<body data-page="account"><main>
+<h2>Account check</h2>
+<form id="f" class="uidbar"><input id="uid" inputmode="numeric" placeholder="Endfield UID" aria-label="Endfield UID"><button>Fetch</button></form>
+<div class="chips" id="recent"></div>
+<p id="st" class="dim" role="status">Your showcase must be public in-game for operators to appear.</p>
+<section id="out"></section>
+</main><script src="/js/app.js"></script>
+<script>
+const st=m=>$('#st').innerHTML=m;
+const recent=()=>{$('#recent').innerHTML=load('et.recent',[]).map(u=>`<button class="chip" data-u="${u}">${u}</button>`).join('')+'<button class="chip" data-u="demo">Demo data</button>'};
+const DEMO={playerInfo:{nickname:'Demo Endministrator',level:42,signature:'Sample data, not a real account'},characters:[{name:'Laevatain',level:60},{name:'Gilberta',level:60},{name:'Snowshine',level:50},{name:'Wulfgard',level:55},{name:'Xaihi',level:50}]};
+async function go(uid){
+  st('Scanning…');$('#out').innerHTML='';let j;
+  try{if(uid==='demo')j=DEMO;else{const r=await fetch('/api/uid?uid='+encodeURIComponent(uid));j=await r.json();if(!r.ok)throw Error(j.error||'Request failed')}}
+  catch(e){return st(`<span class="err">${esc(e.message)}</span>`)}
+  const n=normalize(j,uid);save('et.ops',n.ops);
+  if(uid!=='demo')save('et.recent',[uid,...load('et.recent',[]).filter(u=>u!==uid)].slice(0,5));recent();
+  st(n.ops.length?`<span class="ok">Found ${n.ops.length} operators.</span>`:'<span class="err">No operators found. The showcase may be private, or this response uses fields End:Tech does not read yet. Check the raw response below.</span>');
+  const p=n.profile;
+  $('#out').innerHTML=`<div class="panel"><h3 style="margin:0">${esc(p.name||'Unnamed player')}</h3><div class="stat dim"><span>UID ${esc(p.uid)}</span><span>Level ${esc(p.level??'?')}</span></div>${p.sig?`<p class="dim">${esc(p.sig)}</p>`:''}</div>
+  <div class="grid">${n.ops.map((o,i)=>`<button class="op own" style="--c:${COL[o.element]||'var(--line)'}" data-i="${i}"><b>${esc(o.name)}</b><small>Lv ${esc(o.level??'?')} · ${esc(o.element||'?')} ${esc(o.cls||'')}</small></button>`).join('')}</div>
+  ${n.ops.length?'<p><a href="/team"><button class="ghost" type="button">Open team builder</button></a></p>':''}
+  <details class="panel"><summary>Raw response</summary><pre>${esc(JSON.stringify(j,null,2))}</pre></details>`;
+}
+$('#f').onsubmit=e=>{e.preventDefault();const v=$('#uid').value.replace(/\D/g,'');if(v)go(v)};
+$('#recent').onclick=e=>{const u=e.target.dataset.u;if(u){$('#uid').value=u==='demo'?'':u;go(u)}};
+$('#out').onclick=e=>{const b=e.target.closest('.op');if(!b)return;const o=load('et.ops',[])[b.dataset.i],t=load('et.team',[]);if(t.length<4&&!t.includes(o.name)){save('et.team',[...t,o.name]);b.classList.add('in');st(`${esc(o.name)} added to your team.`)}else st('Team is full or already has this operator.')};
+recent();const q=new URLSearchParams(location.search).get('uid');if(q){$('#uid').value=q;go(q)}
+</script></body></html>

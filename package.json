@@ -1,0 +1,1 @@
+{ "name": "end-tech", "version": "1.0.0-beta.1", "private": true, "engines": { "node": ">=20" } }
