@@ -1,4 +1,4 @@
-# End:Tech beta 1.0
+# Talos-II_Archives beta 1.0
 Static site in `public/` + one Vercel function `api/uid.js` (Enka proxy). No build step.
 
 Deploy: push to GitHub, import on Vercel (framework: Other). Local: `npx vercel dev`.
