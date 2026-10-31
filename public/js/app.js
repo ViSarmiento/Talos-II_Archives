@@ -1,24 +1,8 @@
-// ---- shared: nav, storage, roster, Enka normalizer, Talos-II background ----
-const $=(s,r=document)=>r.querySelector(s), esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}, save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
-const COL={Cryo:'var(--cryo)',Heat:'var(--heat)',Nature:'var(--nat)',Electric:'var(--ele)',Physical:'var(--phy)'};
-// [name, rarity, element, class] — null = not confirmed. Sources disagreed in places: verify and edit here.
-const ROSTER=[['Endministrator',null,'Physical','Guard'],['Ardelia',6,'Nature',null],['Ember',6,'Heat','Defender'],['Gilberta',6,'Nature','Supporter'],['Laevatain',6,'Heat','Striker'],['Last Rite',6,'Cryo','Striker'],['Lifeng',6,'Physical','Guard'],['Yvonne',6,'Cryo','Striker'],['Alesh',5,'Cryo','Vanguard'],['Arclight',5,'Electric',null],['Avywenna',5,'Electric',null],['Chen Qianyu',5,'Physical',null],['Da Pan',5,'Physical',null],['Perlica',5,'Electric',null],['Pogranichnik',5,'Physical','Vanguard'],['Snowshine',5,'Cryo','Defender'],['Wulfgard',5,'Heat','Caster'],['Xaihi',5,'Cryo','Supporter'],['Akekuri',4,'Heat','Vanguard'],['Antal',4,'Electric','Supporter'],['Catcher',4,'Physical',null],['Estella',4,'Cryo',null],['Fluorite',4,'Nature',null]].map(([name,rarity,element,cls])=>({name,rarity,element,cls}));
-const key=s=>String(s).toLowerCase().replace(/[^a-z]/g,'');
-const lookup=n=>ROSTER.find(r=>key(r.name)===key(n))||ROSTER.find(r=>key(n).includes(key(r.name)));
-// Enka's Endfield response shape is unconfirmed, so this is deliberately defensive. Fix field names here after checking "Raw response".
-const pick=(o,ks)=>{for(const k of ks)if(o&&o[k]!=null&&typeof o[k]!=='object')return o[k]};
-function findList(o,d=0){if(!o||typeof o!=='object'||d>3)return null;for(const[k,v]of Object.entries(o))if(Array.isArray(v)&&v.length&&typeof v[0]==='object'&&/char|avatar|oper|role|unit/i.test(k))return v;for(const v of Object.values(o)){const r=findList(v,d+1);if(r)return r}return null}
-function normalize(raw,uid){
-  const info=raw.playerInfo||raw.player||raw.profile||raw.detail||raw;
-  const ops=(findList(raw)||[]).map(c=>{const n=pick(c,['name','charName','nickname','charId','id','templateId','avatarId'])||'Unknown';const r=lookup(n);
-    return{name:r?r.name:String(n),level:pick(c,['level','lv','charLevel']),element:r?.element,cls:r?.cls,rarity:r?.rarity}});
-  return{profile:{uid,name:pick(info,['nickname','name','playerName','roleName']),level:pick(info,['level','authorityLevel','adventureLevel','worldLevel']),sig:pick(info,['signature','sign','bio'])},ops};
-}
+// ---- page chrome: nav, footer, Talos-II background (helpers live in core.js) ----
 // ---- chrome ----
 document.body.insertAdjacentHTML('afterbegin',`<header><a class="logo" href="/">END<i>:</i>TECH</a><nav>${[['/','Home','home'],['/account','Account','account'],['/team','Team builder','team']].map(([h,t,p])=>`<a href="${h}" class="${document.body.dataset.page===p?'on':''}">${t}</a>`).join('')}</nav></header>`);
 document.body.insertAdjacentHTML('afterbegin','<canvas id="bg"></canvas><div class="hud"></div>');
-document.body.insertAdjacentHTML('beforeend','<footer style="padding:24px;text-align:center;color:var(--dim);font-size:13px">End:Tech is an unofficial fan project, not affiliated with Hypergryph or Gryphline. Player data via Enka.Network.</footer>');
+document.body.insertAdjacentHTML('beforeend','<footer style="padding:24px;text-align:center;color:var(--dim);font-size:13px">End:Tech is an unofficial fan project, not affiliated with Hypergryph or Gryphline. Player data via Enka.Network. Operator art and data: Hypergryph/Gryphline, shown via the Endfield Talos Wiki (CC BY-SA).</footer>');
 // ---- Talos-II: dusk sky, orbital ring, parallax ridgelines, drifting originium dust ----
 (()=>{const c=$('#bg'),x=c.getContext('2d');let w,h,t=0,mx=0;const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const P=Array.from({length:80},()=>({x:Math.random(),y:Math.random(),s:Math.random()*1.8+.4,v:Math.random()*.0006+.0002}));

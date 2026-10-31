@@ -3,29 +3,72 @@
 <body data-page="team"><main>
 <h2>Team builder</h2>
 <div class="slots" id="slots"></div>
+<div class="links" id="links"></div>
 <div class="panel" id="an"></div>
-<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><div class="uidbar" style="flex:1;min-width:200px"><input id="s" placeholder="Search operators" aria-label="Search operators"></div><div class="chips" id="fl"></div><button class="ghost" id="cp">Copy team link</button><button class="ghost" id="cl">Clear</button></div>
+<div id="sugbox"></div>
+<div class="tools">
+  <div class="uidbar" style="flex:1;min-width:200px"><input id="s" placeholder="Search operators" aria-label="Search operators"></div>
+  <button class="ghost" id="cp">Copy team link</button><button class="ghost" id="cl">Clear</button>
+</div>
+<div class="fbar" id="fl"></div>
 <p class="dim" id="own"></p><div class="grid" id="pool"></div>
-</main><script src="/js/app.js"></script>
+</main>
+<script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/synergy.js"></script><script src="/js/app.js"></script>
 <script>
-let team=(location.hash.slice(1)?decodeURIComponent(location.hash.slice(1)).split('~'):load('et.team',[])).slice(0,4),el='',own=load('et.ops',[]).map(o=>key(o.name));
-const all=[...ROSTER,...load('et.ops',[]).filter(o=>!lookup(o.name)).map(o=>({name:o.name}))];
-const info=n=>lookup(n)||{name:n};
-const set=t=>{team=t;save('et.team',t);history.replaceState(null,'','#'+encodeURIComponent(t.join('~')));draw()};
-function draw(){
-  $('#slots').innerHTML=[0,1,2,3].map(i=>{const o=team[i]&&info(team[i]);return o?`<div class="slot f" style="--c:${COL[o.element]||'var(--line)'}"><button class="x" data-r="${i}" aria-label="Remove ${esc(o.name)}">×</button><b style="font-family:'Chakra Petch';font-size:18px">${esc(o.name)}</b><br><small class="dim">${esc(o.element||'?')} ${esc(o.cls||'')}</small></div>`:`<div class="slot dim">Empty slot</div>`}).join('');
-  const ops=team.map(info),els=[...new Set(ops.map(o=>o.element).filter(Boolean))],cl=ops.map(o=>o.cls).filter(Boolean),notes=[];
-  if(team.length===4){if(!cl.some(c=>/Defender|Guard/.test(c)))notes.push('No Guard or Defender confirmed. Check how the team will take hits.');if(!cl.includes('Supporter'))notes.push('No Supporter confirmed in this team.');if(els.length===1)notes.push(`All ${els[0]}: strong for element reactions, weak to enemies that resist it.`);if(ops.some(o=>!o.cls||!o.element))notes.push('Some operators have unconfirmed element or class, so coverage notes are partial.')}
-  else notes.push(`Pick ${4-team.length} more operator${team.length===3?'':'s'}.`);
-  $('#an').innerHTML=`<div class="stat"><span>Elements: ${els.map(e=>`<b style="color:${COL[e]}">${e}</b>`).join(', ')||'none'}</span><span>Roles: ${esc(cl.join(', ')||'none')}</span><span>Owned: ${team.filter(n=>own.includes(key(n))).length}/${team.length}</span></div>${notes.map(n=>`<div class="note">${esc(n)}</div>`).join('')}`;
-  const q=key($('#s').value);
-  $('#pool').innerHTML=all.filter(o=>(!el||o.element===el)&&key(o.name).includes(q)).map(o=>`<button class="op ${own.includes(key(o.name))?'own':''} ${team.includes(o.name)?'in':''}" style="--c:${COL[o.element]||'var(--line)'}" data-a="${esc(o.name)}"><b>${esc(o.name)}</b><small>${o.rarity?o.rarity+'★ · ':''}${esc(o.element||'?')} ${esc(o.cls||'')}</small></button>`).join('');
-  $('#fl').innerHTML=Object.keys(COL).map(e=>`<button class="chip ${el===e?'on':''}" data-e="${e}">${e}</button>`).join('');
-  $('#own').textContent=own.length?'Outlined operators are on your fetched account.':'Fetch an account to mark the operators you own.';
+const fromHash = () => location.hash.length > 1 ? decodeURIComponent(location.hash.slice(1)).split('~') : null;
+let team = (fromHash() || load('et.team', [])).map(n => lookup(n)?.name).filter(Boolean).filter((n, i, a) => a.indexOf(n) === i).slice(0, 4);
+const f = { el: '', cls: '', rar: 0, own: false };
+const own = new Set(load('et.ops', []).filter(o => o.known !== false && o.name).map(o => key(o.name)));
+const cardHtml = (o, extra = '') => `<button class="op ${team.includes(o.name) ? 'in' : ''}" data-a="${esc(o.name)}" data-rar="${o.rarity}" style="--c:${COL[o.element]}" aria-label="${esc(o.name)}, ${o.rarity} star ${esc(o.element)} ${esc(o.cls)}">${artHtml(o, 360)}<span class="shade"></span><span class="el">${esc(o.element)}</span>${own.has(key(o.name)) ? '<span class="dot" title="On your account"></span>' : ''}<span class="meta"><b>${esc(o.name)}</b><small><span class="st">${stars(o.rarity)}</span><br>${esc(o.cls)} · ${esc(o.weapon)}</small></span></button>`;
+
+const set = t => { team = t; save('et.team', t); history.replaceState(null, '', t.length ? '#' + encodeURIComponent(t.join('~')) : location.pathname); drawTeam(); drawPool() };
+
+function drawTeam() {
+  const a = analyze(team);
+  $('#slots').innerHTML = [0, 1, 2, 3].map(i => {
+    const o = team[i] && lookup(team[i]);
+    return o ? `<div class="slot f" data-rar="${o.rarity}" style="--c:${COL[o.element]}">${artHtml(o, 480)}<span class="shade"></span><span class="el">${esc(o.element)}</span><button class="x" data-r="${i}" aria-label="Remove ${esc(o.name)}">×</button><div class="meta"><b>${esc(o.name)}</b><small>${esc(o.cls)} · ${esc(o.weapon)}${own.has(key(o.name)) ? ' · owned' : ''}</small></div></div>`
+      : `<div class="slot"><span class="n">0${i + 1}</span><span class="plus">+</span></div>`;
+  }).join('');
+
+  $('#links').innerHTML = a.links.slice(0, 8).map(l => `<span class="link">${esc(a.team[l.from].name)}<i>→</i>${esc(a.team[l.to].name)} · ${esc(l.label)}</span>`).join('');
+
+  if (!a.n) { $('#an').innerHTML = '<p class="dim" style="margin:0">Pick up to four operators below. The synergy check updates as you build.</p>'; $('#sugbox').innerHTML = ''; return }
+  const col = a.n < 4 ? 'var(--cryo)' : a.score >= 85 ? 'var(--nat)' : a.score >= 70 ? 'var(--sig)' : a.score >= 50 ? 'var(--ember)' : 'var(--heat)';
+  const bars = Object.entries(PARTS).map(([p, [name, max]]) => `<div class="bar">${name}<div><i style="width:${Math.round((a.parts[p] || 0) * 100)}%"></i></div></div>`).join('');
+  const ic = { good: '✓', warn: '!', info: 'i' };
+  $('#an').innerHTML = `<div class="syn"><div class="score"><div class="ring" style="--p:${a.score};--k:${col}"><b>${a.score}</b></div><div class="lbl" style="color:${col}">${a.label}</div><small>${a.n < 4 ? `${4 - a.n} slot${a.n === 3 ? '' : 's'} open` : 'synergy score'}</small></div>
+    <div><div class="bars">${bars}</div>${a.checks.map(c => `<div class="chk ${c.level}"><span class="ic">${ic[c.level]}</span><div><b>${esc(c.title)}</b><br><span>${esc(c.text)}</span></div></div>`).join('')}
+    <p class="kit">Skill-level data for ${a.known} of ${a.n} operators; the rest are judged by class and element. Heuristic only, not a damage calculator.</p></div></div>`;
+
+  const sg = suggest(team, own);
+  $('#sugbox').innerHTML = sg.length ? `<div class="dim" style="margin:6px 0 2px">Best fits for the next slot${own.size ? ' (• = on your account)' : ''}</div><div class="sug">${sg.map(s => `<button class="sg" data-a="${esc(s.op.name)}" style="--c:${COL[s.op.element]}">${artHtml(s.op, 120)}<span><b>${own.has(key(s.op.name)) ? '• ' : ''}${esc(s.op.name)}</b><small>${esc(s.op.cls)} · ${esc(s.op.element)}<br>improves <em>${esc(s.why)}</em> (${s.score})</small></span></button>`).join('')}</div>` : '';
 }
-document.onclick=e=>{const t=e.target,a=t.closest('[data-a]'),r=t.dataset.r,f=t.dataset.e;
-  if(a&&team.length<4&&!team.includes(a.dataset.a))set([...team,a.dataset.a]);else if(a&&team.includes(a.dataset.a))set(team.filter(n=>n!==a.dataset.a));
-  if(r!=null)set(team.filter((_,i)=>i!=r));if(f){el=el===f?'':f;draw()}};
-$('#s').oninput=draw;$('#cl').onclick=()=>set([]);$('#cp').onclick=()=>{navigator.clipboard?.writeText(location.href);$('#cp').textContent='Link copied';setTimeout(()=>$('#cp').textContent='Copy team link',1500)};
-draw();
+
+function drawPool() {
+  const q = key($('#s').value);
+  const list = ROSTER.filter(o => (!f.el || o.element === f.el) && (!f.cls || o.cls === f.cls) && (!f.rar || o.rarity === f.rar) && (!f.own || own.has(key(o.name))) && key(o.name).includes(q))
+    .sort((x, y) => y.rarity - x.rarity || x.name.localeCompare(y.name));
+  $('#pool').innerHTML = list.map(o => cardHtml(o)).join('') || '<p class="dim">No operators match those filters.</p>';
+  const chip = (attr, val, label, on, c) => `<button class="chip ${on ? 'on' : ''}" data-${attr}="${val}" ${c ? `style="--c:${c}"` : ''}>${label}</button>`;
+  $('#fl').innerHTML = `<div class="chips">${Object.keys(COL).map(e => chip('fe', e, e, f.el === e, COL[e])).join('')}</div><span class="sep"></span>
+    <div class="chips">${CLASSES.map(c => chip('fc', c, c, f.cls === c)).join('')}</div><span class="sep"></span>
+    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + '★', f.rar === r)).join('')}${own.size ? chip('fo', 1, 'Owned only', f.own) : ''}</div>`;
+  $('#own').textContent = (own.size ? `${list.length} of ${ROSTER.length} operators shown. A yellow dot marks operators found on your fetched account.` : `${ROSTER.length} operators. Fetch an account to mark the ones you own.`);
+}
+
+document.onclick = e => {
+  const t = e.target, a = t.closest('[data-a]'), x = t.closest('[data-r]'), fe = t.closest('[data-fe]'), fc = t.closest('[data-fc]'), fr = t.closest('[data-fr]'), fo = t.closest('[data-fo]');
+  if (x) return set(team.filter((_, i) => i != x.dataset.r));
+  if (a) { const n = a.dataset.a; return team.includes(n) ? set(team.filter(m => m !== n)) : team.length < 4 ? set([...team, n]) : undefined }
+  if (fe) f.el = f.el === fe.dataset.fe ? '' : fe.dataset.fe;
+  else if (fc) f.cls = f.cls === fc.dataset.fc ? '' : fc.dataset.fc;
+  else if (fr) f.rar = f.rar === +fr.dataset.fr ? 0 : +fr.dataset.fr;
+  else if (fo) f.own = !f.own;
+  else return;
+  drawPool();
+};
+$('#s').oninput = drawPool; $('#cl').onclick = () => set([]);
+$('#cp').onclick = () => { navigator.clipboard?.writeText(location.href); $('#cp').textContent = 'Link copied'; setTimeout(() => $('#cp').textContent = 'Copy team link', 1500) };
+drawTeam(); drawPool();
 </script></body></html>

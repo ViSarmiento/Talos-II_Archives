@@ -1,10 +1,10 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>End:Tech – Endfield account checker and team builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
 <body data-page="home"><main class="hero">
-<div class="site-tag">Talos-II field terminal, beta 1.0</div>
+<div class="site-tag">Talos-II field terminal, beta 1.1</div>
 <h1>END<span>:</span>TECH</h1>
 <p>Look up any Endfield account by UID, see which operators are on its showcase, and plan a four-operator squad.</p>
 <form id="q" class="uidbar"><input id="uid" inputmode="numeric" placeholder="Enter your Endfield UID" aria-label="Endfield UID" autocomplete="off"><button>Check account</button></form>
-<div class="cards"><a class="card" href="/account"><b>Account check</b><span>Fetch profile and showcase operators from Enka.Network.</span></a><a class="card" href="/team"><b>Team builder</b><span>Fill four slots and see element and role coverage.</span></a></div>
-</main><script src="/js/app.js"></script>
+<div class="cards"><a class="card" href="/account"><b>Account check</b><span>Fetch profile and showcase operators from Enka.Network.</span></a><a class="card" href="/team"><b>Team builder</b><span>Fill four slots with operator art and get a synergy check.</span></a></div>
+</main><script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script>
 <script>$('#q').onsubmit=e=>{e.preventDefault();const v=$('#uid').value.replace(/\D/g,'');location.href='/account'+(v?'?uid='+v:'')}</script></body></html>
