@@ -111,7 +111,8 @@ function artMeasure(img, part = .6) {
 }
 // place an <img class="pic"> inside its .art box (box must be laid out; called on load and on resize)
 function artFit(img) {
-  const box = img.parentElement, W = box.clientWidth, H = box.clientHeight; if (!W || !H) return;
+  const box = img.parentElement; if (box.classList.contains('whole')) return;   // whole-splash boxes show the full image as is
+  const W = box.clientWidth, H = box.clientHeight; if (!W || !H) return;
   const o = { part: +(box.dataset.part || .6), cx: +(img.dataset.cx || .5), wmax: +(img.dataset.wmax || 1.08) };
   const m = img._m !== undefined ? img._m : (img._m = artMeasure(img, o.part)); if (!m) return;
   if (m === 'opaque') { box.classList.add('opaque'); return }
@@ -125,21 +126,23 @@ if (typeof addEventListener === 'function') addEventListener('resize', () => doc
 // ---- art markup ----
 // Endministrator has two splashes (male and female); show both in one frame.
 const ART_DUO = { Endministrator: ['Endministrator_(Male)', 'Endministrator_(Female)'] };
-function picTag(chain, extra = '', cls = '') {
-  return `<img class="pic ${cls}" ${extra} alt="" loading="lazy" decoding="async" crossorigin="anonymous" referrerpolicy="no-referrer" src="${esc(chain[0])}" data-i="0" data-c="${esc(JSON.stringify(chain))}" onload="artLoad(this)" onerror="artErr(this)">`;
+function picTag(chain, extra = '', cls = '', cors = true) {
+  return `<img class="pic ${cls}" ${extra} alt="" loading="lazy" decoding="async" ${cors ? 'crossorigin="anonymous"' : ''} referrerpolicy="no-referrer" src="${esc(chain[0])}" data-i="0" data-c="${esc(JSON.stringify(chain))}" onload="artLoad(this)" onerror="artErr(this)">`;
 }
 // the <img> tags for one operator (two for Endministrator); `cls` is added to each so a page can style layers separately
-function artLayer(o, w, cls = '') {
+function artLayer(o, w, cls = '', cors = true) {
   if (ART_DUO[o.name]) {
     const u = f => encodeURI(`${WIKI_IMG}/thumb/${f}_Splash_Art.png/${w}px-${f}_Splash_Art.png`);
-    return ART_DUO[o.name].map((f, k) => picTag([u(f)], `data-duo="${k}" data-cx="${k ? .7 : .3}" data-wmax=".78"`, cls)).join('');
+    return ART_DUO[o.name].map((f, k) => picTag([u(f)], `data-duo="${k}" data-cx="${k ? .7 : .3}" data-wmax=".78"`, cls, cors)).join('');
   }
-  return picTag(artChain(o, w), '', cls);
+  return picTag(artChain(o, w), '', cls, cors);
 }
+// opt.whole: show the whole splash (no zoom, no centring). opt.sil: add a second, silhouette layer under the colour art (Team Builder boxes).
 function artHtml(o, w, opt = {}) {
   if (!o || !o.name) return `<div class="art"><span class="mono">?</span></div>`;
-  const part = opt.part ?? .6, mono = `<span class="mono">${esc(initials(o.name))}</span>`, [fx, fy, fz] = ART_FOCUS[o.name] || ART_FOCUS_DEFAULT;
-  return `<div class="art${ART_DUO[o.name] ? ' duo' : ''}" data-part="${part}" style="--fx:${fx}%;--fy:${fy}%;--fz:${fz}">${mono}${artLayer(o, w)}</div>`;
+  const part = opt.part ?? .6, mono = `<span class="mono">${esc(initials(o.name))}</span>`, [fx, fy, fz] = ART_FOCUS[o.name] || ART_FOCUS_DEFAULT, cors = !opt.whole;
+  const layers = opt.sil ? artLayer(o, w, 'sil', false) + artLayer(o, w, 'hi', false) : artLayer(o, w, opt.whole ? 'hi' : '', cors);
+  return `<div class="art${ART_DUO[o.name] ? ' duo' : ''}${opt.whole ? ' whole' : ''}" data-part="${part}" style="--fx:${fx}%;--fy:${fy}%;--fz:${fz}">${mono}${layers}</div>`;
 }
 function artErr(img) { // CORS attempt failed -> same file without CORS (cannot be measured, uses the default crop); then next source; then the monogram
   try {
@@ -153,7 +156,11 @@ function artErr(img) { // CORS attempt failed -> same file without CORS (cannot 
 const stars = n => '★'.repeat(n || 0);
 const fmtDate = t => { const n = Number(t); if (!n) return ''; const d = new Date(n < 1e12 ? n * 1000 : n); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) };
 
-// ---- class and element icons (stand-in glyphs; same 24x24 box, drawn in currentColor) ----
+// ---- class and element icons ----
+// Stand-in glyphs (24x24, currentColor) are always in the markup. Real icons replace them when a file exists:
+//   1. your own files: /img/icons/element/<name>.svg|png and /img/icons/class/<name>.svg|png (lowercase: heat.svg, guard.png ...)
+//   2. best-guess wiki files (<Name>_icon.png)
+// Which one answers is probed once per browser and cached (et.icoMap). Nothing breaks if none exist: the glyphs stay.
 const ICO_EL = {
   Heat: '<path d="M12 2c.5 3.5 4.5 5.2 4.5 10a4.5 4.5 0 0 1-9 0c0-1.8.8-3 1.8-4 .1 1.5.7 2.4 1.7 2.8C10.7 8 11 5 12 2z"/>',
   Cryo: '<path d="M12 2v20M4 7l16 10M4 17L20 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
@@ -169,8 +176,34 @@ const ICO_CLS = {
   Defender: '<path d="M12 2l8 3v6.2c0 4.8-3.3 8.6-8 10.8-4.7-2.2-8-6-8-10.8V5z"/>',
   Vanguard: '<path d="M4 5l7 7-7 7M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
 };
-const ico = (set, name) => `<svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${set[name] || '<circle cx="12" cy="12" r="5"/>'}</svg>`;
-const icoEl = n => ico(ICO_EL, n), icoCls = n => ico(ICO_CLS, n);
+const ico = (set, name, kind) => `<span class="ico" data-k="${kind}-${esc(name)}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor">${set[name] || '<circle cx="12" cy="12" r="5"/>'}</svg></span>`;
+const icoEl = n => ico(ICO_EL, n, 'el'), icoCls = n => ico(ICO_CLS, n, 'cls');
+
+const ICO_ALT = { Supporter: ['Support'] };
+const icoCandidates = (kind, name) => {
+  const k = key(name), dir = kind === 'el' ? 'element' : 'class', names = [name, ...(ICO_ALT[name] || [])];
+  return [`/img/icons/${dir}/${k}.svg`, `/img/icons/${dir}/${k}.png`, ...names.flatMap(n => [`${WIKI_IMG}/${n}_icon.png`, `${WIKI_IMG}/${n}_Icon.png`, `${WIKI_IMG}/${n}_${kind === 'el' ? 'element' : 'class'}_icon.png`])];
+};
+const probeImg = (url, cors) => new Promise(res => { const i = new Image(); if (cors) i.crossOrigin = 'anonymous'; i.referrerPolicy = 'no-referrer'; i.onload = () => res(i.naturalWidth > 0); i.onerror = () => res(false); i.src = url });
+async function probeIcon(kind, name) {   // -> { u, m: 'mask' | 'img' } | null.  mask = tinted with the box colour (needs CORS or same-origin); img = untinted
+  for (const u of icoCandidates(kind, name)) {
+    if (await probeImg(u, true)) return { u, m: 'mask' };
+    if (!u.startsWith('/') && await probeImg(u, false)) return { u, m: 'img' };
+  }
+  return null;
+}
+function icoApply(map) {
+  let st = document.getElementById('ico-real'); if (!st) { st = document.createElement('style'); st.id = 'ico-real'; document.head.appendChild(st) }
+  st.textContent = Object.entries(map).filter(([, v]) => v).map(([k, v]) => `.ico[data-k="${k}"]{${v.m === 'mask' ? `background:currentColor;-webkit-mask:url("${v.u}") center/contain no-repeat;mask:url("${v.u}") center/contain no-repeat` : `background:url("${v.u}") center/contain no-repeat`}}.ico[data-k="${k}"] svg{display:none}`).join('');
+}
+async function icoInit() {
+  const cached = load('et.icoMap.v2', null);
+  if (cached && Date.now() - cached.t < 864e5) return icoApply(cached.m);
+  const jobs = [...Object.keys(ICO_EL).map(n => ['el', n]), ...Object.keys(ICO_CLS).map(n => ['cls', n])];
+  const map = {}; await Promise.all(jobs.map(async ([kind, n]) => { map[kind + '-' + n] = await probeIcon(kind, n) }));
+  save('et.icoMap.v2', { t: Date.now(), m: map }); icoApply(map);
+}
+if (typeof document !== 'undefined' && typeof Image !== 'undefined') icoInit();
 
 // ---- ownership: fetched from Enka + added by hand in the Team Builder ----
 const ownState = () => {
@@ -178,38 +211,38 @@ const ownState = () => {
   const manual = new Set(load('et.owned', []).map(n => lookup(n)?.name).filter(Boolean));
   return { fetched, manual, has: o => fetched.has(key(o.name)) || manual.has(o.name), keys: () => new Set([...fetched, ...[...manual].map(key)]) };
 };
-const seenUnlock = () => new Set(load('et.unl', []));   // operators whose unlock + decrypt animation already played once
 
-// ---- character box (Team Builder and Operators) ----
-// state: lk = locked silhouette, rv = owned but the unlock/decrypt animation has not played yet, ul = unlocked art
-const LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor" fill-opacity=".2"/></svg>';
-function opBox(o, own, seen, attrs = '', tag = 'div', cls = '') {
-  const st = !own ? 'lk' : seen ? 'ul' : 'rv';
-  const lab = `${o.name}, ${o.rarity} star ${o.element} ${o.cls}, ${own ? 'unlocked' : 'locked'}`;
-  return `<${tag} class="op oc ${st} ${cls}" ${attrs} data-rar="${o.rarity}" data-nm="${esc(o.name)}" style="--c:${COL[o.element]}" aria-label="${esc(lab)}">${artHtml(o, 480)}<i class="scan"></i><span class="shade"></span>`
+// ---- character box ----
+// Team Builder box (db = false): lk = locked silhouette with a lock in the middle; ul = unlocked, still a silhouette, art is revealed by a
+//   scan line only when the pointer is over it and Add mode is off.
+// Operators database box (db = true): plain splash art, no silhouette, no lock.
+const LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor" fill-opacity=".25"/></svg>';
+const opLabel = (o, own, db) => `${o.name}, ${o.rarity} star ${o.element} ${o.cls}${db ? '' : own ? ', unlocked' : ', locked'}`;
+function opBox(o, { own = false, db = false, attrs = '', tag = 'div', cls = '' } = {}) {
+  const st = db ? 'db' : own ? 'ul' : 'lk';
+  return `<${tag} class="op oc ${st} ${cls}" ${attrs} data-rar="${o.rarity}" data-nm="${esc(o.name)}" style="--c:${COL[o.element]}" aria-label="${esc(opLabel(o, own, db))}">${artHtml(o, 480, { whole: true, sil: !db })}${db ? '' : '<i class="scan"></i>'}<span class="shade"></span>`
     + `<span class="tags"><span class="el">${icoEl(o.element)}${esc(o.element)}</span><span class="cls" title="${esc(o.cls)}">${icoCls(o.cls)}</span></span>`
-    + `<span class="lock" title="${own ? 'Unlocked' : 'Locked: not on your account'}">${LOCK_SVG}</span>`
+    + (db ? '' : `<span class="lock" aria-hidden="true">${LOCK_SVG}</span>`)
     + `<span class="meta"><b>${esc(o.name)}</b><small><span class="st">${stars(o.rarity)}</span><br>${esc(o.cls)} · ${esc(o.weapon)}</small></span></${tag}>`;
 }
-// play the unlock then decrypt animation once per owned operator, when its box scrolls into view
-function opReveal(root = document) {
-  const els = [...root.querySelectorAll('.op.rv')]; if (!els.length) return;
-  const seen = seenUnlock(), done = el => { el.classList.remove('rv', 'unl', 'dec'); el.classList.add('ul'); seen.add(el.dataset.nm); save('et.unl', [...seen]) };
-  if (matchMedia('(prefers-reduced-motion:reduce)').matches || typeof IntersectionObserver === 'undefined') return els.forEach(done);
-  const run = el => {
-    el.classList.add('unl');                                             // 1. the lock opens
-    setTimeout(() => { el.classList.add('dec'); const b = el.querySelector('.meta b'); if (b && typeof decrypt === 'function') decrypt(b, { duration: 800 }) }, 650); // 2. silhouette decrypts into the art
-    setTimeout(() => done(el), 1700);
-  };
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); setTimeout(() => run(e.target), 120 + Math.random() * 380) } }), { threshold: .55 });
-  els.forEach(e => io.observe(e));
+// change a Team Builder box between locked and unlocked in place (the images are never re-created, so nothing flashes).
+// animate = true plays the lock opening / closing; that only happens when the person clicks a box in Add mode.
+function opSetState(el, own, o, animate) {
+  const was = el.classList.contains('ul');
+  el.classList.toggle('ul', own); el.classList.toggle('lk', !own);
+  if (o) el.setAttribute('aria-label', opLabel(o, own, false));
+  if (!animate || own === was) return;
+  clearTimeout(el._t); el.classList.remove('unl', 'rel');
+  void el.offsetWidth;
+  el.classList.add(own ? 'unl' : 'rel');
+  el._t = setTimeout(() => el.classList.remove('unl', 'rel'), 1100);
 }
-// silhouette and art lean toward the pointer while it is over a box
+// locked silhouettes lean toward the pointer while it is over a box
 if (typeof document !== 'undefined' && typeof addEventListener === 'function') {
   let raf = 0, cur = null;
   const set = (el, x, y) => { el.style.setProperty('--mx', x); el.style.setProperty('--my', y) };
   addEventListener('pointermove', e => {
-    const el = e.target.closest?.('.oc'); if (cur && cur !== el) { set(cur, 0, 0); cur = null } if (!el) return;
+    const el = e.target.closest?.('.oc.lk'); if (cur && cur !== el) { set(cur, 0, 0); cur = null } if (!el) return;
     cur = el; if (raf) return;
     raf = requestAnimationFrame(() => { raf = 0; const r = el.getBoundingClientRect(); set(el, ((e.clientX - r.left) / r.width * 2 - 1).toFixed(2), ((e.clientY - r.top) / r.height * 2 - 1).toFixed(2)) });
   });

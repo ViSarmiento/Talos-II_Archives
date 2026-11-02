@@ -2,7 +2,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
 <body data-page="operators"><main>
 <h2 data-decrypt>Operators</h2>
-<p class="dim" style="margin:0 0 6px">Every operator in the game. Ones you own are unlocked; the rest stay as locked silhouettes. Fetch your account on the Account tab, or use Add operators in the Team Builder, to unlock more.</p>
+<p class="dim" style="margin:0 0 6px">Every operator in the game, with their full splash art. Use the Team Builder to plan a squad.</p>
 <div class="tools"><div class="uidbar" style="flex:1;min-width:200px"><input id="s" placeholder="Search operators" aria-label="Search operators"></div></div>
 <div class="fbar" id="fl"></div>
 <p class="dim" id="cnt"></p>
@@ -10,28 +10,29 @@
 </main>
 <script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script>
 <script>
-const f = { el: '', cls: '', rar: 0, own: false };
-const OS = ownState(), owned = o => OS.has(o);
-
-const card = (o, sn) => opBox(o, owned(o), sn.has(o.name));
+const f = { el: '', cls: '', rar: 0 };
+const cards = new Map();   // one node per operator, so searching and filtering never reload the art
+function card(o) {
+  let el = cards.get(o.name);
+  if (!el) { const t = document.createElement('template'); t.innerHTML = opBox(o, { db: true }).trim(); el = t.content.firstChild; cards.set(o.name, el) }
+  return el;
+}
 function draw() {
-  const q = key($('#s').value), sn = seenUnlock();
-  const list = ROSTER.filter(o => (!f.el || o.element === f.el) && (!f.cls || o.cls === f.cls) && (!f.rar || o.rarity === f.rar) && (!f.own || owned(o)) && key(o.name).includes(q))
+  const q = key($('#s').value);
+  const list = ROSTER.filter(o => (!f.el || o.element === f.el) && (!f.cls || o.cls === f.cls) && (!f.rar || o.rarity === f.rar) && key(o.name).includes(q))
     .sort((x, y) => y.rarity - x.rarity || x.name.localeCompare(y.name));
-  $('#pool').innerHTML = list.map(o => card(o, sn)).join('') || '<p class="dim">No operators match those filters.</p>';
+  if (list.length) $('#pool').replaceChildren(...list.map(card)); else $('#pool').innerHTML = '<p class="dim">No operators match those filters.</p>';
   const chip = (attr, val, label, on, c, ic = '') => `<button class="chip ${on ? 'on' : ''}" data-${attr}="${val}" ${c ? `style="--c:${c}"` : ''}>${ic}${label}</button>`;
   $('#fl').innerHTML = `<div class="chips">${Object.keys(COL).map(e => chip('fe', e, e, f.el === e, COL[e], icoEl(e))).join('')}</div><span class="sep"></span>
     <div class="chips">${CLASSES.map(c => chip('fc', c, c, f.cls === c, '', icoCls(c))).join('')}</div><span class="sep"></span>
-    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + '★', f.rar === r)).join('')}${chip('fo', 1, 'Owned only', f.own)}</div>`;
-  $('#cnt').textContent = `${list.length} of ${ROSTER.length} operators shown. ${ROSTER.filter(owned).length} unlocked.`;
-  opReveal($('#pool'));
+    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + '★', f.rar === r)).join('')}</div>`;
+  $('#cnt').textContent = `${list.length} of ${ROSTER.length} operators shown.`;
 }
 document.onclick = e => {
-  const t = e.target, o = t.closest('[data-o]'), fe = t.closest('[data-fe]'), fc = t.closest('[data-fc]'), fr = t.closest('[data-fr]'), fo = t.closest('[data-fo]');
+  const t = e.target, fe = t.closest('[data-fe]'), fc = t.closest('[data-fc]'), fr = t.closest('[data-fr]');
   if (fe) f.el = f.el === fe.dataset.fe ? '' : fe.dataset.fe;
   else if (fc) f.cls = f.cls === fc.dataset.fc ? '' : fc.dataset.fc;
   else if (fr) f.rar = f.rar === +fr.dataset.fr ? 0 : +fr.dataset.fr;
-  else if (fo) f.own = !f.own;
   else return;
   draw();
 };

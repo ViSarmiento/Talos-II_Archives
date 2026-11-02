@@ -18,10 +18,10 @@ if(SU)document.querySelectorAll('a.card[href="/account"]').forEach(a=>a.href='/a
 // fixed footer: sits at the bottom of the window and never scrolls
 document.body.insertAdjacentHTML('beforeend','<footer>Talos-II Archives is an unofficial fan project, not affiliated with Hypergryph or Gryphline. Player data via Enka.Network. Operator art and data: Hypergryph/Gryphline, shown via the Endfield Talos Wiki (CC BY-SA).</footer>');
 
-// ---- background: gray field, black-space circle with stars, the Dijiang hovering, the Endministrator blended in ----
+// ---- background: gray field, black-space circle with stars, the purple operator backdrop, the Dijiang hovering ----
 (()=>{
   const lines='<svg class="lines" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#000" stroke-width="1.2"><circle cx="360" cy="640" r="330"/><circle cx="360" cy="640" r="250" stroke-dasharray="3 9"/><circle cx="360" cy="640" r="120"/><path d="M-20 780 L760 150 M40 900 L900 220 M-20 520 L420 120"/><path d="M0 700H800M360 280V900" stroke-dasharray="2 10"/><path d="M110 560l-14 0m14 0l14 0M96 560l14 -10M610 740l18 0M619 731v18"/></svg>';
-  document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><canvas id="space"></canvas><div class="glow"></div><div class="emw"><img class="em" alt="" src="${esc(ENDMIN_IMG)}" onerror="this.remove()"></div><div class="dwrap"><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"></div><i class="rim"></i></div><i class="vig"></i></div>`);
+  document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><canvas id="space"></canvas><div class="glow"></div><div class="oart"><i></i></div><div class="dwrap"><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"></div><i class="rim"></i></div><i class="vig"></i></div>`);
   const orb=$('.orb'),c=$('#space'),x=c.getContext('2d');let w=0,h=0,t=0,vis=true,shoot=null;
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
   // three depth layers of stars: far ones are small and slow, near ones bigger and drift more; pointer shifts them by depth

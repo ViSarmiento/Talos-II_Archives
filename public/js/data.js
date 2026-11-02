@@ -78,10 +78,10 @@ const TAGS = {
 };
 
 // ---- site background (same on every page) ----
-// The black-space circle: twinkling stars, the Dijiang hovering in front of them, and the Endministrator
-// (blended into the scene, looking toward the ship). Both are transparent cut-outs in public/img/bg/.
+// The black-space circle: twinkling stars, the purple halftone operator backdrop on the left, and the Dijiang hovering in front.
+// Position and size of the Dijiang: --dj-x / --dj-y / --dj-w on `.orb` in style.css (share of the circle's width / height).
 const DIJIANG_IMG = '/img/bg/dijiang.webp';
-const ENDMIN_IMG = '/img/bg/endmin.webp';
+// The backdrop is /img/bg/operator-art.png: a light layer whose transparency carries the art; style.css fills it purple (.orb .oart i).
 
 // ---- team/account card framing ----
 // Splash art is shown zoomed in on the operator. Default is [x%, y%, zoom]: look 50% across and 14% down, 1.55x.
