@@ -119,35 +119,49 @@ details pre{max-height:320px;overflow:auto;background:#07080b;padding:12px;font-
 .dc.u{color:var(--sig);opacity:.8;font-size:.88em}.dc.ac{color:var(--sig)}.dc{text-align:center}
 h1[data-decrypt],h2[data-decrypt]{white-space:pre-line}
 
-/* ---- landing: gray field + black-space circle (see Black Space mockup) ---- */
-body[data-page=home]{background:#8d8d8f}
+/* ---- shared background: gray field + black-space circle (see Black Space mockup) ---- */
+body{background:#8d8d8f}
 .scene{position:fixed;inset:0;z-index:-2;overflow:hidden;background:radial-gradient(ellipse at 24% 62%,#9b9b9d,#868688 62%,#6c6c6f)}
 .scene .lines{position:absolute;inset:0;width:100%;height:100%;opacity:.13}
-.scene .bgart{position:absolute;left:-3vw;bottom:-8vh;width:min(72vw,1150px);aspect-ratio:1;opacity:var(--bgart-o,.28);mix-blend-mode:var(--bgart-blend,multiply);-webkit-mask-image:radial-gradient(closest-side,#000 45%,transparent);mask-image:radial-gradient(closest-side,#000 45%,transparent)}
-.scene .bgart img{width:100%;height:100%;object-fit:contain}
 .scene .vig{position:absolute;inset:0;background:radial-gradient(ellipse at 40% 50%,transparent 55%,rgba(0,0,0,.35))}
-.orb{position:absolute;left:52vw;top:calc(25vh - 29.5vw);width:59vw;height:59vw;border-radius:50%;background:#000;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.45)}
-.orb canvas,.orb .dij{position:absolute;inset:0;width:100%;height:100%}
-.orb .dij{object-fit:contain;object-position:50% 42%}
-.orb .opart{position:absolute;left:41%;bottom:5%;height:min(84vh,50vw);width:auto;max-width:none;transform:translateX(-50%);filter:drop-shadow(0 10px 40px rgba(0,0,0,.7));-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+.orb{--sc:#ccc;position:absolute;left:52vw;top:calc(25vh - 29.5vw);width:59vw;height:59vw;border-radius:50%;background:#000;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.45)}
+.orb canvas{position:absolute;inset:0;width:100%;height:100%}
+.orb .dij{position:absolute;right:8%;top:34%;width:66%;height:auto;filter:drop-shadow(0 18px 40px rgba(0,0,0,.8));animation:drift 16s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(-10px,8px) rotate(-.6deg)}}
+.orb .opart{position:absolute;left:3%;top:27%;height:70%;aspect-ratio:360/680;background:var(--sc);-webkit-mask:var(--art) center/contain no-repeat;mask:var(--art) center/contain no-repeat;opacity:var(--art-o,.8);transition:background .4s}
 .orb .rim{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 90px rgba(120,150,255,.14),inset 0 -40px 120px rgba(0,0,0,.6)}
+footer{color:var(--dim);background:rgba(8,9,12,.82)}
+body:not([data-page=home]) main{width:min(1180px,calc(100% - 32px));margin:24px auto 40px;background:rgba(9,10,14,.8);backdrop-filter:blur(3px);border:1px solid #1d1f26}
 body[data-page=home] .hero{max-width:min(700px,49vw)}
 body[data-page=home] .hero h1{font-size:clamp(42px,7vw,104px)}
 body[data-page=home] h1{color:#0a0a0c;text-shadow:none}
 body[data-page=home] .hero p{color:#17171a}
 body[data-page=home] .site-tag{color:#26262a}
 body[data-page=home] .dc.u{color:#3b3b40}body[data-page=home] .dc.ac{color:#a24a0c}
-body[data-page=home] footer{color:#1b1b1f!important}
 .uidbar button{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
 .uidbar.bad{border-color:#ff8a7a;animation:nudge .25s 2}
 @keyframes nudge{50%{transform:translateX(5px)}}
+/* operator art picker (home) */
+.pick{position:fixed;right:18px;bottom:18px;z-index:8;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+#pk{background:rgba(8,9,12,.9);color:var(--text);border:1px solid var(--line);padding:11px 16px;font-size:14px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+#pk b{color:var(--sig);margin-left:8px}
+.pl{width:270px;max-height:min(56vh,440px);overflow:auto;background:rgba(8,9,12,.96);border:1px solid var(--line)}
+.pl[hidden]{display:none}
+.pl button{display:flex;justify-content:space-between;align-items:center;width:100%;background:transparent;color:var(--text);text-align:left;padding:8px 12px;border-left:3px solid var(--c);font-weight:500;font-size:14px}
+.pl button small{color:var(--dim);font-size:11px}
+.pl button:hover,.pl button[aria-selected=true]{background:rgba(255,255,255,.08);filter:none}
+.pl button[aria-selected=true]{color:var(--sig)}
 @media(max-width:820px){
   .orb{left:-22vw;top:46vh;width:144vw;height:144vw}
-  .orb .opart{left:50%;bottom:auto;top:5%;height:48vh}
+  .orb .dij{width:76%;right:14%;top:10%}
+  .orb .opart{left:14%;top:4%;height:55%}
   body[data-page=home] .hero{max-width:none;margin:0;min-height:0;padding-top:4vh}
-  .scene .bgart{width:120vw;bottom:auto;top:10vh}
 }
+/* ---- card art framing: focus on the operator, not the whole splash ---- */
+.art .pic{object-position:var(--fx,50%) var(--fy,14%);transform:scale(var(--fz,1.55));transform-origin:var(--fx,50%) var(--fy,14%)}
+.art .pic.ico{transform:none;object-position:50% 20%}
 /* ---- account: loading skeleton + header row ---- */
+.acct[hidden]{display:none}
 .acct{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
 .sk{border:1px solid var(--line);background:var(--panel);padding:18px 20px;margin:18px 0}
 .sk i{display:block;height:14px;margin:8px 0;background:linear-gradient(90deg,#1b1d24 25%,#2a2d37 50%,#1b1d24 75%) 0 0/200% 100%;animation:sh 1.2s linear infinite}

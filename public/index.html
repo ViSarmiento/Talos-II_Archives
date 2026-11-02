@@ -12,5 +12,6 @@ ARCHIVES</h1>
 const u=$('#uid'),bar=$('#q');u.value=load('et.recent',[])[0]||'';
 bar.onsubmit=e=>{e.preventDefault();const v=u.value.replace(/\D/g,'');
   if(!v){bar.classList.remove('bad');void bar.offsetWidth;bar.classList.add('bad');u.focus();return}
+  try{sessionStorage.setItem('et.uid',v)}catch{}
   location.href='/account?uid='+v};
 </script></body></html>

@@ -85,10 +85,11 @@ const initials = n => n.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpper
 function artHtml(o, w) {
   if (!o || !o.name) return `<div class="art"><span class="mono">?</span></div>`;
   const ch = artChain(o, w);
-  return `<div class="art"><span class="mono">${esc(initials(o.name))}</span><img class="pic" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="${esc(ch[0])}" data-i="0" data-c="${esc(JSON.stringify(ch))}" onerror="artErr(this)"></div>`;
+  const [fx, fy, fz] = ART_FOCUS[o.name] || ART_FOCUS_DEFAULT;
+  return `<div class="art" style="--fx:${fx}%;--fy:${fy}%;--fz:${fz}"><span class="mono">${esc(initials(o.name))}</span><img class="pic" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="${esc(ch[0])}" data-i="0" data-c="${esc(JSON.stringify(ch))}" onerror="artErr(this)"></div>`;
 }
 function artErr(img) { // try the next source, otherwise leave the monogram showing
-  try { const c = JSON.parse(img.dataset.c), i = +img.dataset.i + 1; if (i < c.length) { img.dataset.i = i; img.src = c[i]; return } } catch {}
+  try { const c = JSON.parse(img.dataset.c), i = +img.dataset.i + 1; if (i < c.length) { img.dataset.i = i; if (i === c.length - 1) img.classList.add('ico'); img.src = c[i]; return } } catch {}
   img.remove();
 }
 const stars = n => '★'.repeat(n || 0);

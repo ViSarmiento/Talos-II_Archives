@@ -77,13 +77,20 @@ const TAGS = {
   Endministrator: { note: 'Crowd control with a combo skill that caters to other operators.' },
 };
 
-// ---- landing-page background (edit these) ----
-// HERO_OP: operator whose splash art stands inside the black-space circle.
-// BG_ART: operators whose in-game loading backdrop art (the faint linework behind them on the operator screen)
-//   is shown in one section of the gray background. Put one file per operator at public/img/bg/<name>.png
-//   (lowercase, no spaces: avywenna.png, laevatain.png ...). One of the listed names is picked at random per visit;
-//   list a single name to pin it. A missing file is skipped and the built-in linework shows instead.
-// DIJIANG_IMG: optional picture of the Dijiang in space. If the file is missing, a drawn silhouette is used.
-const HERO_OP = 'Avywenna';
-const BG_ART = ['avywenna'];
-const DIJIANG_IMG = '/img/bg/dijiang.png';
+// ---- site background (same on every page) ----
+// The black-space circle shows the Dijiang and, in front of it, the in-game backdrop art (the faint halftone
+// illustration behind an operator on the operator screen), tinted in the chosen operator's element color.
+// BG_SHARED is lifted from the Avywenna screen and used for everyone until an operator has their own file:
+// public/img/bg/<key>.png (key = lowercase name, no spaces: chenqianyu.png). Files must be white art on a
+// transparent background; make them with scripts/extract-backdrop.py. Visitors pick the operator with the
+// "Operator art" button on the home page. BG_DEFAULT is used on a first visit.
+const BG_DEFAULT = 'Avywenna';
+const BG_DIR = '/img/bg/';
+const BG_SHARED = '/img/bg/operator-art.png'; // used for every operator that has no file of its own
+const DIJIANG_IMG = '/img/bg/dijiang.png'; // cut-out of the ship, transparent background
+
+// ---- team/account card framing ----
+// Splash art is shown zoomed in on the operator. Default is [x%, y%, zoom]: look 50% across and 14% down, 1.55x.
+// Override one operator here if the framing is off, e.g. 'Rossi': [46, 20, 1.7].
+const ART_FOCUS_DEFAULT = [50, 14, 1.55];
+const ART_FOCUS = {};
