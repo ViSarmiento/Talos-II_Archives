@@ -51,7 +51,7 @@ async function go(uid) {
     ${p.sig ? `<p class="dim" style="margin:8px 0 0">${esc(p.sig)}</p>` : ''}
     <div class="pgrid">${stat('Authority level', p.level)}${stat('World level', p.worldLevel)}${stat('Operators owned', p.owned)}${stat('Weapons', p.weapons)}${stat('Documents', p.docs)}${stat('Account created', fmtDate(p.created))}</div></div>
     <div class="grid">${n.ops.map((o, i) => opCard(o, i)).join('')}</div>
-    ${manual.length ? `<h3 class="sect">Added by you</h3><p class="dim" style="margin:0 0 10px">Marked as owned in the Operators tab. They are not in your fetched showcase.</p><div class="grid">${manual.map(manCard).join('')}</div>` : ''}
+    ${manual.length ? `<h3 class="sect">Added by you</h3><p class="dim" style="margin:0 0 10px">Added in the Team Builder tab. They are not in your fetched showcase.</p><div class="grid">${manual.map(manCard).join('')}</div>` : ''}
     ${unk.length ? `<div class="note"><b>${unk.length} operator${unk.length === 1 ? ' is' : 's are'} not mapped yet</b>: ${unk.map(o => `<code>${esc(o.id)}</code>`).join(', ')}. Add ${unk.length === 1 ? 'it' : 'each'} to <code>ID_MAP</code> in <code>public/js/data.js</code> (id: 'Operator Name').</div>` : ''}
     ${known.length ? '<p class="row"><a href="/team"><button type="button">Open team builder</button></a><span class="dim">Click an operator to add it to your team.</span></p>' : ''}`;
 }

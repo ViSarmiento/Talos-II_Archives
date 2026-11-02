@@ -45,7 +45,6 @@ details pre{max-height:320px;overflow:auto;background:#07080b;padding:12px;font-
 .op .meta .st{color:var(--r);letter-spacing:.06em;font-size:11px}
 .op .el{position:absolute;top:8px;left:8px;padding:1px 8px;font:700 11px "Chakra Petch";letter-spacing:.06em;text-transform:uppercase;background:rgba(6,7,10,.78);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
 .op .badge{position:absolute;top:8px;right:8px;font:12px "IBM Plex Mono",monospace;background:rgba(6,7,10,.78);padding:1px 6px;color:var(--text);border:1px solid var(--line)}
-.op .dot{position:absolute;top:34px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--sig);box-shadow:0 0 8px var(--sig)}
 .op.unk .art .mono{font-size:28px}
 .op.unk .meta small{font-family:"IBM Plex Mono",monospace;word-break:break-all}
 
@@ -123,7 +122,6 @@ body{background:#8d8d8f}
 .orb{--sc:#ccc;position:absolute;left:52vw;top:calc(25vh - 29.5vw);width:59vw;height:59vw;border-radius:50%;background:#000;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.45)}
 .orb .dij{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;object-position:68% 52%;animation:drift 18s ease-in-out infinite alternate}
 @keyframes drift{to{transform:translate(-10px,8px) rotate(-.6deg)}}
-.orb .opart{display:none;position:absolute;left:3%;top:27%;height:70%;aspect-ratio:360/680;background:var(--sc);-webkit-mask:var(--art) center/contain no-repeat;mask:var(--art) center/contain no-repeat;opacity:var(--art-o,.8);transition:background .4s}
 .orb .rim{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 90px rgba(120,150,255,.14),inset 0 -40px 120px rgba(0,0,0,.6)}
 body:not([data-page=home]) main{width:min(1180px,calc(100% - 32px));margin:24px auto 40px;background:rgba(9,10,14,.8);backdrop-filter:blur(3px);border:1px solid #1d1f26}
 body[data-page=home] .hero{max-width:min(700px,49vw)}
@@ -135,20 +133,8 @@ body[data-page=home] .dc.u{color:#3b3b40}body[data-page=home] .dc.ac{color:#a24a
 .uidbar button{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
 .uidbar.bad{border-color:#ff8a7a;animation:nudge .25s 2}
 @keyframes nudge{50%{transform:translateX(5px)}}
-/* operator art picker (home) */
-.pick{position:fixed;right:18px;bottom:18px;z-index:8;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-#pk{background:rgba(8,9,12,.9);color:var(--text);border:1px solid var(--line);padding:11px 16px;font-size:14px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
-#pk b{color:var(--sig);margin-left:8px}
-.pl{width:270px;max-height:min(56vh,440px);overflow:auto;background:rgba(8,9,12,.96);border:1px solid var(--line)}
-.pl[hidden]{display:none}
-.pl button{display:flex;justify-content:space-between;align-items:center;width:100%;background:transparent;color:var(--text);text-align:left;padding:8px 12px;border-left:3px solid var(--c);font-weight:500;font-size:14px}
-.pl button small{color:var(--dim);font-size:11px}
-.pl button:hover,.pl button[aria-selected=true]{background:rgba(255,255,255,.08);filter:none}
-.pl button[aria-selected=true]{color:var(--sig)}
 @media(max-width:820px){
   .orb{left:-22vw;top:46vh;width:144vw;height:144vw}
-  .orb .dij{object-position:70% 50%}
-  .orb .opart,.orb .osil{left:14%;top:4%;height:55%}
   body[data-page=home] .hero{max-width:none;margin:0;min-height:0;padding-top:4vh}
 }
 /* ---- card art framing: focus on the operator, not the whole splash ---- */
@@ -186,7 +172,6 @@ body{padding-left:var(--rw);padding-bottom:58px}
 .rl-pin:hover{color:var(--text);filter:none}
 
 footer{position:fixed;left:var(--rw);right:0;bottom:0;z-index:4;padding:7px 16px;text-align:center;font-size:11px;line-height:1.4;color:var(--dim);background:rgba(8,9,12,.88);border-top:1px solid #1d1f26;pointer-events:none}
-.pick{bottom:62px}
 .hero{margin-left:clamp(0px,4vw,70px)}
 
 /* account: empty-state message */
@@ -199,42 +184,88 @@ footer{position:fixed;left:var(--rw);right:0;bottom:0;z-index:4;padding:7px 16px
 .art.duo .pic[data-duo="0"]{left:0}.art.duo .pic[data-duo="1"]{left:50%}
 .art.duo .pic.fit{height:auto}
 
-/* ---- landing circle: the operator as a moving silhouette ---- */
-.orb.nosil .opart{display:block}
-.orb .osil{position:absolute;left:3%;top:27%;height:70%;aspect-ratio:360/680;pointer-events:none;perspective:800px}
-.orb .osil .par{position:absolute;inset:0;transform:translate3d(calc(var(--px,0)*14px),calc(var(--py,0)*8px),0) rotateY(calc(var(--px,0)*8deg)) rotateX(calc(var(--py,0)*-4deg));transition:transform .35s ease-out}
-.orb .osil .float{position:absolute;inset:0;animation:sway 8s ease-in-out infinite alternate}
-@keyframes sway{from{transform:translateY(5px) rotate(-.8deg) scale(1)}to{transform:translateY(-9px) rotate(.8deg) scale(1.02)}}
-.orb .osil .fig,.orb .osil .lay{position:absolute;inset:0}
-.orb .osil .lay{animation:flick 12s steps(1) infinite}
-@keyframes flick{0%,92%,100%{opacity:1;transform:none}93%{opacity:.45;transform:translateX(5px)}94%{opacity:1;transform:translateX(-3px)}95%{opacity:.7;transform:none}}
-.orb .osil .lay .pic{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:none;filter:brightness(0) drop-shadow(0 0 1.4px var(--sc)) drop-shadow(0 0 16px color-mix(in srgb,var(--sc) 60%,transparent));animation:glow 5s ease-in-out infinite alternate}
-.orb .osil .lay .pic.fit{object-fit:fill}
-@keyframes glow{to{filter:brightness(0) drop-shadow(0 0 2px var(--sc)) drop-shadow(0 0 26px color-mix(in srgb,var(--sc) 80%,transparent))}}
-.orb .osil .lay.duo .pic{width:50%;right:auto}.orb .osil .lay.duo .pic[data-duo="1"]{left:50%}.orb .osil .lay.duo .pic.fit{width:auto}
-.orb .osil .scan{position:absolute;left:-10%;right:-10%;top:100%;height:2px;background:var(--sc);box-shadow:0 0 18px 3px var(--sc);opacity:0}
-/* when the operator changes: decrypt wipe from the feet up, with a scan line on the leading edge */
-.orb .osil.wipe .lay{animation:wipeIn .9s cubic-bezier(.3,.7,.2,1) backwards,flick 12s steps(1) .9s infinite}
-.orb .osil.wipe .scan{animation:sweep .9s cubic-bezier(.3,.7,.2,1) both}
-@keyframes wipeIn{from{clip-path:inset(100% -20% -10% -20%)}to{clip-path:inset(-10% -20% -10% -20%)}}
-@keyframes sweep{0%{top:100%;opacity:1}85%{opacity:1}100%{top:0;opacity:0}}
 @media(max-width:700px){
   :root{--rw:56px}
   body{padding-bottom:84px}
-  .pick{bottom:90px}
   body:not([data-page=home]) main{width:calc(100% - 20px)}
 }
-@media(prefers-reduced-motion:reduce){.rail,.orb .osil .par{transition:none!important;animation:none!important}}
+@media(prefers-reduced-motion:reduce){{transition:none!important;animation:none!important}}
 
-/* ---- Operators page: owned toggle ---- */
-.op.pick-own{cursor:pointer}
-.op .ownlbl{display:flex;align-items:center;gap:6px;margin-top:7px;padding:4px 8px;font:700 12px "Chakra Petch",sans-serif;letter-spacing:.04em;color:var(--text);background:rgba(6,7,10,.7);border:1px solid var(--line)}
-.op .ownlbl i{font-style:normal;width:14px;height:14px;display:grid;place-items:center;border:1px solid var(--dim);font-size:11px;line-height:1;color:#14120a}
-.op.owned{border-color:var(--sig)}
-.op.owned .ownlbl{border-color:var(--sig);color:var(--sig)}
-.op.owned .ownlbl i{background:var(--sig);border-color:var(--sig)}
-.op.locked{cursor:default}
-.op.locked .ownlbl{border-color:var(--nat);color:var(--nat)}
-.op.locked .ownlbl i{background:var(--nat);border-color:var(--nat)}
-.op .badge.man{color:var(--sig);border-color:var(--sig)}
-.sect{margin:22px 0 8px;font-size:18px}
+
+/* ---- landing circle: stars, hovering Dijiang, Endministrator blended in ---- */
+.orb canvas{position:absolute;inset:0;width:100%;height:100%}
+.orb .glow{position:absolute;inset:0;background:radial-gradient(ellipse 38% 22% at 62% 40%,rgba(255,170,70,.16),transparent 70%),radial-gradient(ellipse 30% 40% at 24% 62%,rgba(90,130,255,.12),transparent 70%)}
+.orb .dwrap{position:absolute;right:-2%;top:23%;width:64%;transform:translate3d(calc(var(--px,0)*-20px),calc(var(--py,0)*-12px),0);transition:transform .6s ease-out}
+.orb .dij{display:block;width:100%;height:auto;filter:drop-shadow(0 26px 40px rgba(0,0,0,.85)) saturate(.92) brightness(.95);animation:hover 9s ease-in-out infinite alternate}
+@keyframes hover{0%{transform:translate(0,8px) rotate(-1.2deg)}50%{transform:translate(-10px,-6px) rotate(.2deg)}100%{transform:translate(-18px,-14px) rotate(1deg)}}
+.orb .emw{position:absolute;left:1%;bottom:-9%;height:73%;aspect-ratio:520/1100;transform:translate3d(calc(var(--px,0)*8px),calc(var(--py,0)*5px),0);transition:transform .6s ease-out;-webkit-mask-image:linear-gradient(#000 60%,transparent 97%),linear-gradient(90deg,transparent,#000 22%);-webkit-mask-composite:source-in;mask-image:linear-gradient(#000 60%,transparent 97%),linear-gradient(90deg,transparent,#000 22%);mask-composite:intersect}
+.orb .em{display:block;width:100%;height:100%;opacity:.88;filter:brightness(.64) saturate(.62) contrast(1.1) hue-rotate(8deg) drop-shadow(10px 0 16px rgba(255,160,80,.28)) drop-shadow(-6px 0 18px rgba(90,130,255,.25));animation:bob 11s ease-in-out infinite alternate}
+@keyframes bob{from{transform:translateY(6px)}to{transform:translateY(-10px)}}
+@media(max-width:820px){.orb .dwrap{right:-4%;top:12%;width:78%}.orb .emw{left:12%;bottom:-6%;height:52%}}
+
+/* ---- sidebar sections ---- */
+.rail nav .sec{position:relative;flex:none;height:34px;display:flex;align-items:flex-end;padding:0 calc((var(--rw) - 28px)/2) 6px;margin-top:10px;color:#6b6f7b;font:700 11px "Chakra Petch",sans-serif;letter-spacing:.22em;text-transform:uppercase}
+.rail nav .sec::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:1px;background:var(--line)}
+
+/* ================= 1.7: character boxes (Team Builder + Operators) ================= */
+body[data-page=team] .grid,body[data-page=operators] .grid{grid-template-columns:repeat(4,1fr);gap:18px}
+@media(max-width:760px){body[data-page=team] .grid,body[data-page=operators] .grid{grid-template-columns:repeat(2,1fr);gap:12px}}
+.oc{aspect-ratio:3/4.1;border-radius:0}
+.oc .meta{padding:14px 15px 13px}
+.oc .meta b{font-size:clamp(18px,1.9vw,24px)}
+.oc .meta small{font-size:13px;margin-top:3px}
+.oc .meta .st{font-size:13px}
+.oc .shade{height:52%}
+/* class + element icons, top-left */
+.oc .tags{position:absolute;top:10px;left:10px;display:flex;gap:6px;align-items:center;z-index:3}
+.oc .tags .el,.slot .el{position:static;display:inline-flex;align-items:center;gap:5px;padding:2px 9px 2px 6px;font:700 12px "Chakra Petch";letter-spacing:.06em;text-transform:uppercase;background:rgba(6,7,10,.8);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
+.oc .tags .cls{display:grid;place-items:center;width:26px;height:24px;background:rgba(6,7,10,.8);color:#e8e4d6;border:1px solid var(--line)}
+.ico{width:14px;height:14px;flex:none}.oc .tags .cls .ico{width:15px;height:15px}
+.slot .el{position:absolute;top:8px;left:8px}
+.chip .ico{width:12px;height:12px;vertical-align:-1px;margin-right:5px}
+.chip[data-fe] .ico{color:var(--c)}
+/* lock on the side of the box */
+.oc .lock{position:absolute;right:-1px;top:14px;width:27px;height:34px;display:grid;place-items:center;z-index:4;background:rgba(6,7,10,.92);border:1px solid var(--line);border-right:0;color:#9fa3af;transition:color .25s,border-color .25s}
+.oc .lock svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.oc .lock .sh{transform-box:fill-box;transform-origin:0 100%}
+.oc.lk:hover .lock{color:var(--c);border-color:var(--c);animation:jig .45s}
+@keyframes jig{25%{transform:rotate(-9deg)}60%{transform:rotate(7deg)}}
+.oc.unl .lock{color:var(--sig);border-color:var(--sig);box-shadow:0 0 16px rgba(255,210,31,.5)}
+.oc.unl .lock .sh{animation:unlock .6s cubic-bezier(.3,1.5,.5,1) forwards}
+@keyframes unlock{0%{transform:none}35%{transform:translateY(-3px)}100%{transform:translateY(-2px) rotate(-32deg)}}
+.oc.ul .lock{color:var(--sig);border-color:color-mix(in srgb,var(--sig) 45%,var(--line))}
+.oc.ul .lock .sh{transform:translateY(-2px) rotate(-32deg)}
+/* silhouette: the splash art as a dark shape with an element-colour glow; it sways, leans toward the pointer, and flickers */
+.oc .art .pic{translate:calc(var(--mx,0)*9px) calc(var(--my,0)*6px);transition:translate .25s ease-out,scale .3s,filter .35s}
+.oc:hover .art .pic{scale:1.035}
+.oc.lk .art .pic,.oc.rv:not(.dec) .art .pic{filter:brightness(0) drop-shadow(0 0 1.5px var(--c)) drop-shadow(0 0 14px color-mix(in srgb,var(--c) 55%,transparent));animation:idle 6s ease-in-out infinite alternate,flick2 11s steps(1) infinite}
+.oc.lk:hover .art .pic,.oc.rv:hover:not(.dec) .art .pic{filter:brightness(0) drop-shadow(0 0 2px var(--c)) drop-shadow(0 0 26px color-mix(in srgb,var(--c) 90%,transparent))}
+.oc:nth-child(3n) .art .pic{animation-delay:-2s,-3s}.oc:nth-child(3n+1) .art .pic{animation-delay:-4s,-7s}
+@keyframes idle{from{rotate:-.7deg}to{rotate:.7deg}}
+@keyframes flick2{0%,93%,100%{opacity:1}94%{opacity:.45}95%{opacity:1}96%{opacity:.7}}
+/* a flat (non-cut-out) splash or a square icon would make a box, so show the monogram instead of a silhouette */
+.oc.lk .art.opaque .pic,.oc.rv:not(.dec) .art.opaque .pic,.oc.lk .art .pic.ico{display:none}
+.oc.lk .art.opaque .mono,.oc.lk .art:has(.pic.ico) .mono,.oc.rv .art.opaque .mono{display:grid}
+.oc.lk .art{background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--c) 22%,#14151b),#08090d 78%)}
+.oc.lk .art .mono{opacity:.55}
+/* scan line on hover and during decrypt */
+.oc .scan{position:absolute;left:0;right:0;top:100%;height:2px;background:var(--c);box-shadow:0 0 16px 3px var(--c);opacity:0;z-index:2;pointer-events:none}
+.oc.lk:hover .scan{animation:sweep2 1s ease-out}
+@keyframes sweep2{0%{top:100%;opacity:.9}100%{top:0;opacity:0}}
+/* decrypt: the silhouette resolves into the art in stepped bands, scan line on the leading edge */
+.oc.dec .scan{animation:sweep2 .95s cubic-bezier(.3,.7,.2,1) both;--c:var(--sig)}
+.oc.dec .art .pic{animation:decArt .95s steps(14) both}
+@keyframes decArt{
+  0%{filter:brightness(0) drop-shadow(0 0 14px var(--c));clip-path:inset(100% 0 0 0)}
+  25%{filter:brightness(3) saturate(0) drop-shadow(0 0 14px var(--c));clip-path:inset(70% 0 0 0);translate:6px 0}
+  50%{filter:brightness(1.8) hue-rotate(60deg);clip-path:inset(40% 0 0 0);translate:-5px 0}
+  75%{filter:brightness(1.3) hue-rotate(-30deg);clip-path:inset(12% 0 0 0);translate:3px 0}
+  100%{filter:none;clip-path:inset(0)}}
+.oc.dec .art .mono{display:none}
+.oc.ul .art .pic{animation:none}
+.oc.ul:hover{border-color:var(--c)}
+/* add-mode (Team Builder) */
+body.addmode .oc{cursor:copy;outline:1px dashed color-mix(in srgb,var(--sig) 55%,transparent);outline-offset:-4px}
+body.addmode .oc.in::after{display:none}
+#am[aria-pressed=true]{background:var(--sig);color:#14120a;border-color:var(--sig)}
+.tools #am{margin-left:auto}

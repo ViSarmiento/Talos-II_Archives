@@ -152,3 +152,66 @@ function artErr(img) { // CORS attempt failed -> same file without CORS (cannot 
 }
 const stars = n => '★'.repeat(n || 0);
 const fmtDate = t => { const n = Number(t); if (!n) return ''; const d = new Date(n < 1e12 ? n * 1000 : n); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) };
+
+// ---- class and element icons (stand-in glyphs; same 24x24 box, drawn in currentColor) ----
+const ICO_EL = {
+  Heat: '<path d="M12 2c.5 3.5 4.5 5.2 4.5 10a4.5 4.5 0 0 1-9 0c0-1.8.8-3 1.8-4 .1 1.5.7 2.4 1.7 2.8C10.7 8 11 5 12 2z"/>',
+  Cryo: '<path d="M12 2v20M4 7l16 10M4 17L20 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  Nature: '<path d="M20 4C10 4 5 9 5 15c0 2 .8 3.5 1.5 4.5C8 13 12 10 16 9c-4 2-7 5-8.5 11C16 20 20 14 20 4z"/>',
+  Electric: '<path d="M13.5 2L5 13.5h5.5L9.5 22 19 9.5h-5.8z"/>',
+  Physical: '<path d="M12 2l2.4 6.1L21 9l-5 4.4 1.6 6.6L12 16.6 6.4 20 8 13.4 3 9l6.6-.9z"/>',
+};
+const ICO_CLS = {
+  Guard: '<path d="M19 3h2v2L10.5 15.5l-2-2z"/><path d="M6.5 14.5l3 3M8 16l-3.5 3.5M5.5 18.5L3 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  Caster: '<circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9" ry="4" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(-30 12 12)"/>',
+  Striker: '<path d="M4 3l8 18M9.5 3l8 18M15 3l6 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+  Supporter: '<path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5z"/>',
+  Defender: '<path d="M12 2l8 3v6.2c0 4.8-3.3 8.6-8 10.8-4.7-2.2-8-6-8-10.8V5z"/>',
+  Vanguard: '<path d="M4 5l7 7-7 7M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+};
+const ico = (set, name) => `<svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${set[name] || '<circle cx="12" cy="12" r="5"/>'}</svg>`;
+const icoEl = n => ico(ICO_EL, n), icoCls = n => ico(ICO_CLS, n);
+
+// ---- ownership: fetched from Enka + added by hand in the Team Builder ----
+const ownState = () => {
+  const fetched = new Set(load('et.ops', []).filter(o => o.known !== false && o.name).map(o => key(o.name)));
+  const manual = new Set(load('et.owned', []).map(n => lookup(n)?.name).filter(Boolean));
+  return { fetched, manual, has: o => fetched.has(key(o.name)) || manual.has(o.name), keys: () => new Set([...fetched, ...[...manual].map(key)]) };
+};
+const seenUnlock = () => new Set(load('et.unl', []));   // operators whose unlock + decrypt animation already played once
+
+// ---- character box (Team Builder and Operators) ----
+// state: lk = locked silhouette, rv = owned but the unlock/decrypt animation has not played yet, ul = unlocked art
+const LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor" fill-opacity=".2"/></svg>';
+function opBox(o, own, seen, attrs = '', tag = 'div', cls = '') {
+  const st = !own ? 'lk' : seen ? 'ul' : 'rv';
+  const lab = `${o.name}, ${o.rarity} star ${o.element} ${o.cls}, ${own ? 'unlocked' : 'locked'}`;
+  return `<${tag} class="op oc ${st} ${cls}" ${attrs} data-rar="${o.rarity}" data-nm="${esc(o.name)}" style="--c:${COL[o.element]}" aria-label="${esc(lab)}">${artHtml(o, 480)}<i class="scan"></i><span class="shade"></span>`
+    + `<span class="tags"><span class="el">${icoEl(o.element)}${esc(o.element)}</span><span class="cls" title="${esc(o.cls)}">${icoCls(o.cls)}</span></span>`
+    + `<span class="lock" title="${own ? 'Unlocked' : 'Locked: not on your account'}">${LOCK_SVG}</span>`
+    + `<span class="meta"><b>${esc(o.name)}</b><small><span class="st">${stars(o.rarity)}</span><br>${esc(o.cls)} · ${esc(o.weapon)}</small></span></${tag}>`;
+}
+// play the unlock then decrypt animation once per owned operator, when its box scrolls into view
+function opReveal(root = document) {
+  const els = [...root.querySelectorAll('.op.rv')]; if (!els.length) return;
+  const seen = seenUnlock(), done = el => { el.classList.remove('rv', 'unl', 'dec'); el.classList.add('ul'); seen.add(el.dataset.nm); save('et.unl', [...seen]) };
+  if (matchMedia('(prefers-reduced-motion:reduce)').matches || typeof IntersectionObserver === 'undefined') return els.forEach(done);
+  const run = el => {
+    el.classList.add('unl');                                             // 1. the lock opens
+    setTimeout(() => { el.classList.add('dec'); const b = el.querySelector('.meta b'); if (b && typeof decrypt === 'function') decrypt(b, { duration: 800 }) }, 650); // 2. silhouette decrypts into the art
+    setTimeout(() => done(el), 1700);
+  };
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); setTimeout(() => run(e.target), 120 + Math.random() * 380) } }), { threshold: .55 });
+  els.forEach(e => io.observe(e));
+}
+// silhouette and art lean toward the pointer while it is over a box
+if (typeof document !== 'undefined' && typeof addEventListener === 'function') {
+  let raf = 0, cur = null;
+  const set = (el, x, y) => { el.style.setProperty('--mx', x); el.style.setProperty('--my', y) };
+  addEventListener('pointermove', e => {
+    const el = e.target.closest?.('.oc'); if (cur && cur !== el) { set(cur, 0, 0); cur = null } if (!el) return;
+    cur = el; if (raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; const r = el.getBoundingClientRect(); set(el, ((e.clientX - r.left) / r.width * 2 - 1).toFixed(2), ((e.clientY - r.top) / r.height * 2 - 1).toFixed(2)) });
+  });
+  document.addEventListener('pointerleave', () => { if (cur) { set(cur, 0, 0); cur = null } }, true);
+}

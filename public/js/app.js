@@ -2,9 +2,10 @@
 const HOME=document.body.dataset.page==='home';
 const SU=(()=>{try{return sessionStorage.getItem('et.uid')||''}catch{return ''}})(); // UID entered on the home page this session
 const PAGE=document.body.dataset.page;
-const NAV=[['/','Home','home','/img/icons/home.png'],['/account'+(SU?'?uid='+SU:''),'Account','account','/img/icons/account.svg'],['/team','Team Builder','team','/img/icons/team.svg'],['/operators','Operators','operators','/img/icons/operators.svg']];
+const NAV=[['/','Home','home','/img/icons/home.png'],['/account'+(SU?'?uid='+SU:''),'Account','account','/img/icons/account.svg'],{sec:'Database'},['/operators','Operators','operators','/img/icons/operators.svg'],{sec:'Tools'},['/team','Team Builder','team','/img/icons/team.svg']];
 const pinned=load('et.rail',false);
-document.body.insertAdjacentHTML('afterbegin',`<aside class="rail${pinned?' pin':''}" id="rail" aria-label="Site"><a class="rl-logo" href="/" aria-label="Talos-II Archives"><span class="mk">T<i>II</i></span><span class="tx">TALOS<i>-</i>II<br>ARCHIVES</span></a><nav><i class="ind" aria-hidden="true"></i>${NAV.map(([h,t,p,ic])=>`<a href="${h}" class="${PAGE===p?'on':''}"${PAGE===p?' aria-current="page"':''} title="${t}"><span class="ic" style="--m:url(${ic})" aria-hidden="true"></span><span class="tx">${t}</span></a>`).join('')}</nav><button class="rl-pin" type="button" id="rlp" aria-label="Keep sidebar open" aria-pressed="${pinned}"><span aria-hidden="true">${pinned?'‹':'›'}</span><span class="tx">Collapse</span></button></aside>`);
+document.body.insertAdjacentHTML('afterbegin',`<aside class="rail${pinned?' pin':''}" id="rail" aria-label="Site"><a class="rl-logo" href="/" aria-label="Talos-II Archives"><span class="mk">T<i>II</i></span><span class="tx">TALOS<i>-</i>II<br>ARCHIVES</span></a><nav><i class="ind" aria-hidden="true"></i>${NAV.map(n=>n.sec?`<div class="sec" aria-hidden="true"><span class="tx">${n.sec}</span></div>`:(([h,t,p,ic])=>`<a href="${h}" class="${PAGE===p?'on':''}"${PAGE===p?' aria-current="page"':''} title="${t}"><span class="ic" style="--m:url(${ic})" aria-hidden="true"></span><span class="tx">${t}</span></a>`)(n)).join('')}</nav><button class="rl-pin" type="button" id="rlp" aria-label="Keep sidebar open" aria-pressed="${pinned}"><span aria-hidden="true">${pinned?'‹':'›'}</span><span class="tx">Collapse</span></button></aside>`);
+(()=>{const r=document.getElementById('rail');try{if(sessionStorage.getItem('et.railin'))r.style.animation='none';else sessionStorage.setItem('et.railin','1')}catch{}})(); // slide-in intro only on the first page of a visit, not on every tab change
 if(SU)document.querySelectorAll('a.card[href="/account"]').forEach(a=>a.href='/account?uid='+SU);
 (()=>{ // the highlight glides to whichever tab you point at, and back to the current page
   const rail=$('#rail'),nav=$('nav',rail),ind=$('.ind',nav),cur=$('a.on',nav);
@@ -17,33 +18,33 @@ if(SU)document.querySelectorAll('a.card[href="/account"]').forEach(a=>a.href='/a
 // fixed footer: sits at the bottom of the window and never scrolls
 document.body.insertAdjacentHTML('beforeend','<footer>Talos-II Archives is an unofficial fan project, not affiliated with Hypergryph or Gryphline. Player data via Enka.Network. Operator art and data: Hypergryph/Gryphline, shown via the Endfield Talos Wiki (CC BY-SA).</footer>');
 
-// ---- background: gray field, black-space circle, Dijiang in space, operator backdrop art in front ----
+// ---- background: gray field, black-space circle with stars, the Dijiang hovering, the Endministrator blended in ----
 (()=>{
   const lines='<svg class="lines" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#000" stroke-width="1.2"><circle cx="360" cy="640" r="330"/><circle cx="360" cy="640" r="250" stroke-dasharray="3 9"/><circle cx="360" cy="640" r="120"/><path d="M-20 780 L760 150 M40 900 L900 220 M-20 520 L420 120"/><path d="M0 700H800M360 280V900" stroke-dasharray="2 10"/><path d="M110 560l-14 0m14 0l14 0M96 560l14 -10M610 740l18 0M619 731v18"/></svg>';
-  document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"><i class="opart"></i><div class="osil"><div class="par"><div class="float"><div class="fig"></div></div></div><i class="scan"></i></div><i class="rim"></i></div><i class="vig"></i></div>`);
-  const orb=$('.orb'),art=$('.opart'),osil=$('.osil'),fig=$('.fig',osil);let cur='';
-  // the operator is a dark silhouette in their element colour that drifts, leans toward the cursor and flickers
-  function setOp(name){const o=lookup(name)||lookup(BG_DEFAULT);if(!o||o.name===cur)return;const first=!cur;cur=o.name;save('et.bgop',o.name);
-    orb.style.setProperty('--sc',COL[o.element]||'#ccc');orb.classList.remove('nosil');
-    fig.innerHTML=`<div class="lay s${ART_DUO[o.name]?' duo':''}" data-part="1">${artLayer(o,640,'sp')}</div>`;
-    osil.classList.remove('wipe');void osil.offsetWidth;osil.classList.add('wipe');
-    // fallback if the splash cannot be loaded at all: the old halftone backdrop, tinted
-    const use=u=>art.style.setProperty('--art','url('+u+')'),own=BG_DIR+key(o.name)+'.png',im=new Image();
-    use(BG_SHARED);im.onload=()=>{if(cur===o.name)use(own)};im.src=own;
-    const b=$('#pk b');if(b)b.textContent=o.name;document.querySelectorAll('#pkl [data-n]').forEach(e=>e.setAttribute('aria-selected',e.dataset.n===o.name))}
-  osil.addEventListener('artlost',()=>{if(!$('.pic',fig))orb.classList.add('nosil')});
-  let raf=0;addEventListener('pointermove',e=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;orb.style.setProperty('--px',(e.clientX/innerWidth*2-1).toFixed(2));orb.style.setProperty('--py',(e.clientY/innerHeight*2-1).toFixed(2))})});
-  // operator picker (home page only)
-  if(HOME){
-    const list=[...ROSTER].sort((a,b)=>b.rarity-a.rarity||a.name.localeCompare(b.name));
-    document.body.insertAdjacentHTML('beforeend',`<div class="pick"><div class="pl" id="pkl" role="listbox" aria-label="Operator art" hidden>${list.map(o=>`<button type="button" role="option" data-n="${esc(o.name)}" aria-selected="false" style="--c:${COL[o.element]}">${esc(o.name)}<small>${stars(o.rarity)}</small></button>`).join('')}</div><button type="button" id="pk" aria-expanded="false" aria-controls="pkl">Operator art<b></b> ▾</button></div>`);
-    const pk=$('#pk'),pl=$('#pkl'),close=()=>{pl.hidden=true;pk.setAttribute('aria-expanded','false')};
-    pk.onclick=e=>{e.stopPropagation();const open=pl.hidden;pl.hidden=!open;pk.setAttribute('aria-expanded',open);if(open)pl.querySelector('[aria-selected=true]')?.scrollIntoView({block:'center'})};
-    pl.onclick=e=>{const b=e.target.closest('[data-n]');if(b){setOp(b.dataset.n);close()}};
-    document.addEventListener('click',e=>{if(!e.target.closest('.pick'))close()});
-    addEventListener('keydown',e=>{if(e.key==='Escape'){close();pk.focus()}});
-  }
-  setOp(load('et.bgop',BG_DEFAULT));
+  document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><canvas id="space"></canvas><div class="glow"></div><div class="emw"><img class="em" alt="" src="${esc(ENDMIN_IMG)}" onerror="this.remove()"></div><div class="dwrap"><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"></div><i class="rim"></i></div><i class="vig"></i></div>`);
+  const orb=$('.orb'),c=$('#space'),x=c.getContext('2d');let w=0,h=0,t=0,vis=true,shoot=null;
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  // three depth layers of stars: far ones are small and slow, near ones bigger and drift more; pointer shifts them by depth
+  const S=Array.from({length:260},(_,i)=>{const d=i%3;return{x:Math.random(),y:Math.random(),d,r:[.5,.9,1.5][d]*(.7+Math.random()*.6),m:Math.random()*9,sp:[.004,.009,.018][d],hue:Math.random()<.18?(Math.random()<.5?'255,214,150':'170,200,255'):'255,255,255'}});
+  let px=0,py=0,tx=0,ty=0;
+  const rs=()=>{const r=orb.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);w=r.width;h=r.height;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0)};
+  rs();addEventListener('resize',()=>{rs();draw()});
+  let raf=0;addEventListener('pointermove',e=>{tx=e.clientX/innerWidth*2-1;ty=e.clientY/innerHeight*2-1;if(raf)return;raf=requestAnimationFrame(()=>{raf=0;orb.style.setProperty('--px',tx.toFixed(2));orb.style.setProperty('--py',ty.toFixed(2))})});
+  new IntersectionObserver(e=>{vis=e[0].isIntersecting;if(vis&&!reduce)draw()}).observe(orb);
+  function draw(){
+    if(!vis)return;t++;px+=(tx-px)*.05;py+=(ty-py)*.05;x.clearRect(0,0,w,h);
+    const g=x.createRadialGradient(w*.62,h*.4,0,w*.62,h*.4,w*.75);g.addColorStop(0,'#0d1220');g.addColorStop(.6,'#04060b');g.addColorStop(1,'#000');x.fillStyle=g;x.fillRect(0,0,w,h);
+    for(const s of S){
+      const par=[6,16,34][s.d];let X=((s.x-t*s.sp*.0006*(s.d+1))%1+1)%1*w-px*par,Y=(s.y*h+Math.sin(t*.004+s.m)*2)-py*par*.6;
+      const a=.25+.75*Math.abs(Math.sin(t*.015*(s.d+1)*.6+s.m));x.globalAlpha=a;x.fillStyle='rgb('+s.hue+')';
+      if(s.d===2){x.beginPath();x.arc(X,Y,s.r,0,6.3);x.fill();x.globalAlpha=a*.35;x.fillRect(X-s.r*3.2,Y-.4,s.r*6.4,.8);x.fillRect(X-.4,Y-s.r*3.2,.8,s.r*6.4)} // near stars get a little cross-flare
+      else x.fillRect(X,Y,s.r,s.r)}
+    x.globalAlpha=1;
+    // now and then a shooting star crosses the circle
+    if(!shoot&&Math.random()<.0035)shoot={x:Math.random()*w*.8+w*.2,y:Math.random()*h*.35,vx:-(9+Math.random()*6),vy:4+Math.random()*3,l:0};
+    if(shoot){const s=shoot,gr=x.createLinearGradient(s.x,s.y,s.x-s.vx*7,s.y-s.vy*7);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(1,'rgba(255,255,255,0)');x.strokeStyle=gr;x.lineWidth=1.4;x.beginPath();x.moveTo(s.x,s.y);x.lineTo(s.x-s.vx*7,s.y-s.vy*7);x.stroke();s.x+=s.vx;s.y+=s.vy;if(++s.l>60)shoot=null}
+    if(!reduce)requestAnimationFrame(draw)}
+  draw();
 })();
 
 // ---- decryption text effect: characters cycle through random glyphs, then lock in left to right (with some jitter) ----

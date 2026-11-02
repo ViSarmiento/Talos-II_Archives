@@ -78,16 +78,10 @@ const TAGS = {
 };
 
 // ---- site background (same on every page) ----
-// The black-space circle shows the Dijiang and, in front of it, the in-game backdrop art (the faint halftone
-// illustration behind an operator on the operator screen), tinted in the chosen operator's element color.
-// BG_SHARED is lifted from the Avywenna screen and used for everyone until an operator has their own file:
-// public/img/bg/<key>.png (key = lowercase name, no spaces: chenqianyu.png). Files must be white art on a
-// transparent background; make them with scripts/extract-backdrop.py. Visitors pick the operator with the
-// "Operator art" button on the home page. BG_DEFAULT is used on a first visit.
-const BG_DEFAULT = 'Avywenna';
-const BG_DIR = '/img/bg/';
-const BG_SHARED = '/img/bg/operator-art.png'; // used for every operator that has no file of its own
-const DIJIANG_IMG = '/img/bg/dijiang.jpg'; // the Dijiang over the planet; fills the black-space circle
+// The black-space circle: twinkling stars, the Dijiang hovering in front of them, and the Endministrator
+// (blended into the scene, looking toward the ship). Both are transparent cut-outs in public/img/bg/.
+const DIJIANG_IMG = '/img/bg/dijiang.webp';
+const ENDMIN_IMG = '/img/bg/endmin.webp';
 
 // ---- team/account card framing ----
 // Splash art is shown zoomed in on the operator. Default is [x%, y%, zoom]: look 50% across and 14% down, 1.55x.
