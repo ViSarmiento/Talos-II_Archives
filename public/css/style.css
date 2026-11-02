@@ -192,18 +192,20 @@ footer{position:fixed;left:var(--rw);right:0;bottom:0;z-index:4;padding:7px 16px
 @media(prefers-reduced-motion:reduce){{transition:none!important;animation:none!important}}
 
 
-/* ---- landing circle: stars, hovering Dijiang, Endministrator blended in ---- */
+/* ---- landing circle: still stars, purple operator backdrop, Dijiang ---- */
 .orb canvas{position:absolute;inset:0;width:100%;height:100%}
-.orb .glow{position:absolute;inset:0;background:radial-gradient(ellipse 36% 20% at 46% 52%,rgba(255,170,70,.14),transparent 70%),radial-gradient(ellipse 26% 42% at 15% 56%,rgba(150,90,255,.16),transparent 70%)}
+.orb .glow{position:absolute;inset:0;background:radial-gradient(ellipse 26% 42% at 15% 56%,rgba(150,90,255,.16),transparent 70%)}
 /* purple fill, cut out by the transparency of operator-art.png (stacked twice to strengthen it) */
 .orb .oart i{display:block;width:100%;height:100%;background:linear-gradient(180deg,#a678ff,#7c4ee0);-webkit-mask:url(/img/bg/operator-art.png) center/100% 100%,url(/img/bg/operator-art.png) center/100% 100%;mask:url(/img/bg/operator-art.png) center/100% 100%,url(/img/bg/operator-art.png) center/100% 100%;-webkit-mask-composite:source-over;mask-composite:add}
-/* operator backdrop (the purple halftone art on the left of the circle) */
-.orb .oart{position:absolute;left:2%;top:27%;height:70%;aspect-ratio:720/1360;width:auto;opacity:.9;-webkit-mask-image:radial-gradient(ellipse 62% 58% at 46% 52%,#000 38%,transparent 100%);mask-image:radial-gradient(ellipse 62% 58% at 46% 52%,#000 38%,transparent 100%);transform:translate3d(calc(var(--px,0)*-6px),calc(var(--py,0)*-4px),0);transition:transform .6s ease-out}
-.orb{--dj-x:9%;--dj-y:42%;--dj-w:70%}
-.orb .dwrap{position:absolute;left:var(--dj-x);top:var(--dj-y);width:var(--dj-w);transform:translate3d(calc(var(--px,0)*-20px),calc(var(--py,0)*-12px),0);transition:transform .6s ease-out}
-.orb .dij{display:block;width:100%;height:auto;filter:drop-shadow(0 26px 40px rgba(0,0,0,.85)) saturate(.92) brightness(.95);animation:hover 9s ease-in-out infinite alternate}
-@keyframes hover{0%{transform:translate(0,8px) rotate(-1.2deg)}50%{transform:translate(-10px,-6px) rotate(.2deg)}100%{transform:translate(-18px,-14px) rotate(1deg)}}
-@media(max-width:820px){.orb{--dj-x:6%;--dj-y:22%;--dj-w:88%}.orb .oart{left:4%;top:12%;height:44%}}
+/* operator backdrop (the dark purple halftone art with its grid, left half of the circle, as in beta 1.5) */
+.orb .oart{position:absolute;left:3%;top:33%;height:70%;aspect-ratio:720/1360;width:auto;opacity:.62;-webkit-mask-image:radial-gradient(ellipse 62% 58% at 46% 52%,#000 38%,transparent 100%);mask-image:radial-gradient(ellipse 62% 58% at 46% 52%,#000 38%,transparent 100%);transform:translate3d(calc(var(--px,0)*-6px),calc(var(--py,0)*-4px),0);transition:transform .6s ease-out}
+/* Dijiang: bottom right of the circle, tilted so it looks like it is passing through; the rim hides only a sliver of its tail.
+   Move/resize with --dj-x / --dj-y (position of its top-left, % of the circle), --dj-w (width) and --dj-r (tilt). --dj-b dims it. */
+.orb{--dj-x:31%;--dj-y:67%;--dj-w:56%;--dj-r:13deg;--dj-b:.8}
+.orb .dwrap{position:absolute;left:var(--dj-x);top:var(--dj-y);width:var(--dj-w);rotate:var(--dj-r);transform:translate3d(calc(var(--px,0)*-8px),calc(var(--py,0)*-5px),0);transition:transform .6s ease-out}
+.orb .dij{position:static;inset:auto;display:block;width:100%;height:auto;object-fit:fill;filter:drop-shadow(0 26px 40px rgba(0,0,0,.85)) saturate(.88) brightness(var(--dj-b));animation:hover 12s ease-in-out infinite alternate}
+@keyframes hover{0%{transform:translate(0,4px) rotate(-.5deg)}100%{transform:translate(-8px,-6px) rotate(.5deg)}}
+@media(max-width:820px){.orb{--dj-x:30%;--dj-y:62%;--dj-w:66%}.orb .oart{left:4%;top:12%;height:44%}}
 
 /* ---- sidebar sections ---- */
 .rail nav .sec{position:relative;flex:none;height:34px;display:flex;align-items:flex-end;padding:0 calc((var(--rw) - 28px)/2) 6px;margin-top:10px;color:#6b6f7b;font:700 11px "Chakra Petch",sans-serif;letter-spacing:.22em;text-transform:uppercase}
@@ -259,7 +261,7 @@ body[data-page=team] .grid,body[data-page=operators] .grid{grid-template-columns
 .oc.ul .art .pic.hi{clip-path:inset(var(--t) 0 0 0)}
 .oc .scan{position:absolute;left:0;right:0;top:100%;height:2px;background:var(--c);box-shadow:0 0 14px 3px var(--c);opacity:0;z-index:2;pointer-events:none}
 .oc.ul .scan{top:var(--t);opacity:min(1,calc(var(--n)*(100 - var(--n))/260))}
-body:not(.addmode) .oc.ul:hover{--t:0%;--n:0}
+body:not(.addmode) .oc.ul:hover,.oc.ul.rv{--t:0%;--n:0}
 .oc.ul .art .mono{display:none}
 
 /* lock: only the lock, centred, no box behind it */

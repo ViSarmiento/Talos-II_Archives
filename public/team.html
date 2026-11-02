@@ -71,7 +71,7 @@ function drawFilters() {
     <div class="chips">${CLASSES.map(c => chip('fc', c, c, f.cls === c, '', icoCls(c))).join('')}</div><span class="sep"></span>
     <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + '★', f.rar === r)).join('')}${own.size ? chip('fo', 1, 'Owned only', f.own) : ''}</div>`);
 }
-function drawCount() { $('#own').textContent = `${shown.length} of ${ROSTER.length} operators shown. ${own.size} unlocked. Dark silhouettes with a lock are operators you do not own yet. Fetch your account or use Add operators, then hover an unlocked silhouette to reveal it.` }
+function drawCount() { $('#own').textContent = `${shown.length} of ${ROSTER.length} operators shown. ${own.size} unlocked. Dark silhouettes with a lock are operators you do not own yet. Fetch your account or use Add operators, then hover an unlocked silhouette once to reveal it for good.` }
 
 function drawPool() {
   const q = key($('#s').value);
@@ -108,7 +108,7 @@ function toggleOwn(name) {
   drawAnalysis(); drawFilters(); drawCount();
   if (f.own && !gain) drawPool();   // "Owned only" is on and this one just left the list
 }
-const ADD_NOTE = 'Add mode: click an operator to unlock it, click again to lock it. Operators on your fetched account are already unlocked. Press Done adding, then hover an unlocked silhouette to reveal its art.';
+const ADD_NOTE = 'Add mode: click an operator to unlock it, click again to lock it. Operators on your fetched account are already unlocked. Press Done adding, then hover an unlocked silhouette once to reveal its art for good.';
 $('#am').onclick = () => {
   addMode = !addMode; document.body.classList.toggle('addmode', addMode);
   $('#am').setAttribute('aria-pressed', addMode); $('#am').textContent = addMode ? 'Done adding' : '＋ Add operators'; $('#amn').hidden = !addMode;

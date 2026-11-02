@@ -18,33 +18,23 @@ if(SU)document.querySelectorAll('a.card[href="/account"]').forEach(a=>a.href='/a
 // fixed footer: sits at the bottom of the window and never scrolls
 document.body.insertAdjacentHTML('beforeend','<footer>Talos-II Archives is an unofficial fan project, not affiliated with Hypergryph or Gryphline. Player data via Enka.Network. Operator art and data: Hypergryph/Gryphline, shown via the Endfield Talos Wiki (CC BY-SA).</footer>');
 
-// ---- background: gray field, black-space circle with stars, the purple operator backdrop, the Dijiang hovering ----
+// ---- background: gray field, black-space circle with still stars, the purple operator backdrop, the Dijiang passing through ----
 (()=>{
   const lines='<svg class="lines" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#000" stroke-width="1.2"><circle cx="360" cy="640" r="330"/><circle cx="360" cy="640" r="250" stroke-dasharray="3 9"/><circle cx="360" cy="640" r="120"/><path d="M-20 780 L760 150 M40 900 L900 220 M-20 520 L420 120"/><path d="M0 700H800M360 280V900" stroke-dasharray="2 10"/><path d="M110 560l-14 0m14 0l14 0M96 560l14 -10M610 740l18 0M619 731v18"/></svg>';
   document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><canvas id="space"></canvas><div class="glow"></div><div class="oart"><i></i></div><div class="dwrap"><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"></div><i class="rim"></i></div><i class="vig"></i></div>`);
-  const orb=$('.orb'),c=$('#space'),x=c.getContext('2d');let w=0,h=0,t=0,vis=true,shoot=null;
-  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  // three depth layers of stars: far ones are small and slow, near ones bigger and drift more; pointer shifts them by depth
-  const S=Array.from({length:260},(_,i)=>{const d=i%3;return{x:Math.random(),y:Math.random(),d,r:[.5,.9,1.5][d]*(.7+Math.random()*.6),m:Math.random()*9,sp:[.004,.009,.018][d],hue:Math.random()<.18?(Math.random()<.5?'255,214,150':'170,200,255'):'255,255,255'}});
-  let px=0,py=0,tx=0,ty=0;
-  const rs=()=>{const r=orb.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);w=r.width;h=r.height;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0)};
-  rs();addEventListener('resize',()=>{rs();draw()});
-  let raf=0;addEventListener('pointermove',e=>{tx=e.clientX/innerWidth*2-1;ty=e.clientY/innerHeight*2-1;if(raf)return;raf=requestAnimationFrame(()=>{raf=0;orb.style.setProperty('--px',tx.toFixed(2));orb.style.setProperty('--py',ty.toFixed(2))})});
-  new IntersectionObserver(e=>{vis=e[0].isIntersecting;if(vis&&!reduce)draw()}).observe(orb);
-  function draw(){
-    if(!vis)return;t++;px+=(tx-px)*.05;py+=(ty-py)*.05;x.clearRect(0,0,w,h);
-    const g=x.createRadialGradient(w*.62,h*.4,0,w*.62,h*.4,w*.75);g.addColorStop(0,'#0d1220');g.addColorStop(.6,'#04060b');g.addColorStop(1,'#000');x.fillStyle=g;x.fillRect(0,0,w,h);
-    for(const s of S){
-      const par=[6,16,34][s.d];let X=((s.x-t*s.sp*.0006*(s.d+1))%1+1)%1*w-px*par,Y=(s.y*h+Math.sin(t*.004+s.m)*2)-py*par*.6;
-      const a=.25+.75*Math.abs(Math.sin(t*.015*(s.d+1)*.6+s.m));x.globalAlpha=a;x.fillStyle='rgb('+s.hue+')';
-      if(s.d===2){x.beginPath();x.arc(X,Y,s.r,0,6.3);x.fill();x.globalAlpha=a*.35;x.fillRect(X-s.r*3.2,Y-.4,s.r*6.4,.8);x.fillRect(X-.4,Y-s.r*3.2,.8,s.r*6.4)} // near stars get a little cross-flare
-      else x.fillRect(X,Y,s.r,s.r)}
-    x.globalAlpha=1;
-    // now and then a shooting star crosses the circle
-    if(!shoot&&Math.random()<.0035)shoot={x:Math.random()*w*.8+w*.2,y:Math.random()*h*.35,vx:-(9+Math.random()*6),vy:4+Math.random()*3,l:0};
-    if(shoot){const s=shoot,gr=x.createLinearGradient(s.x,s.y,s.x-s.vx*7,s.y-s.vy*7);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(1,'rgba(255,255,255,0)');x.strokeStyle=gr;x.lineWidth=1.4;x.beginPath();x.moveTo(s.x,s.y);x.lineTo(s.x-s.vx*7,s.y-s.vy*7);x.stroke();s.x+=s.vx;s.y+=s.vy;if(++s.l>60)shoot=null}
-    if(!reduce)requestAnimationFrame(draw)}
-  draw();
+  const orb=$('.orb'),c=$('#space'),x=c.getContext('2d');let w=0,h=0;
+  // Still stars: no twinkle, no shooting stars. A fixed seed keeps the same sky on every load and every resize.
+  let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
+  const S=Array.from({length:150},()=>({x:rnd(),y:rnd(),r:.5+rnd()*.7,a:.18+rnd()*.5,hue:rnd()<.15?'255,214,170':rnd()<.3?'175,200,255':'255,255,255'}));
+  const draw=()=>{
+    x.clearRect(0,0,w,h);
+    const g=x.createRadialGradient(w*.62,h*.4,0,w*.62,h*.4,w*.75);g.addColorStop(0,'#0b0f1a');g.addColorStop(.6,'#04060a');g.addColorStop(1,'#000');x.fillStyle=g;x.fillRect(0,0,w,h);
+    for(const s of S){x.globalAlpha=s.a;x.fillStyle='rgb('+s.hue+')';x.fillRect(s.x*w,s.y*h,s.r,s.r)}
+    x.globalAlpha=1};
+  const rs=()=>{const r=orb.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);w=r.width;h=r.height;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0);draw()};
+  rs();addEventListener('resize',rs);
+  // the art and the ship only shift a few pixels with the pointer
+  let raf=0;addEventListener('pointermove',e=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;orb.style.setProperty('--px',(e.clientX/innerWidth*2-1).toFixed(2));orb.style.setProperty('--py',(e.clientY/innerHeight*2-1).toFixed(2))})});
 })();
 
 // ---- decryption text effect: characters cycle through random glyphs, then lock in left to right (with some jitter) ----

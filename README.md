@@ -1,8 +1,12 @@
-# Talos-II Archives beta 1.8 (formerly End:Tech)
+# Talos-II Archives beta 1.9 (formerly End:Tech)
 Static site in `public/` + one Vercel function `api/uid.js` (Enka proxy). No build step.
 
 Deploy: push to GitHub, import on Vercel (framework: Other). Local: `npx vercel dev` (a plain static server has no `/api`).
 Tests (no network needed): `npm test`.
+
+## What changed in 1.9
+- **Landing circle**: restyled to match the beta 1.5 look. The dark purple halftone backdrop (with its grid) fills the left half, no warm glow. Stars are **still** (no twinkle, no cross-flares, no shooting stars; a fixed seed, drawn once). The Dijiang sits in the **bottom right** of the circle, tilted so it looks like it is passing through, with the rim hiding only a sliver of its tail. Tune it with `--dj-x`, `--dj-y`, `--dj-w`, `--dj-r` (tilt) and `--dj-b` (brightness) on `.orb` in `style.css`.
+- **Team Builder**: the first time you hover an unlocked operator its art is revealed, and it **stays revealed** after the pointer leaves (and after a reload; stored as `et.rev`). Add mode never reveals. Locking an operator again clears it, so it is a silhouette until hovered again after re-unlocking.
 
 ## What changed in 1.8
 - **Landing circle**: the Endministrator is gone. The circle uses the purple halftone operator backdrop again (`public/img/bg/operator-art.png`, filled purple by `.orb .oart i`) with the stars, and the Dijiang is bigger and sits fully inside the circle. Move or resize it with `--dj-x`, `--dj-y`, `--dj-w` on `.orb` in `style.css`.

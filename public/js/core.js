@@ -216,10 +216,13 @@ const ownState = () => {
 // Team Builder box (db = false): lk = locked silhouette with a lock in the middle; ul = unlocked, still a silhouette, art is revealed by a
 //   scan line only when the pointer is over it and Add mode is off.
 // Operators database box (db = true): plain splash art, no silhouette, no lock.
+// Revealed operators: the first time you hover an unlocked silhouette its art is revealed, and it then stays revealed
+// (remembered in the browser as et.rev). Locking the operator again clears it, so it has to be hovered anew after re-unlocking.
+const revSet = () => new Set(load('et.rev', []));
 const LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor" fill-opacity=".25"/></svg>';
 const opLabel = (o, own, db) => `${o.name}, ${o.rarity} star ${o.element} ${o.cls}${db ? '' : own ? ', unlocked' : ', locked'}`;
 function opBox(o, { own = false, db = false, attrs = '', tag = 'div', cls = '' } = {}) {
-  const st = db ? 'db' : own ? 'ul' : 'lk';
+  const st = db ? 'db' : own ? 'ul' + (revSet().has(o.name) ? ' rv' : '') : 'lk';
   return `<${tag} class="op oc ${st} ${cls}" ${attrs} data-rar="${o.rarity}" data-nm="${esc(o.name)}" style="--c:${COL[o.element]}" aria-label="${esc(opLabel(o, own, db))}">${artHtml(o, 480, { whole: true, sil: !db })}${db ? '' : '<i class="scan"></i>'}<span class="shade"></span>`
     + `<span class="tags"><span class="el">${icoEl(o.element)}${esc(o.element)}</span><span class="cls" title="${esc(o.cls)}">${icoCls(o.cls)}</span></span>`
     + (db ? '' : `<span class="lock" aria-hidden="true">${LOCK_SVG}</span>`)
@@ -230,12 +233,21 @@ function opBox(o, { own = false, db = false, attrs = '', tag = 'div', cls = '' }
 function opSetState(el, own, o, animate) {
   const was = el.classList.contains('ul');
   el.classList.toggle('ul', own); el.classList.toggle('lk', !own);
+  if (!own) { el.classList.remove('rv'); const r = revSet(); if (r.delete(el.dataset.nm)) save('et.rev', [...r]) }
   if (o) el.setAttribute('aria-label', opLabel(o, own, false));
   if (!animate || own === was) return;
   clearTimeout(el._t); el.classList.remove('unl', 'rel');
   void el.offsetWidth;
   el.classList.add(own ? 'unl' : 'rel');
   el._t = setTimeout(() => el.classList.remove('unl', 'rel'), 1100);
+}
+// hovering (or focusing) an unlocked silhouette reveals it for good; Add mode never reveals
+if (typeof document !== 'undefined') {
+  const reveal = e => {
+    const el = e.target.closest?.('.oc.ul:not(.rv)'); if (!el || document.body.classList.contains('addmode')) return;
+    el.classList.add('rv'); const r = revSet(); r.add(el.dataset.nm); save('et.rev', [...r]);
+  };
+  document.addEventListener('pointerover', reveal); document.addEventListener('focusin', reveal);
 }
 // locked silhouettes lean toward the pointer while it is over a box
 if (typeof document !== 'undefined' && typeof addEventListener === 'function') {
