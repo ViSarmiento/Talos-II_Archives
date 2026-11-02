@@ -1,7 +1,7 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Account check – End:Tech</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Account – Talos-II Archives</title>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
 <body data-page="account"><main>
-<h2>Account check</h2>
+<h2 data-decrypt>Account</h2>
 <form id="f" class="uidbar"><input id="uid" inputmode="numeric" placeholder="Endfield UID" aria-label="Endfield UID" autocomplete="off"><button>Fetch</button></form>
 <div class="chips" id="recent"></div>
 <p id="st" class="dim" role="status">Your showcase must be public in-game for operators to appear.</p>
@@ -40,18 +40,15 @@ async function go(uid) {
   if (uid !== 'demo') save('et.recent', [uid, ...load('et.recent', []).filter(u => u !== uid)].slice(0, 5));
   recent();
   st(n.ops.length ? `<span class="ok">Found ${n.ops.length} showcase operator${n.ops.length === 1 ? '' : 's'}.</span> ${esc(got.note)}`
-    : `<span class="err">No operators in the showcase.</span> Make sure the character showcase is public in-game, then fetch again. If it is public, open "Raw response" below to check the response shape. ${esc(got.note)}`);
+    : `<span class="err">No operators in the showcase.</span> Make sure the character showcase is public in-game, then fetch again. ${esc(got.note)}`);
   const stat = (l, v) => v == null || v === '' ? '' : `<div>${l}<b>${esc(v)}</b></div>`;
-  const shown = known.length, total = p.owned;
   $('#out').innerHTML = `<div class="panel"><h3 style="margin:0">${esc(p.name || 'Unnamed player')}</h3>
     <div class="stat dim"><span>UID ${esc(p.uid)}</span>${p.region ? `<span>${esc(p.region)}</span>` : ''}${p.shortId ? `<span>ID ${esc(p.shortId)}</span>` : ''}${p.enkaUser ? `<span>Enka: ${esc(p.enkaUser)}</span>` : ''}</div>
     ${p.sig ? `<p class="dim" style="margin:8px 0 0">${esc(p.sig)}</p>` : ''}
     <div class="pgrid">${stat('Authority level', p.level)}${stat('World level', p.worldLevel)}${stat('Operators owned', p.owned)}${stat('Weapons', p.weapons)}${stat('Documents', p.docs)}${stat('Account created', fmtDate(p.created))}</div></div>
-    ${total > n.ops.length ? `<div class="note">Enka only exposes the operators on the player's public showcase: ${n.ops.length} of ${total} owned. Operators missing here will not be marked as owned in the team builder.</div>` : ''}
     <div class="grid">${n.ops.map((o, i) => opCard(o, i)).join('')}</div>
     ${unk.length ? `<div class="note"><b>${unk.length} operator${unk.length === 1 ? ' is' : 's are'} not mapped yet</b>: ${unk.map(o => `<code>${esc(o.id)}</code>`).join(', ')}. Add ${unk.length === 1 ? 'it' : 'each'} to <code>ID_MAP</code> in <code>public/js/data.js</code> (id: 'Operator Name').</div>` : ''}
-    ${known.length ? '<p class="row"><a href="/team"><button type="button">Open team builder</button></a><span class="dim">Click an operator to add it to your team.</span></p>' : ''}
-    <details class="panel"><summary>Raw response</summary><pre>${esc(JSON.stringify(j, null, 2))}</pre></details>`;
+    ${known.length ? '<p class="row"><a href="/team"><button type="button">Open team builder</button></a><span class="dim">Click an operator to add it to your team.</span></p>' : ''}`;
 }
 $('#f').onsubmit = e => { e.preventDefault(); const v = $('#uid').value.replace(/\D/g, ''); if (v) go(v) };
 $('#recent').onclick = e => { const u = e.target.dataset.u; if (u) { $('#uid').value = u === 'demo' ? '' : u; go(u) } };

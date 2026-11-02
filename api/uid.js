@@ -4,7 +4,7 @@ const CANDIDATES = [
   'https://enka.network/api/endfield/uid/{uid}', // pattern used by Enka's other games (/api/hsr/uid, /api/zzz/uid)
   'https://enka.network/api/ef/uid/{uid}',       // fallback guess, only tried if the first path returns a non-JSON page
 ];
-const UA = 'End:Tech/1.0 (Endfield fan site)';
+const UA = 'Talos-II-Archives/1.1 (Endfield fan site)';
 const MESSAGES = {
   400: 'That UID format is not valid.',
   404: 'UID not found, or this account has no public showcase.',

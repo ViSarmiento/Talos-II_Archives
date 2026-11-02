@@ -14,7 +14,7 @@ for (const o of ROSTER) {
   let done = false;
   for (const url of artChain(o, 640)) {
     try {
-      const r = await fetch(url, { headers: { 'User-Agent': 'End:Tech art fetch (fan site)' } });
+      const r = await fetch(url, { headers: { 'User-Agent': 'Talos-II Archives art fetch (fan site)' } });
       if (r.ok && (r.headers.get('content-type') || '').startsWith('image/')) { writeFileSync(file, Buffer.from(await r.arrayBuffer())); done = true; ok++; console.log('saved', o.name); break }
     } catch {}
   }

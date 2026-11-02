@@ -1,8 +1,8 @@
 // ---- page chrome: nav, footer, Talos-II background (helpers live in core.js) ----
 // ---- chrome ----
-document.body.insertAdjacentHTML('afterbegin',`<header><a class="logo" href="/">END<i>:</i>TECH</a><nav>${[['/','Home','home'],['/account','Account','account'],['/team','Team builder','team']].map(([h,t,p])=>`<a href="${h}" class="${document.body.dataset.page===p?'on':''}">${t}</a>`).join('')}</nav></header>`);
+document.body.insertAdjacentHTML('afterbegin',`<header><a class="logo" href="/">TALOS<i>-</i>II ARCHIVES</a><nav>${[['/','Home','home'],['/account','Account','account'],['/team','Team Builder','team']].map(([h,t,p])=>`<a href="${h}" class="${document.body.dataset.page===p?'on':''}">${t}</a>`).join('')}</nav></header>`);
 document.body.insertAdjacentHTML('afterbegin','<canvas id="bg"></canvas><div class="hud"></div>');
-document.body.insertAdjacentHTML('beforeend','<footer style="padding:24px;text-align:center;color:var(--dim);font-size:13px">End:Tech is an unofficial fan project, not affiliated with Hypergryph or Gryphline. Player data via Enka.Network. Operator art and data: Hypergryph/Gryphline, shown via the Endfield Talos Wiki (CC BY-SA).</footer>');
+document.body.insertAdjacentHTML('beforeend','<footer style="padding:24px;text-align:center;color:var(--dim);font-size:13px">Talos-II Archives is an unofficial fan project, not affiliated with Hypergryph or Gryphline. Player data via Enka.Network. Operator art and data: Hypergryph/Gryphline, shown via the Endfield Talos Wiki (CC BY-SA).</footer>');
 // ---- Talos-II: dusk sky, orbital ring, parallax ridgelines, drifting originium dust ----
 (()=>{const c=$('#bg'),x=c.getContext('2d');let w,h,t=0,mx=0;const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const P=Array.from({length:80},()=>({x:Math.random(),y:Math.random(),s:Math.random()*1.8+.4,v:Math.random()*.0006+.0002}));
@@ -18,3 +18,46 @@ x.fillStyle='rgba(255,196,120,.9)';x.beginPath();x.arc(cx,cy,w*.012+4,0,7);x.fil
 R.forEach(([b,a,col,sp,k],i)=>{ridge(b,a,col,sp,k);if(i==2)tower(w*.18-mx*30,h*.79-6,h/700);if(i==1)tower(w*.83-mx*14,h*.70-4,h/1100);const hz=x.createLinearGradient(0,h*(b-.1),0,h*(b+.1));hz.addColorStop(0,'rgba(229,140,69,0)');hz.addColorStop(1,'rgba(229,140,69,.13)');x.fillStyle=hz;x.fillRect(0,h*(b-.1),w,h*.2)});
 x.fillStyle='rgba(255,196,90,.8)';P.forEach(p=>{p.y-=p.v;p.x+=Math.sin(t*.01+p.s)*.0003;if(p.y<0){p.y=1;p.x=Math.random()}x.globalAlpha=.15+p.s/3;x.fillRect(p.x*w,p.y*h,p.s,p.s)});x.globalAlpha=1;
 if(!reduce)requestAnimationFrame(f)}f()})();
+
+// ---- decryption text effect: characters cycle through random glyphs, then lock in left to right (with some jitter) ----
+const GLYPHS = 'ABCDEFGHKLNPRSTUVXYZ0123456789#$%@<>=+*?'; // medium-width glyphs only: wide ones (W, M, &) would overflow their slot
+const GLYPHS_NARROW = '1I|!:;/\\-[](){}';
+function decrypt(el, { delay = 0, duration = 1800, accent = '' } = {}) {
+  const text = el.dataset.text || el.textContent.trim();
+  el.dataset.text = text; el.setAttribute('aria-label', text);
+  if (matchMedia('(prefers-reduced-motion:reduce)').matches) { el.style.visibility = 'visible'; return }
+  const chars = [];
+  el.textContent = '';
+  text.split('\n').forEach((line, li) => {
+    if (li) el.appendChild(document.createElement('br'));
+    for (const ch of line) {
+      const s = document.createElement('span');
+      s.className = 'dc' + (accent.includes(ch) ? ' ac' : ''); s.setAttribute('aria-hidden', 'true'); s.textContent = ch;
+      el.appendChild(s); chars.push({ s, ch });
+    }
+  });
+  chars.forEach(c => { c.w = c.s.getBoundingClientRect().width }); // lock each glyph's final width so the layout does not jump
+  const fs = parseFloat(getComputedStyle(el).fontSize) || 16;
+  const rnd = c => { const p = c.w < fs * 0.5 ? GLYPHS_NARROW : GLYPHS; return p[Math.floor(Math.random() * p.length)] };
+  chars.forEach(c => { if (c.ch !== ' ') { c.s.style.display = 'inline-block'; c.s.style.width = c.w + 'px'; c.s.textContent = rnd(c); c.s.classList.add('u') } });
+  el.style.visibility = 'visible';
+  const lock = chars.map((_, i) => (i / Math.max(chars.length - 1, 1)) * duration * 0.7 + Math.random() * duration * 0.3);
+  const t0 = performance.now() + delay; let last = 0;
+  (function tick(now) {
+    const t = now - t0, refresh = now - last > 70; // slower glyph refresh than a 60fps flicker, so the scramble is readable
+    if (refresh) last = now;
+    let left = 0;
+    chars.forEach((c, i) => {
+      if (c.fin || c.ch === ' ') return;
+      if (t >= lock[i]) { c.s.textContent = c.ch; c.s.classList.remove('u'); c.fin = true }
+      else { left++; if (refresh) c.s.textContent = rnd(c) }
+    });
+    if (left) requestAnimationFrame(tick);
+  })(performance.now());
+}
+(() => {
+  const els = [...document.querySelectorAll('nav a'), ...document.querySelectorAll('[data-decrypt]')];
+  els.forEach(e => { e.style.visibility = 'hidden' });
+  const go = () => els.forEach((e, i) => decrypt(e, e.dataset.decrypt ? { delay: 250, duration: 2400, accent: e.dataset.accent || '' } : { delay: 100 + i * 140, duration: 1500 }));
+  Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 1200))]).then(go, go);
+})();
