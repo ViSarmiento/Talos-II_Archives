@@ -8,7 +8,7 @@
 </main>
 <script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script>
 <script>
-const st = m => $('#st').innerHTML = m;
+const st = (m, empty) => { const e = $('#st'); e.className = empty ? 'dim empty' : 'dim'; e.innerHTML = m };
 const recent = () => { $('#recent').innerHTML = load('et.recent', []).map(u => `<button class="chip" data-u="${esc(u)}">${esc(u)}</button>`).join('') + '<button class="chip" data-u="demo">Demo data</button>' };
 // same shape as the real Enka Endfield response, so the demo exercises the real code path
 const DEMO = { uid: 'demo', region: 'Demo', ttl: 0, playerInfo: { businessCard: { name: 'Demo Endministrator', shortId: 'DEMO', signature: 'Sample data, not a real account', adventureLevel: 42, worldLevel: 6, createTime: 1769040000,
@@ -62,5 +62,5 @@ $('#out').onclick = e => {
 let q = new URLSearchParams(location.search).get('uid') || '';
 if (q !== 'demo') q = q.replace(/\D/g, '');
 if (!q) { try { q = sessionStorage.getItem('et.uid') || '' } catch {} } // UID entered on the home page this session
-if (q) go(q); else st('To see account information, insert UID from the Home tab.');
+if (q) go(q); else st('To see account information, insert UID from the Home tab.', true);
 </script></body></html>

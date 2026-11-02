@@ -1,12 +1,12 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Talos-II Archives – Endfield account checker and team builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
 <body data-page="home"><main class="hero">
-<div class="site-tag">Endfield field terminal, beta 1.1</div>
+<div class="site-tag">Endfield field terminal, beta 1.5</div>
 <h1 data-decrypt data-accent="-" aria-label="Talos-II Archives">TALOS-II
 ARCHIVES</h1>
 <p>Look up any Endfield account by UID, see which operators are on its showcase, and plan a four-operator squad.</p>
 <form id="q" class="uidbar"><input id="uid" inputmode="numeric" placeholder="Enter your Endfield UID" aria-label="Endfield UID" autocomplete="off" autofocus><button>Check account</button></form>
-<div class="cards"><a class="card" href="/account"><b>Account</b><span>Fetch profile and showcase operators from Enka.Network.</span></a><a class="card" href="/team"><b>Team Builder</b><span>Fill four slots with operator art and get a synergy check.</span></a></div>
+<div class="cards"><a class="card" href="/account"><b>Account</b><span>Fetch profile and showcase operators from Enka.Network.</span></a><a class="card" href="/team"><b>Team Builder</b><span>Fill four slots with operator art and get a synergy check.</span></a><a class="card" href="/operators"><b>Operators</b><span>Moving silhouettes of every operator.</span></a></div>
 </main><script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script>
 <script>
 const u=$('#uid'),bar=$('#q');u.value=load('et.recent',[])[0]||'';

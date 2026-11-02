@@ -1,8 +1,16 @@
-# Talos-II Archives beta 1.2 (formerly End:Tech)
+# Talos-II Archives beta 1.5 (formerly End:Tech)
 Static site in `public/` + one Vercel function `api/uid.js` (Enka proxy). No build step.
 
 Deploy: push to GitHub, import on Vercel (framework: Other). Local: `npx vercel dev` (a plain static server has no `/api`).
 Tests (no network needed): `npm test`.
+
+## What changed in 1.5
+- **Sidebar** replaces the top bar: a slim icon rail on the left that slides open on hover/focus (or pin it with the arrow at the bottom). A highlight glides between tabs. Icons are files in `public/img/icons/` (white shape on transparent, tinted by CSS): `home.png` (mini Dijiang, made from the background cut-out), `account.svg`, `team.svg`, `operators.svg`. The account and team icons are stand-ins; drop the in-game icons over those files (same names, white on transparent) and they are picked up automatically.
+- **Footer** is fixed to the bottom of the window and no longer scrolls.
+- **Centred operator art**: cards and team slots now find the operator inside the splash (alpha cut-out) and centre it, instead of a fixed crop. This needs the image to be readable by the page: hot-linked wiki images are asked for with CORS; if the wiki does not allow it the page falls back to the old fixed crop (`ART_FOCUS` still works). For guaranteed centring run `npm run art` and set `ART_LOCAL = true` (same-origin files can always be measured).
+- **Endministrator** shows the male and female splash side by side in one frame (`ART_DUO` in `core.js`; file names `Endministrator_(Male)` / `Endministrator_(Female)`).
+- **Operators page** (`/operators`): moving silhouettes. Each operator is drawn as a dark, glowing cut-out in their element colour that drifts and leans toward the cursor; hovering sweeps a scan line up and decrypts the full art.
+- **Account tab**: the "To see account information..." message is centred.
 
 ## What changed in 1.2
 - **Account tab**: no UID box. Enter the UID on the home page and press Enter; /account opens already scanning it (skeleton while loading). With no UID it shows only the header and a line saying to insert the UID from the Home tab. The UID is kept for the browser session so the Account tab keeps working after you visit other tabs.

@@ -2,7 +2,7 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const dir = path.join(__dirname, '..', 'public', 'js');
 const src = ['data.js', 'core.js', 'synergy.js'].map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
-const api = vm.runInNewContext(src + '\n({ROSTER,ID_MAP,TAGS,normalize,resolveTemplate,analyze,suggest,lookup,artChain,key})', { localStorage: { getItem() { return null }, setItem() {} } });
+const api = vm.runInNewContext(src + '\n({ROSTER,ID_MAP,TAGS,normalize,resolveTemplate,analyze,suggest,lookup,artChain,key,fitMath,artHtml,artLayer,ART_DUO})', { localStorage: { getItem() { return null }, setItem() {} } });
 const assert = require('assert');
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok  ' + name) };
 
@@ -31,6 +31,17 @@ t('balanced team outscores a lopsided one', () => { const good = A('Laevatain', 
 t('score stays in 0..100', () => api.ROSTER.forEach(r => { const s = A(r.name).score; assert(s >= 0 && s <= 100) }));
 t('suggest returns candidates and respects ownership', () => { const s = api.suggest(['Laevatain'], new Set(['ember'])); assert(s.length && s.every(x => x.op.name !== 'Laevatain')); assert.equal(api.suggest(['Laevatain', 'Camille', 'Ember', 'Gilberta']).length, 0) });
 t('art chain falls back to icon and handles Endministrator', () => { const c = api.artChain(api.lookup('Endministrator')); assert(/Endministrator_\(Female\)_Splash_Art/.test(c[0])); assert(/_icon\.png/.test(c[1])) });
+
+// ---- 1.5: centring + Endministrator pair art ----
+const subj = { nw: 1000, nh: 1500, x0: 300, x1: 700, cx: 520, y0: 50, y1: 1450 };
+t('fitMath puts the operator on the horizontal centre of the card', () => { const f = api.fitMath(subj, 4 / 3), s = f.w / 100 / subj.nw; assert(Math.abs(f.l / 100 + subj.cx * s - .5) < 1e-9) });
+t('fitMath keeps the operator inside the card width', () => { const f = api.fitMath(subj, 4 / 3), s = f.w / 100 / subj.nw; assert((subj.x1 - subj.x0) * s <= 1.08 + 1e-9) });
+t('fitMath puts the top of the operator near the top edge, whatever the art offset', () => { [0, 200, 600].forEach(y0 => { const m = { ...subj, y0, y1: y0 + 1400 }, f = api.fitMath(m, 4 / 3), s = f.w / 100 / m.nw; assert(Math.abs((f.t / 100 * 4 / 3) + y0 * s - 4 / 3 * .04) < 1e-9) }) });
+t('fitMath honours a custom centre (pair art)', () => { const f = api.fitMath(subj, 4 / 3, { cx: .3, wmax: .78 }), s = f.w / 100 / subj.nw; assert(Math.abs(f.l / 100 + subj.cx * s - .3) < 1e-9); assert((subj.x1 - subj.x0) * s <= .78 + 1e-9) });
+t('a wide-armed pose does not push the operator off centre (cx is the median, not the box)', () => { const f = api.fitMath({ ...subj, x0: 100, x1: 900, cx: 500 }, 4 / 3), s = f.w / 100 / subj.nw; assert(Math.abs(f.l / 100 + 500 * s - .5) < 1e-9) });
+t('Endministrator renders male and female splash in one frame', () => { const h = api.artHtml(api.lookup('Endministrator'), 360); assert(/Endministrator_\(Male\)_Splash_Art/.test(h) && /Endministrator_\(Female\)_Splash_Art/.test(h)); assert(/class="art duo"/.test(h)); assert.equal((h.match(/<img/g) || []).length, 2) });
+t('other operators render a single image', () => { assert.equal((api.artHtml(api.lookup('Rossi'), 360).match(/<img/g) || []).length, 1) });
+t('every roster operator produces art markup', () => api.ROSTER.forEach(r => assert(/<img/.test(api.artHtml(r, 360)), r.name)));
 
 // print a sample for eyeballing
 const a = A('Laevatain', 'Camille', 'Gilberta', 'Ember'); console.log('\nsample:', a.score, a.label, a.checks.map(c => c.level + ': ' + c.title).join(' | '));

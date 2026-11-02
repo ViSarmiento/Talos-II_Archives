@@ -4,12 +4,8 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 "IBM Plex Sa
 #bg{position:fixed;inset:0;width:100%;height:100%;z-index:-2}
 body:not([data-page=home]) #bg{opacity:.45}
 .hud{position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(transparent 96%,rgba(255,210,31,.05) 96%) 0 0/100% 48px,linear-gradient(90deg,transparent 96%,rgba(255,210,31,.04) 96%) 0 0/48px 100%,radial-gradient(ellipse at 50% 40%,transparent 40%,rgba(0,0,0,.65))}
-h1,h2,h3,.logo,button{font-family:"Chakra Petch",system-ui,sans-serif}
+h1,h2,h3,button{font-family:"Chakra Petch",system-ui,sans-serif}
 a{color:inherit}
-header{display:flex;align-items:center;gap:28px;padding:16px clamp(16px,4vw,48px);border-bottom:1px solid var(--line);background:rgba(8,9,12,.7);backdrop-filter:blur(6px);position:sticky;top:0;z-index:5}
-.logo{font-weight:700;font-size:20px;letter-spacing:.04em;text-decoration:none;margin-right:auto}.logo i{color:var(--sig);font-style:normal}
-nav a{text-decoration:none;color:var(--dim);margin-left:22px;padding:4px 0;border-bottom:2px solid transparent}
-nav a:hover,nav a.on{color:var(--text);border-color:var(--sig)}
 :focus-visible{outline:2px solid var(--sig);outline-offset:2px}
 main{padding:32px clamp(16px,4vw,48px) 80px;max-width:1180px;margin:auto}
 .hero{min-height:78vh;display:flex;flex-direction:column;justify-content:center;max-width:760px;margin:0 0 0 clamp(0px,6vw,90px)}
@@ -109,7 +105,7 @@ details pre{max-height:320px;overflow:auto;background:#07080b;padding:12px;font-
 .note.ok{border-color:var(--nat)}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 @media(max-width:820px){.syn{grid-template-columns:1fr}.score{border-right:0;border-bottom:1px solid var(--line);padding:0 0 18px}}
-@media(max-width:700px){.slots{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}header{flex-wrap:wrap;gap:8px}nav a{margin:0 16px 0 0}}
+@media(max-width:700px){.slots{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}}
 
 .op.in::after{content:'ON TEAM';position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font:700 12px 'Chakra Petch';letter-spacing:.14em;color:var(--text);background:rgba(6,7,10,.85);border:1px solid var(--line);padding:3px 10px}
 .op.in{opacity:.5}
@@ -130,7 +126,6 @@ body{background:#8d8d8f}
 @keyframes drift{to{transform:translate(-10px,8px) rotate(-.6deg)}}
 .orb .opart{position:absolute;left:3%;top:27%;height:70%;aspect-ratio:360/680;background:var(--sc);-webkit-mask:var(--art) center/contain no-repeat;mask:var(--art) center/contain no-repeat;opacity:var(--art-o,.8);transition:background .4s}
 .orb .rim{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 90px rgba(120,150,255,.14),inset 0 -40px 120px rgba(0,0,0,.6)}
-footer{color:var(--dim);background:rgba(8,9,12,.82)}
 body:not([data-page=home]) main{width:min(1180px,calc(100% - 32px));margin:24px auto 40px;background:rgba(9,10,14,.8);backdrop-filter:blur(3px);border:1px solid #1d1f26}
 body[data-page=home] .hero{max-width:min(700px,49vw)}
 body[data-page=home] .hero h1{font-size:clamp(42px,7vw,104px)}
@@ -167,3 +162,80 @@ body[data-page=home] .dc.u{color:#3b3b40}body[data-page=home] .dc.ac{color:#a24a
 .sk i{display:block;height:14px;margin:8px 0;background:linear-gradient(90deg,#1b1d24 25%,#2a2d37 50%,#1b1d24 75%) 0 0/200% 100%;animation:sh 1.2s linear infinite}
 .sk .grid i{height:auto;aspect-ratio:3/4;margin:0}
 @keyframes sh{to{background-position:-200% 0}}
+
+/* ================= 1.5: sidebar, fixed footer, centred art, silhouettes ================= */
+:root{--rw:64px}
+body{padding-left:var(--rw);padding-bottom:58px}
+.rail{position:fixed;left:0;top:0;bottom:0;width:var(--rw);z-index:20;display:flex;flex-direction:column;overflow:hidden;background:rgba(8,9,12,.92);backdrop-filter:blur(8px);border-right:1px solid var(--line);transition:width .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s;animation:railIn .7s cubic-bezier(.2,.8,.2,1) both}
+.rail:hover,.rail:focus-within,.rail.pin{width:226px;box-shadow:14px 0 44px rgba(0,0,0,.55)}
+@keyframes railIn{from{transform:translateX(-100%)}}
+.rail .tx{white-space:nowrap;opacity:0;transform:translateX(-10px);transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1)}
+.rail:hover .tx,.rail:focus-within .tx,.rail.pin .tx{opacity:1;transform:none;transition-delay:.06s}
+.rl-logo{display:flex;align-items:center;gap:14px;height:72px;flex:none;padding:0 calc((var(--rw) - 36px)/2);color:var(--text);text-decoration:none;font:700 14px/1.15 "Chakra Petch",sans-serif;letter-spacing:.07em;border-bottom:1px solid var(--line)}
+.rl-logo i{color:var(--sig);font-style:normal}
+.rl-logo .mk{flex:none;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--sig);font-size:12px;letter-spacing:0;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
+.rail nav{position:relative;flex:1;display:flex;flex-direction:column;gap:4px;padding:14px 0}
+.rail nav a{position:relative;z-index:1;display:flex;align-items:center;gap:16px;height:46px;flex:none;padding:0 calc((var(--rw) - 28px)/2);color:var(--dim);text-decoration:none;font:500 15px "Chakra Petch",sans-serif;letter-spacing:.03em}
+.rail nav a:hover,.rail nav a.on{color:var(--text)}
+.rail nav a.on .ic{color:var(--sig)}
+.rail .ind{position:absolute;left:0;top:0;width:100%;height:46px;border-left:3px solid var(--sig);background:linear-gradient(90deg,rgba(255,210,31,.18),transparent 85%);opacity:0;pointer-events:none}
+.rail .ind.go{transition:transform .34s cubic-bezier(.2,.9,.25,1),height .2s,opacity .2s}
+.ic{flex:none;width:28px;height:28px;background:currentColor;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;transition:color .2s,transform .3s}
+.rail nav a:hover .ic{transform:scale(1.1)}
+.rail .rl-pin{display:flex;align-items:center;gap:16px;height:46px;flex:none;width:100%;padding:0 calc((var(--rw) - 28px)/2);background:transparent;color:var(--dim);border-top:1px solid var(--line);font:500 13px "Chakra Petch",sans-serif;text-align:left}
+.rl-pin>span:first-child{width:28px;text-align:center;font-size:20px;line-height:1}
+.rl-pin:hover{color:var(--text);filter:none}
+
+footer{position:fixed;left:var(--rw);right:0;bottom:0;z-index:4;padding:7px 16px;text-align:center;font-size:11px;line-height:1.4;color:var(--dim);background:rgba(8,9,12,.88);border-top:1px solid #1d1f26;pointer-events:none}
+.pick{bottom:62px}
+.hero{margin-left:clamp(0px,4vw,70px)}
+
+/* account: empty-state message */
+#st.empty{min-height:46vh;display:grid;place-items:center;text-align:center;padding:24px;font-size:18px;max-width:34ch;margin:0 auto}
+
+/* art: centred operator, duo frame for Endministrator */
+.art.has .mono{display:none}
+.art .pic.fit{will-change:auto}
+.art.duo .pic{right:auto;top:0;bottom:auto;height:100%;width:50%;object-fit:cover;object-position:50% 14%;transform:none}
+.art.duo .pic[data-duo="0"]{left:0}.art.duo .pic[data-duo="1"]{left:50%}
+.art.duo .pic.fit{height:auto}
+
+/* ---- Operators page: moving silhouettes ---- */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:6px}
+.sil{--c:var(--sig);--r:var(--line);position:relative;display:block;padding:0;aspect-ratio:3/4.3;overflow:hidden;text-align:left;color:var(--text);font:inherit;cursor:pointer;border:1px solid var(--line);border-bottom:3px solid var(--r);background:#07080b;perspective:700px;transition:border-color .2s,box-shadow .2s}
+.sil[data-rar="6"]{--r:#ff8a2e}.sil[data-rar="5"]{--r:#ffd21f}.sil[data-rar="4"]{--r:#b58cff}
+.sil:hover,.sil:focus-visible{border-color:var(--c);box-shadow:0 10px 30px rgba(0,0,0,.55),0 0 0 1px var(--c)}
+.sil .stage{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 78%,color-mix(in srgb,var(--c) 26%,#0d0e13),#07080b 70%),linear-gradient(transparent 94%,rgba(255,255,255,.04) 94%) 0 0/100% 22px}
+.sil .stage::after{content:"";position:absolute;left:14%;right:14%;bottom:20%;height:9%;border-radius:50%;background:radial-gradient(ellipse,color-mix(in srgb,var(--c) 55%,transparent),transparent 70%);filter:blur(4px)}
+.sil .par{position:absolute;inset:0;transform:translate3d(calc(var(--px,0)*9px),calc(var(--py,0)*5px),0) rotateY(calc(var(--px,0)*7deg)) rotateX(calc(var(--py,0)*-4deg));transition:transform .25s ease-out}
+.sil .float{position:absolute;inset:0 0 14% 0;animation:sway var(--t,7s) ease-in-out var(--d,0s) infinite alternate}
+@keyframes sway{from{transform:translateY(4px) rotate(-.8deg) scale(1)}to{transform:translateY(-7px) rotate(.8deg) scale(1.018)}}
+.sil .fig{position:absolute;inset:0}
+.sil .lay{position:absolute;inset:0}
+.sil .lay .pic{object-fit:contain;object-position:50% 50%;transform:none;position:absolute;inset:0;width:100%;height:100%}
+.sil .lay .pic.fit{object-fit:fill}
+.sil .lay.s{animation:flick 11s steps(1) var(--d,0s) infinite}
+.sil .lay.s .pic{filter:brightness(0) drop-shadow(0 0 1.2px var(--c)) drop-shadow(0 0 14px color-mix(in srgb,var(--c) 60%,transparent))}
+.sil .lay.s.opaque .pic{filter:grayscale(1) brightness(.4) contrast(1.4);-webkit-mask:radial-gradient(ellipse at 50% 42%,#000 38%,transparent 72%);mask:radial-gradient(ellipse at 50% 42%,#000 38%,transparent 72%)}
+@keyframes flick{0%,91%,100%{opacity:1;transform:none}92%{opacity:.5;transform:translateX(4px)}93%{opacity:1;transform:translateX(-3px)}94%{opacity:.75;transform:none}}
+.sil .lay.c{clip-path:inset(100% 0 0 0);transition:clip-path .55s cubic-bezier(.3,.7,.2,1) .05s}
+.sil:hover .lay.c,.sil:focus-visible .lay.c{clip-path:inset(0)}
+.sil .scan{position:absolute;left:0;right:0;top:100%;height:2px;background:var(--c);box-shadow:0 0 16px 2px var(--c);opacity:0;pointer-events:none}
+.sil:hover .scan,.sil:focus-visible .scan{animation:sweep .6s cubic-bezier(.3,.7,.2,1) both}
+@keyframes sweep{0%{top:100%;opacity:1}85%{opacity:1}100%{top:0;opacity:0}}
+.sil .shade{position:absolute;inset:auto 0 0 0;height:34%;background:linear-gradient(transparent,rgba(5,6,9,.95) 75%);pointer-events:none}
+.sil .meta{position:absolute;left:0;right:0;bottom:0;padding:10px 12px 9px}
+.sil .meta b{display:block;font:700 17px/1.15 "Chakra Petch",sans-serif;text-shadow:0 1px 6px #000}
+.sil .meta small{display:block;color:#b9bcc6;font-size:12px;margin-top:2px}
+.sil .meta .st{color:var(--r);letter-spacing:.06em;font-size:11px}
+.sil .el{position:absolute;top:8px;left:8px;z-index:2;padding:1px 8px;font:700 11px "Chakra Petch",sans-serif;letter-spacing:.06em;text-transform:uppercase;background:rgba(6,7,10,.78);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
+
+.sil .lay.duo .pic{width:50%;object-fit:contain;right:auto}.sil .lay.duo .pic[data-duo="1"]{left:50%}.sil .lay.duo .pic.fit{width:auto}
+@media(max-width:700px){
+  :root{--rw:56px}
+  body{padding-bottom:84px}
+  .pick{bottom:90px}
+  .sgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  body:not([data-page=home]) main{width:calc(100% - 20px)}
+}
+@media(prefers-reduced-motion:reduce){.rail,.sil .par,.sil .lay.c{transition:none!important;animation:none!important}}
