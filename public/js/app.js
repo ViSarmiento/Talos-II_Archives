@@ -41,7 +41,7 @@ function decrypt(el, { delay = 0, duration = 1800, accent = '' } = {}) {
   const rnd = c => { const p = c.w < fs * 0.5 ? GLYPHS_NARROW : GLYPHS; return p[Math.floor(Math.random() * p.length)] };
   chars.forEach(c => { if (c.ch !== ' ') { c.s.style.display = 'inline-block'; c.s.style.width = c.w + 'px'; c.s.textContent = rnd(c); c.s.classList.add('u') } });
   el.style.visibility = 'visible';
-  const lock = chars.map((_, i) => (i / Math.max(chars.length - 1, 1)) * duration * 0.7 + Math.random() * duration * 0.3);
+  const lock = chars.map((_, i) => (i / Math.max(chars.length - 1, 1)) * duration); // strictly left to right, one letter after another
   const t0 = performance.now() + delay; let last = 0;
   (function tick(now) {
     const t = now - t0, refresh = now - last > 70; // slower glyph refresh than a 60fps flicker, so the scramble is readable
@@ -56,8 +56,8 @@ function decrypt(el, { delay = 0, duration = 1800, accent = '' } = {}) {
   })(performance.now());
 }
 (() => {
-  const els = [...document.querySelectorAll('nav a'), ...document.querySelectorAll('[data-decrypt]')];
+  const els = [...document.querySelectorAll('[data-decrypt]')]; // page titles only, the nav tabs stay static
   els.forEach(e => { e.style.visibility = 'hidden' });
-  const go = () => els.forEach((e, i) => decrypt(e, e.dataset.decrypt ? { delay: 250, duration: 2400, accent: e.dataset.accent || '' } : { delay: 100 + i * 140, duration: 1500 }));
+  const go = () => els.forEach((e, i) => decrypt(e, e.dataset.decrypt ? { delay: 200, duration: e.tagName === 'H1' ? 1500 : 900, accent: e.dataset.accent || '' } : { delay: 80 + i * 100, duration: 800 }));
   Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 1200))]).then(go, go);
 })();
