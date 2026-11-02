@@ -20,23 +20,19 @@ document.body.insertAdjacentHTML('beforeend','<footer>Talos-II Archives is an un
 // ---- background: gray field, black-space circle, Dijiang in space, operator backdrop art in front ----
 (()=>{
   const lines='<svg class="lines" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#000" stroke-width="1.2"><circle cx="360" cy="640" r="330"/><circle cx="360" cy="640" r="250" stroke-dasharray="3 9"/><circle cx="360" cy="640" r="120"/><path d="M-20 780 L760 150 M40 900 L900 220 M-20 520 L420 120"/><path d="M0 700H800M360 280V900" stroke-dasharray="2 10"/><path d="M110 560l-14 0m14 0l14 0M96 560l14 -10M610 740l18 0M619 731v18"/></svg>';
-  document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><canvas id="space"></canvas><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"><i class="opart"></i><i class="rim"></i></div><i class="vig"></i></div>`);
-  const orb=$('.orb'),c=$('#space'),x=c.getContext('2d'),art=$('.opart');let w,h,t=0,mx=0,cur='';
-  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  function setOp(name){const o=lookup(name)||lookup(BG_DEFAULT);if(!o||o.name===cur)return;cur=o.name;save('et.bgop',o.name);
-    orb.style.setProperty('--sc',COL[o.element]||'#ccc');
-    // per-operator file if present, otherwise the shared Avywenna backdrop
+  document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"><i class="opart"></i><div class="osil"><div class="par"><div class="float"><div class="fig"></div></div></div><i class="scan"></i></div><i class="rim"></i></div><i class="vig"></i></div>`);
+  const orb=$('.orb'),art=$('.opart'),osil=$('.osil'),fig=$('.fig',osil);let cur='';
+  // the operator is a dark silhouette in their element colour that drifts, leans toward the cursor and flickers
+  function setOp(name){const o=lookup(name)||lookup(BG_DEFAULT);if(!o||o.name===cur)return;const first=!cur;cur=o.name;save('et.bgop',o.name);
+    orb.style.setProperty('--sc',COL[o.element]||'#ccc');orb.classList.remove('nosil');
+    fig.innerHTML=`<div class="lay s${ART_DUO[o.name]?' duo':''}" data-part="1">${artLayer(o,640,'sp')}</div>`;
+    osil.classList.remove('wipe');void osil.offsetWidth;osil.classList.add('wipe');
+    // fallback if the splash cannot be loaded at all: the old halftone backdrop, tinted
     const use=u=>art.style.setProperty('--art','url('+u+')'),own=BG_DIR+key(o.name)+'.png',im=new Image();
     use(BG_SHARED);im.onload=()=>{if(cur===o.name)use(own)};im.src=own;
     const b=$('#pk b');if(b)b.textContent=o.name;document.querySelectorAll('#pkl [data-n]').forEach(e=>e.setAttribute('aria-selected',e.dataset.n===o.name))}
-  const S=Array.from({length:220},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.3+.3,m:Math.random()*9}));
-  const rs=()=>{const r=orb.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);w=c.width=r.width*d;h=c.height=r.height*d;x.setTransform(d,0,0,d,0,0);w/=d;h/=d};rs();addEventListener('resize',()=>{rs();draw()});
-  addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5});
-  function draw(){t++;x.clearRect(0,0,w,h);
-    const g=x.createRadialGradient(w*.7,h*.35,0,w*.7,h*.35,w*.7);g.addColorStop(0,'#10131c');g.addColorStop(1,'#000');x.fillStyle=g;x.fillRect(0,0,w,h);
-    x.fillStyle='#fff';S.forEach(s=>{x.globalAlpha=.2+.6*Math.abs(Math.sin(t*.012+s.m));x.fillRect((s.x+mx*.01*s.r)*w,s.y*h,s.r,s.r)});x.globalAlpha=1;
-    if(!reduce)requestAnimationFrame(draw)}
-  draw();
+  osil.addEventListener('artlost',()=>{if(!$('.pic',fig))orb.classList.add('nosil')});
+  let raf=0;addEventListener('pointermove',e=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;orb.style.setProperty('--px',(e.clientX/innerWidth*2-1).toFixed(2));orb.style.setProperty('--py',(e.clientY/innerHeight*2-1).toFixed(2))})});
   // operator picker (home page only)
   if(HOME){
     const list=[...ROSTER].sort((a,b)=>b.rarity-a.rarity||a.name.localeCompare(b.name));

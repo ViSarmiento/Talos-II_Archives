@@ -2,43 +2,51 @@
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
 <body data-page="operators"><main>
 <h2 data-decrypt>Operators</h2>
-<p class="dim" style="margin:0 0 6px">Every operator as a drifting silhouette. Point at one to decrypt the full art.</p>
+<p class="dim" style="margin:0 0 6px">Mark the operators you own. Ones that are not on your fetched showcase are added to your Account tab.</p>
 <div class="tools"><div class="uidbar" style="flex:1;min-width:200px"><input id="s" placeholder="Search operators" aria-label="Search operators"></div></div>
 <div class="fbar" id="fl"></div>
 <p class="dim" id="cnt"></p>
-<div class="sgrid" id="grid"></div>
+<div class="grid" id="pool"></div>
 </main>
 <script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script>
 <script>
-const f = { el: '' };
-// small stable pseudo-random per operator, so each silhouette drifts on its own rhythm (and keeps it between renders)
-const rnd = (n, i) => { let h = 2166136261; for (const c of n + i) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 1000) / 1000 };
-const tile = o => {
-  const d = (rnd(o.name, 'd') * 6).toFixed(2), t = (6 + rnd(o.name, 't') * 4).toFixed(2), duo = ART_DUO[o.name] ? ' duo' : '';
-  return `<div class="sil" tabindex="0" role="img" data-rar="${o.rarity}" style="--c:${COL[o.element]};--d:-${d}s;--t:${t}s" aria-label="${esc(o.name)}, ${o.rarity} star ${esc(o.element)} ${esc(o.cls)}">
-    <div class="stage"></div>
-    <div class="par"><div class="float"><div class="fig">
-      <div class="lay s${duo}" data-part="1">${artLayer(o, 480)}</div>
-      <div class="lay c${duo}" data-part="1">${artLayer(o, 480)}</div>
-    </div></div></div>
-    <i class="scan"></i><span class="shade"></span><span class="el">${esc(o.element)}</span>
-    <span class="meta"><b>${esc(o.name)}</b><small><span class="st">${stars(o.rarity)}</span><br>${esc(o.cls)} · ${esc(o.weapon)}</small></span></div>`;
+const f = { el: '', cls: '', rar: 0, own: false };
+const fetched = new Set(load('et.ops', []).filter(o => o.known !== false && o.name).map(o => key(o.name)));   // from Enka
+let manual = new Set(load('et.owned', []).map(n => lookup(n)?.name).filter(Boolean));                           // marked here
+const owned = o => fetched.has(key(o.name)) || manual.has(o.name);
+
+const card = o => {
+  const fx = fetched.has(key(o.name)), on = owned(o);
+  return `<div class="op ${fx ? 'locked' : 'pick-own'} ${on ? 'owned' : ''}" ${fx ? '' : `data-o="${esc(o.name)}" role="checkbox" aria-checked="${on}" tabindex="0"`} data-rar="${o.rarity}" style="--c:${COL[o.element]}" aria-label="${esc(o.name)}, ${o.rarity} star ${esc(o.element)} ${esc(o.cls)}${fx ? ', on your account' : ''}">${artHtml(o, 360)}<span class="shade"></span><span class="el">${esc(o.element)}</span><span class="meta"><b>${esc(o.name)}</b><small><span class="st">${stars(o.rarity)}</span><br>${esc(o.cls)} · ${esc(o.weapon)}</small><span class="ownlbl"><i>${on ? '✓' : ''}</i>${fx ? 'On your account' : on ? 'Owned' : 'I own this'}</span></span></div>`;
 };
 function draw() {
   const q = key($('#s').value);
-  const list = ROSTER.filter(o => (!f.el || o.element === f.el) && key(o.name).includes(q)).sort((a, b) => b.rarity - a.rarity || a.name.localeCompare(b.name));
-  $('#grid').innerHTML = list.map(tile).join('') || '<p class="dim">No operators match.</p>';
-  $('#cnt').textContent = `${list.length} of ${ROSTER.length} operators`;
-  $('#fl').innerHTML = `<div class="chips">${Object.keys(COL).map(e => `<button class="chip ${f.el === e ? 'on' : ''}" data-fe="${e}" style="--c:${COL[e]}">${e}</button>`).join('')}</div>`;
+  const list = ROSTER.filter(o => (!f.el || o.element === f.el) && (!f.cls || o.cls === f.cls) && (!f.rar || o.rarity === f.rar) && (!f.own || owned(o)) && key(o.name).includes(q))
+    .sort((x, y) => y.rarity - x.rarity || x.name.localeCompare(y.name));
+  $('#pool').innerHTML = list.map(card).join('') || '<p class="dim">No operators match those filters.</p>';
+  const chip = (attr, val, label, on, c) => `<button class="chip ${on ? 'on' : ''}" data-${attr}="${val}" ${c ? `style="--c:${c}"` : ''}>${label}</button>`;
+  $('#fl').innerHTML = `<div class="chips">${Object.keys(COL).map(e => chip('fe', e, e, f.el === e, COL[e])).join('')}</div><span class="sep"></span>
+    <div class="chips">${CLASSES.map(c => chip('fc', c, c, f.cls === c)).join('')}</div><span class="sep"></span>
+    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + '★', f.rar === r)).join('')}${chip('fo', 1, 'Owned only', f.own)}</div>`;
+  const total = ROSTER.filter(owned).length;
+  $('#cnt').textContent = `${list.length} of ${ROSTER.length} operators shown. ${total} owned (${[...fetched].length} from your account, ${[...manual].filter(n => !fetched.has(key(n))).length} marked here).`;
 }
-$('#fl').onclick = e => { const b = e.target.closest('[data-fe]'); if (!b) return; f.el = f.el === b.dataset.fe ? '' : b.dataset.fe; draw() };
+function toggle(name) {
+  if (manual.has(name)) manual.delete(name); else manual.add(name);
+  save('et.owned', [...manual]); draw();
+  const el = [...document.querySelectorAll('[data-o]')].find(e => e.dataset.o === name); el?.focus({ preventScroll: true });
+}
+document.onclick = e => {
+  const t = e.target, o = t.closest('[data-o]'), fe = t.closest('[data-fe]'), fc = t.closest('[data-fc]'), fr = t.closest('[data-fr]'), fo = t.closest('[data-fo]');
+  if (o) return toggle(o.dataset.o);
+  if (fe) f.el = f.el === fe.dataset.fe ? '' : fe.dataset.fe;
+  else if (fc) f.cls = f.cls === fc.dataset.fc ? '' : fc.dataset.fc;
+  else if (fr) f.rar = f.rar === +fr.dataset.fr ? 0 : +fr.dataset.fr;
+  else if (fo) f.own = !f.own;
+  else return;
+  draw();
+};
+document.onkeydown = e => { const o = e.target.closest?.('[data-o]'); if (o && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); toggle(o.dataset.o) } };
 $('#s').oninput = draw;
-// pointer parallax: the figure leans toward the cursor
-const grid = $('#grid');
-grid.addEventListener('pointermove', e => {
-  const t = e.target.closest('.sil'); if (!t) return;
-  const r = t.getBoundingClientRect(); t.style.setProperty('--px', ((e.clientX - r.left) / r.width * 2 - 1).toFixed(2)); t.style.setProperty('--py', ((e.clientY - r.top) / r.height * 2 - 1).toFixed(2));
-});
-grid.addEventListener('pointerout', e => { const t = e.target.closest('.sil'); if (t && !t.contains(e.relatedTarget)) { t.style.setProperty('--px', 0); t.style.setProperty('--py', 0) } });
 draw();
 </script></body></html>

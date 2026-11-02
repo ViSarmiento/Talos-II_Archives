@@ -1,4 +1,4 @@
-# Talos-II Archives beta 1.5 (formerly End:Tech)
+# Talos-II Archives beta 1.6 (formerly End:Tech)
 Static site in `public/` + one Vercel function `api/uid.js` (Enka proxy). No build step.
 
 Deploy: push to GitHub, import on Vercel (framework: Other). Local: `npx vercel dev` (a plain static server has no `/api`).
@@ -9,12 +9,13 @@ Tests (no network needed): `npm test`.
 - **Footer** is fixed to the bottom of the window and no longer scrolls.
 - **Centred operator art**: cards and team slots now find the operator inside the splash (alpha cut-out) and centre it, instead of a fixed crop. This needs the image to be readable by the page: hot-linked wiki images are asked for with CORS; if the wiki does not allow it the page falls back to the old fixed crop (`ART_FOCUS` still works). For guaranteed centring run `npm run art` and set `ART_LOCAL = true` (same-origin files can always be measured).
 - **Endministrator** shows the male and female splash side by side in one frame (`ART_DUO` in `core.js`; file names `Endministrator_(Male)` / `Endministrator_(Female)`).
-- **Operators page** (`/operators`): moving silhouettes. Each operator is drawn as a dark, glowing cut-out in their element colour that drifts and leans toward the cursor; hovering sweeps a scan line up and decrypts the full art.
+- **Landing circle**: the chosen operator is now a moving silhouette (dark, glowing in their element colour) that drifts, leans toward the cursor, flickers, and decrypts upward when you pick another operator. It uses the operator's splash art; if that cannot load it falls back to the old halftone backdrop. The Dijiang in the circle is now `public/img/bg/dijiang.jpg`.
+- **Operators page** (`/operators`): the same cards as the team builder (Endministrator shows male and female together). Click a card to mark "I own this". Marked operators are stored in the browser (`et.owned`); on the Account tab, any that Enka did not return appear under "Added by you". The team builder also counts them as owned. Operators fetched from Enka show "On your account" and cannot be toggled.
 - **Account tab**: the "To see account information..." message is centred.
 
 ## What changed in 1.2
 - **Account tab**: no UID box. Enter the UID on the home page and press Enter; /account opens already scanning it (skeleton while loading). With no UID it shows only the header and a line saying to insert the UID from the Home tab. The UID is kept for the browser session so the Account tab keeps working after you visit other tabs.
-- **Background (all pages)**: gray field, black-space circle with the Dijiang (cut-out at `public/img/bg/dijiang.png`) in front of the stars, and one operator's loading-backdrop art in front of the Dijiang. The "Operator art" button on the home page picks the operator and remembers it. Put each backdrop at `public/img/bg/<key>.png` (key = lowercase name, no spaces: `avywenna.png`, `chenqianyu.png`). Until a file exists, drawn linework tinted in the operator's element color is shown. Config at the bottom of `public/js/data.js`; blend/opacity via `--art-blend` and `--art-o` on `.orb`.
+- **Background (all pages)**: gray field, black-space circle with the Dijiang (picture at `public/img/bg/dijiang.jpg`, fills the circle), and one operator's loading-backdrop art in front of the Dijiang. The "Operator art" button on the home page picks the operator and remembers it. Put each backdrop at `public/img/bg/<key>.png` (key = lowercase name, no spaces: `avywenna.png`, `chenqianyu.png`). Until a file exists, drawn linework tinted in the operator's element color is shown. Config at the bottom of `public/js/data.js`; blend/opacity via `--art-blend` and `--art-o` on `.orb`.
 - **Operator cards (team builder, account)**: splash art is zoomed onto the operator. Defaults in `ART_FOCUS_DEFAULT`; override per operator in `ART_FOCUS` as `'Name': [x%, y%, zoom]`.
 
 ## What changed in 1.1

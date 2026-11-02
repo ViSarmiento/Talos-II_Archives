@@ -87,7 +87,7 @@ const TAGS = {
 const BG_DEFAULT = 'Avywenna';
 const BG_DIR = '/img/bg/';
 const BG_SHARED = '/img/bg/operator-art.png'; // used for every operator that has no file of its own
-const DIJIANG_IMG = '/img/bg/dijiang.png'; // cut-out of the ship, transparent background
+const DIJIANG_IMG = '/img/bg/dijiang.jpg'; // the Dijiang over the planet; fills the black-space circle
 
 // ---- team/account card framing ----
 // Splash art is shown zoomed in on the operator. Default is [x%, y%, zoom]: look 50% across and 14% down, 1.55x.

@@ -18,7 +18,7 @@
 const fromHash = () => location.hash.length > 1 ? decodeURIComponent(location.hash.slice(1)).split('~') : null;
 let team = (fromHash() || load('et.team', [])).map(n => lookup(n)?.name).filter(Boolean).filter((n, i, a) => a.indexOf(n) === i).slice(0, 4);
 const f = { el: '', cls: '', rar: 0, own: false };
-const own = new Set(load('et.ops', []).filter(o => o.known !== false && o.name).map(o => key(o.name)));
+const own = new Set([...load('et.ops', []).filter(o => o.known !== false && o.name).map(o => key(o.name)), ...load('et.owned', []).map(key)]); // fetched + marked on the Operators tab
 const cardHtml = (o, extra = '') => `<button class="op ${team.includes(o.name) ? 'in' : ''}" data-a="${esc(o.name)}" data-rar="${o.rarity}" style="--c:${COL[o.element]}" aria-label="${esc(o.name)}, ${o.rarity} star ${esc(o.element)} ${esc(o.cls)}">${artHtml(o, 360)}<span class="shade"></span><span class="el">${esc(o.element)}</span>${own.has(key(o.name)) ? '<span class="dot" title="On your account"></span>' : ''}<span class="meta"><b>${esc(o.name)}</b><small><span class="st">${stars(o.rarity)}</span><br>${esc(o.cls)} · ${esc(o.weapon)}</small></span></button>`;
 
 const set = t => { team = t; save('et.team', t); history.replaceState(null, '', t.length ? '#' + encodeURIComponent(t.join('~')) : location.pathname); drawTeam(); drawPool() };

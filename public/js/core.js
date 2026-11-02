@@ -147,7 +147,7 @@ function artErr(img) { // CORS attempt failed -> same file without CORS (cannot 
     const c = JSON.parse(img.dataset.c), i = +img.dataset.i + 1;
     if (i < c.length) { img.dataset.i = i; img.dataset.nocors = ''; if (i === c.length - 1) img.classList.add('ico'); img.setAttribute('crossorigin', 'anonymous'); img.src = c[i]; return }
   } catch {}
-  const box = img.parentElement; img.remove(); if (box) box.dataset.lost = (+box.dataset.lost || 0) + 1;
+  const box = img.parentElement; img.remove(); if (box) { box.dataset.lost = (+box.dataset.lost || 0) + 1; box.dispatchEvent(new CustomEvent('artlost', { bubbles: true })) }
   if (box && box.classList.contains('duo')) box.querySelectorAll('.pic').forEach(p => { p.dataset.cx = '.5'; p.dataset.wmax = '1.08'; artFit(p) });
 }
 const stars = n => '★'.repeat(n || 0);
