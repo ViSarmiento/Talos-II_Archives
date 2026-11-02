@@ -2,8 +2,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
 <body data-page="account"><main>
 <h2 data-decrypt>Account</h2>
-<form id="f" class="uidbar"><input id="uid" inputmode="numeric" placeholder="Endfield UID" aria-label="Endfield UID" autocomplete="off"><button>Fetch</button></form>
-<div class="chips" id="recent"></div>
+<div class="acct"><div class="chips" id="recent"></div><a class="chip" href="/">Change UID</a></div>
 <p id="st" class="dim" role="status">Your showcase must be public in-game for operators to appear.</p>
 <section id="out"></section>
 </main>
@@ -33,7 +32,7 @@ const opCard = (o, i) => o.known
   : `<div class="op unk" data-rar="0" style="--c:#777;cursor:default"><div class="art"><span class="mono">?</span></div><span class="shade"></span><span class="badge">Lv ${esc(o.level ?? '?')}</span><span class="meta"><b>Unmapped</b><small>${esc(o.id)}</small></span></div>`;
 
 async function go(uid) {
-  st('Scanning…'); $('#out').innerHTML = ''; let got;
+  st('Scanning…'); $('#out').innerHTML = '<div class="sk"><i style="width:40%;height:22px"></i><i style="width:60%"></i><i style="width:80%"></i></div><div class="sk"><div class="grid">' + '<i></i>'.repeat(6) + '</div></div>'; let got;
   try { got = await getData(uid) } catch (e) { return st(`<span class="err">${esc(e.message)}</span>`) }
   const j = got.data, n = normalize(j, uid), p = n.profile, known = n.ops.filter(o => o.known), unk = n.ops.filter(o => !o.known);
   save('et.ops', n.ops);
@@ -50,8 +49,7 @@ async function go(uid) {
     ${unk.length ? `<div class="note"><b>${unk.length} operator${unk.length === 1 ? ' is' : 's are'} not mapped yet</b>: ${unk.map(o => `<code>${esc(o.id)}</code>`).join(', ')}. Add ${unk.length === 1 ? 'it' : 'each'} to <code>ID_MAP</code> in <code>public/js/data.js</code> (id: 'Operator Name').</div>` : ''}
     ${known.length ? '<p class="row"><a href="/team"><button type="button">Open team builder</button></a><span class="dim">Click an operator to add it to your team.</span></p>' : ''}`;
 }
-$('#f').onsubmit = e => { e.preventDefault(); const v = $('#uid').value.replace(/\D/g, ''); if (v) go(v) };
-$('#recent').onclick = e => { const u = e.target.dataset.u; if (u) { $('#uid').value = u === 'demo' ? '' : u; go(u) } };
+$('#recent').onclick = e => { const u = e.target.dataset.u; if (u) { history.replaceState(null, '', '?uid=' + u); go(u) } };
 $('#out').onclick = e => {
   const b = e.target.closest('.op[data-i]'); if (!b) return;
   const o = load('et.ops', [])[b.dataset.i], t = load('et.team', []);
@@ -60,5 +58,8 @@ $('#out').onclick = e => {
   else if (t.length >= 4) st('Team is full. Remove someone in the team builder first.');
   else { save('et.team', [...t, o.name]); b.classList.add('in'); st(`${esc(o.name)} added to your team (${t.length + 1}/4).`) }
 };
-recent(); const q = new URLSearchParams(location.search).get('uid'); if (q) { $('#uid').value = q; go(q) }
+recent(); let q = new URLSearchParams(location.search).get('uid') || '';
+if (q !== 'demo') q = q.replace(/\D/g, '');
+if (!q) { q = load('et.recent', [])[0] || ''; if (q) history.replaceState(null, '', '?uid=' + q) } // came in from the nav tab: reopen the last account
+if (q) go(q); else st('No UID yet. <a href="/">Enter your UID on the home page</a> to load an account.');
 </script></body></html>

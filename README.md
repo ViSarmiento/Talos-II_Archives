@@ -1,8 +1,12 @@
-# Talos-II Archives beta 1.1 (formerly End:Tech)
+# Talos-II Archives beta 1.2 (formerly End:Tech)
 Static site in `public/` + one Vercel function `api/uid.js` (Enka proxy). No build step.
 
 Deploy: push to GitHub, import on Vercel (framework: Other). Local: `npx vercel dev` (a plain static server has no `/api`).
 Tests (no network needed): `npm test`.
+
+## What changed in 1.2
+- **Account tab**: the UID box is gone. Enter the UID on the home page, press Enter, and /account opens already scanning that UID (skeleton while loading). Opening the Account tab with no UID reopens the last one; "Change UID" goes back home.
+- **Landing background**: gray field, black-space circle with the Dijiang in space, operator splash art in front, and the operator loading-backdrop linework in one section. Config is at the bottom of `public/js/data.js` (`HERO_OP`, `BG_ART`, `DIJIANG_IMG`). Drop backdrop files in `public/img/bg/<name>.png` (e.g. `avywenna.png`) and the Dijiang picture at `public/img/bg/dijiang.png`; missing files fall back to drawn linework and a drawn Dijiang silhouette.
 
 ## What changed in 1.1
 - **Fetching player data**: the response mapping now follows Enka's real Endfield shape (`playerInfo.businessCard`, `charList[].templateId`, `statistic`), operators are resolved from internal ids like `chr_0013_aglina`, the proxy honours Enka's `ttl`, retries a second path only on a non-JSON 404, maps Enka's 400/404/424/429/500/503, and has a 9s timeout. The account page caches per UID for the ttl and gives a clear message if `/api/uid` is not running.

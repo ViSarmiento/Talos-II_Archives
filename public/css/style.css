@@ -118,3 +118,38 @@ details pre{max-height:320px;overflow:auto;background:#07080b;padding:12px;font-
 /* decryption text */
 .dc.u{color:var(--sig);opacity:.8;font-size:.88em}.dc.ac{color:var(--sig)}.dc{text-align:center}
 h1[data-decrypt],h2[data-decrypt]{white-space:pre-line}
+
+/* ---- landing: gray field + black-space circle (see Black Space mockup) ---- */
+body[data-page=home]{background:#8d8d8f}
+.scene{position:fixed;inset:0;z-index:-2;overflow:hidden;background:radial-gradient(ellipse at 24% 62%,#9b9b9d,#868688 62%,#6c6c6f)}
+.scene .lines{position:absolute;inset:0;width:100%;height:100%;opacity:.13}
+.scene .bgart{position:absolute;left:-3vw;bottom:-8vh;width:min(72vw,1150px);aspect-ratio:1;opacity:var(--bgart-o,.28);mix-blend-mode:var(--bgart-blend,multiply);-webkit-mask-image:radial-gradient(closest-side,#000 45%,transparent);mask-image:radial-gradient(closest-side,#000 45%,transparent)}
+.scene .bgart img{width:100%;height:100%;object-fit:contain}
+.scene .vig{position:absolute;inset:0;background:radial-gradient(ellipse at 40% 50%,transparent 55%,rgba(0,0,0,.35))}
+.orb{position:absolute;left:52vw;top:calc(25vh - 29.5vw);width:59vw;height:59vw;border-radius:50%;background:#000;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.45)}
+.orb canvas,.orb .dij{position:absolute;inset:0;width:100%;height:100%}
+.orb .dij{object-fit:contain;object-position:50% 42%}
+.orb .opart{position:absolute;left:41%;bottom:5%;height:min(84vh,50vw);width:auto;max-width:none;transform:translateX(-50%);filter:drop-shadow(0 10px 40px rgba(0,0,0,.7));-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+.orb .rim{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 90px rgba(120,150,255,.14),inset 0 -40px 120px rgba(0,0,0,.6)}
+body[data-page=home] .hero{max-width:min(700px,49vw)}
+body[data-page=home] .hero h1{font-size:clamp(42px,7vw,104px)}
+body[data-page=home] h1{color:#0a0a0c;text-shadow:none}
+body[data-page=home] .hero p{color:#17171a}
+body[data-page=home] .site-tag{color:#26262a}
+body[data-page=home] .dc.u{color:#3b3b40}body[data-page=home] .dc.ac{color:#a24a0c}
+body[data-page=home] footer{color:#1b1b1f!important}
+.uidbar button{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+.uidbar.bad{border-color:#ff8a7a;animation:nudge .25s 2}
+@keyframes nudge{50%{transform:translateX(5px)}}
+@media(max-width:820px){
+  .orb{left:-22vw;top:46vh;width:144vw;height:144vw}
+  .orb .opart{left:50%;bottom:auto;top:5%;height:48vh}
+  body[data-page=home] .hero{max-width:none;margin:0;min-height:0;padding-top:4vh}
+  .scene .bgart{width:120vw;bottom:auto;top:10vh}
+}
+/* ---- account: loading skeleton + header row ---- */
+.acct{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.sk{border:1px solid var(--line);background:var(--panel);padding:18px 20px;margin:18px 0}
+.sk i{display:block;height:14px;margin:8px 0;background:linear-gradient(90deg,#1b1d24 25%,#2a2d37 50%,#1b1d24 75%) 0 0/200% 100%;animation:sh 1.2s linear infinite}
+.sk .grid i{height:auto;aspect-ratio:3/4;margin:0}
+@keyframes sh{to{background-position:-200% 0}}

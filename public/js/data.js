@@ -76,3 +76,14 @@ const TAGS = {
   Si: { provides: ['amp'], note: 'Artful Intent records damage taken and converts it into Fixed DMG.' },
   Endministrator: { note: 'Crowd control with a combo skill that caters to other operators.' },
 };
+
+// ---- landing-page background (edit these) ----
+// HERO_OP: operator whose splash art stands inside the black-space circle.
+// BG_ART: operators whose in-game loading backdrop art (the faint linework behind them on the operator screen)
+//   is shown in one section of the gray background. Put one file per operator at public/img/bg/<name>.png
+//   (lowercase, no spaces: avywenna.png, laevatain.png ...). One of the listed names is picked at random per visit;
+//   list a single name to pin it. A missing file is skipped and the built-in linework shows instead.
+// DIJIANG_IMG: optional picture of the Dijiang in space. If the file is missing, a drawn silhouette is used.
+const HERO_OP = 'Avywenna';
+const BG_ART = ['avywenna'];
+const DIJIANG_IMG = '/img/bg/dijiang.png';
