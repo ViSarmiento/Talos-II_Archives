@@ -120,7 +120,20 @@ function artFit(img) {
   img.style.cssText += `;position:absolute;max-width:none;object-fit:fill;transform:none;height:auto;width:${f.w}%;left:${f.l}%;top:${f.t}%`;
   img.classList.add('fit'); box.classList.add('fitted');
 }
-function artLoad(img) { img._m = undefined; img.parentElement?.classList.add('has'); artFit(img) }
+function artLoad(img) { img._m = undefined; img.parentElement?.classList.add('has'); artFit(img); requestAnimationFrame(() => img.classList.add('on')) }
+// load the first cards' art right away and ahead of the rest (call before the node is inserted)
+function artEager(el) { el.querySelectorAll('img.pic').forEach(i => { i.loading = 'eager'; i.setAttribute('fetchpriority', 'high') }); return el }
+// resolves when every art box that is on screen (or just below it) has its picture, or has definitively failed; never waits past `max` ms
+function artReady(root = document, max = 7000) {
+  return new Promise(res => {
+    const t0 = performance.now(), vh = innerHeight + 160;
+    const chk = () => {
+      const pend = [...root.querySelectorAll('.art')].some(b => { const r = b.getBoundingClientRect(); return r.width && r.bottom > -80 && r.top < vh && !b.classList.contains('has') && !b.classList.contains('lost') });
+      if (!pend || performance.now() - t0 > max) res(); else setTimeout(chk, 60);
+    };
+    chk();
+  });
+}
 if (typeof addEventListener === 'function') addEventListener('resize', () => document.querySelectorAll('.pic.fit').forEach(artFit));
 
 // ---- art markup ----
@@ -150,7 +163,7 @@ function artErr(img) { // CORS attempt failed -> same file without CORS (cannot 
     const c = JSON.parse(img.dataset.c), i = +img.dataset.i + 1;
     if (i < c.length) { img.dataset.i = i; img.dataset.nocors = ''; if (i === c.length - 1) img.classList.add('ico'); img.setAttribute('crossorigin', 'anonymous'); img.src = c[i]; return }
   } catch {}
-  const box = img.parentElement; img.remove(); if (box) { box.dataset.lost = (+box.dataset.lost || 0) + 1; box.dispatchEvent(new CustomEvent('artlost', { bubbles: true })) }
+  const box = img.parentElement; img.remove(); if (box) { box.dataset.lost = (+box.dataset.lost || 0) + 1; if (!box.querySelector('.pic')) box.classList.add('lost'); box.dispatchEvent(new CustomEvent('artlost', { bubbles: true })) }
   if (box && box.classList.contains('duo')) box.querySelectorAll('.pic').forEach(p => { p.dataset.cx = '.5'; p.dataset.wmax = '1.08'; artFit(p) });
 }
 const stars = n => '★'.repeat(n || 0);
@@ -203,7 +216,11 @@ async function icoInit() {
   const map = {}; await Promise.all(jobs.map(async ([kind, n]) => { map[kind + '-' + n] = await probeIcon(kind, n) }));
   save('et.icoMap.v2', { t: Date.now(), m: map }); icoApply(map);
 }
-if (typeof document !== 'undefined' && typeof Image !== 'undefined') icoInit();
+if (typeof document !== 'undefined' && typeof Image !== 'undefined') {
+  const had = (() => { const c = load('et.icoMap.v2', null); return c && Date.now() - c.t < 864e5 })();
+  const p = icoInit();   // cached map is applied synchronously; a first run swaps glyphs for real icons, so the loader waits for it (briefly) instead of letting them pop in
+  if (!had && window.FL) window.FL.wait(Promise.race([p, new Promise(r => setTimeout(r, 2200))]));
+}
 
 // ---- ownership: fetched from Enka + added by hand in the Team Builder ----
 const ownState = () => {

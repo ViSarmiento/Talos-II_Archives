@@ -1,8 +1,15 @@
-# Talos-II Archives beta 1.9.3 (formerly End:Tech)
+# Talos-II Archives beta 1.9.4 (formerly End:Tech)
 Static site in `public/` + one Vercel function `api/uid.js` (Enka proxy). No build step.
 
 Deploy: push to GitHub, import on Vercel (framework: Other). Local: `npx vercel dev` (a plain static server has no `/api`).
 Tests (no network needed): `npm test`.
+
+## What changed in 1.9.4 (bug fixes)
+- **Root cause of the loader bugs**: the loader and the Operators/Team Builder filter bar both used `id=\"fl\"`, so the filter chips were written into the loading screen. The loader is now `#ldr`.
+- **Loading screen**: animation slowed (`CFG.speed`, `spin`, `breathSec`; first page min 3.4s, later pages 1.1s). Clicking any tab covers the old page at once with \"Syncing to <page>\"; the next page's loader continues it. First load of a visit ends on \"Welcome Endministrator\" at 100%; all other loads say \"Syncing to Home / Account / Operators / Team Builder\". The \"Protocol-Originium\" text is removed.
+- **Loader gate**: pages call `FL.wait(promise)` (in `loader.js`) to keep the loader up until content is ready. Operators and Team Builder wait for fonts, the background art, and the operator art in view (`artReady()` in `core.js`), capped at 7s. Team Builder also computes Fun comps behind the loader, and the one-time icon lookup runs behind it too.
+- **No fallback flash**: operator initials are hidden unless every art source failed (`.art.lost`). Art fades in (`.pic.on`). The first 12 cards load eagerly with high priority (`artEager()`), the rest lazily.
+- **Decryption animation restored** on the Operators and Team Builder headers: it starts as the loader clears and its clock starts on the first painted frame, so a busy page can no longer swallow it.
 
 ## Loading screen (1.9.3)
 - `public/js/loader.js` (loaded first in every page's `<head>`): a gold-and-dark-gray **fluctlight inside an inverted pyramid**, modelled on the Protocol-Originium core. Plain canvas, no libraries, no audio.

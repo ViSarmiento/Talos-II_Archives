@@ -13,6 +13,7 @@ document.body.insertAdjacentHTML('afterbegin',`<aside class="rail${pinned?' pin'
   nav.addEventListener('pointerleave',()=>place(cur));nav.addEventListener('focusout',e=>{if(!nav.contains(e.relatedTarget))place(cur)});
   const pin=$('#rlp');pin.onclick=()=>{const on=rail.classList.toggle('pin');pin.setAttribute('aria-pressed',on);pin.firstChild.textContent=on?'‹':'›';save('et.rail',on)};
 })();
+window.FL && window.FL.wait(Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 2500))]));   // fonts are part of the page the loader waits for
 // fixed footer: sits at the bottom of the window and never scrolls
 document.body.insertAdjacentHTML('beforeend','<footer>Talos-II Archives is an unofficial fan project, not affiliated with Hypergryph or Gryphline. Player data via Enka.Network. Operator art and data: Hypergryph/Gryphline, shown via the Endfield Talos Wiki (CC BY-SA).</footer>');
 
@@ -20,6 +21,7 @@ document.body.insertAdjacentHTML('beforeend','<footer>Talos-II Archives is an un
 (()=>{
   const lines='<svg class="lines" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#000" stroke-width="1.2"><circle cx="360" cy="640" r="330"/><circle cx="360" cy="640" r="250" stroke-dasharray="3 9"/><circle cx="360" cy="640" r="120"/><path d="M-20 780 L760 150 M40 900 L900 220 M-20 520 L420 120"/><path d="M0 700H800M360 280V900" stroke-dasharray="2 10"/><path d="M110 560l-14 0m14 0l14 0M96 560l14 -10M610 740l18 0M619 731v18"/></svg>';
   document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><canvas id="space"></canvas><div class="dwrap"><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"></div><i class="rim"></i></div><i class="vig"></i></div>`);
+  const dij=$('.dij');if(dij){const ok=()=>dij.classList.add('on');if(dij.complete&&dij.naturalWidth)ok();else{dij.addEventListener('load',ok,{once:true});dij.addEventListener('error',()=>dij.remove(),{once:true});window.FL&&window.FL.wait(new Promise(r=>{dij.addEventListener('load',r,{once:true});dij.addEventListener('error',r,{once:true});setTimeout(r,5000)}))}}
   const orb=$('.orb'),c=$('#space'),x=c.getContext('2d');let w=0,h=0;
   // Still stars: no twinkle, no shooting stars. A fixed seed keeps the same sky on every load and every resize.
   let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
@@ -58,8 +60,9 @@ function decrypt(el, { delay = 0, duration = 1800, accent = '' } = {}) {
   chars.forEach(c => { if (c.ch !== ' ') { c.s.style.display = 'inline-block'; c.s.style.width = c.w + 'px'; c.s.textContent = rnd(c); c.s.classList.add('u') } });
   el.style.visibility = 'visible';
   const lock = chars.map((_, i) => (i / Math.max(chars.length - 1, 1)) * duration); // strictly left to right, one letter after another
-  const t0 = performance.now() + delay; let last = 0;
+  let t0 = null, last = 0;
   (function tick(now) {
+    if (t0 === null) t0 = now + delay;   // clock starts on the first painted frame, so a busy page cannot swallow the animation
     const t = now - t0, refresh = now - last > 70; // slower glyph refresh than a 60fps flicker, so the scramble is readable
     if (refresh) last = now;
     let left = 0;
@@ -75,6 +78,7 @@ function decrypt(el, { delay = 0, duration = 1800, accent = '' } = {}) {
   const els = [...document.querySelectorAll('[data-decrypt]')]; // page titles only, the nav tabs stay static
   els.forEach(e => { e.style.visibility = 'hidden' });
   const go = () => els.forEach((e, i) => decrypt(e, e.dataset.decrypt ? { delay: 200, duration: e.tagName === 'H1' ? 1500 : 900, accent: e.dataset.accent || '' } : { delay: 80 + i * 100, duration: 800 }));
-  const run = () => window.__flDone ? go() : addEventListener('fl:done', go, { once: true }); // wait for the loading screen so the title decrypt is seen
+  const go2 = () => setTimeout(go, 260);   // the loader is mid-fade here; start the decrypt as it clears
+  const run = () => (window.__flDone || !window.FL) ? go() : addEventListener('fl:done', go2, { once: true }); // wait for the loading screen so the title decrypt is seen
   Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 1200))]).then(run, run);
 })();

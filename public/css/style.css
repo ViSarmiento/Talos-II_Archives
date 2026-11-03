@@ -411,3 +411,14 @@ body:not([data-page=home]) .tmhost{margin:16px 0 4px;max-width:760px}
 .fc .m .ico{width:12px;height:12px;color:var(--c)}
 .fc .ff{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
 .fc .use{padding:6px 14px;font-size:13px}
+
+/* ---- 1.9.4: no fallback flash, fluid art ---- */
+.art .mono{visibility:hidden}                       /* initials only when every picture source has failed */
+.art.lost .mono{visibility:visible}
+.oc .art:has(.pic.sil.ico) .mono{visibility:visible}
+.oc.lk .art.lost .mono{opacity:.55}
+.art .pic{opacity:0;transition:opacity .45s ease}
+.art .pic.on{opacity:1}
+.orb .dij{opacity:0;transition:opacity .6s ease}
+.orb .dij.on{opacity:1}
+.oc.lk .art .pic.sil.on{opacity:1}

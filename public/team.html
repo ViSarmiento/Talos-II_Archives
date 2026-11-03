@@ -30,13 +30,14 @@ const isOwn = o => hasAcct && own.has(key(o.name));
 
 // One DOM node per operator, created once. Filtering, searching and unlocking only re-order or re-class these nodes,
 // so the splash images are never re-created (re-creating them is what made every art vanish for a moment).
+let made = 0;
 const cards = new Map();
 function card(o) {
   let el = cards.get(o.name);
   if (!el) {
     const t = document.createElement('template');
     t.innerHTML = opBox(o, { own: OS.has(o), db: !hasAcct, attrs: `data-a="${esc(o.name)}" tabindex="0" role="button"` }).trim();
-    el = t.content.firstChild; cards.set(o.name, el);
+    el = t.content.firstChild; cards.set(o.name, el); if (made++ < 12) artEager(el);
   }
   return el;
 }
@@ -147,5 +148,7 @@ function drawFun() {
   const on = mineOk() && funMine;
   setHtml('#fun', `<div class="funh"><div><b>Fun comps</b> <span class="dim">${on ? 'built from the operators you own' : 'built from every operator'}</span></div><div class="row">${mineOk() ? `<button type="button" class="ghost${on ? ' on' : ''}" id="fmine" aria-pressed="${on}">My operators only</button>` : ''}<button type="button" class="ghost" id="froll">⟳ Roll new comps</button></div></div>${fun.length ? `<div class="fcards">${fun.map(card).join('')}</div>` : '<p class="dim" style="margin:6px 0">Not enough operators to build a squad from. Turn off My operators only or unlock more.</p>'}`);
 }
-drawTeam(); drawPool(); setTimeout(rollFun, 0);
+drawTeam(); drawPool();
+FL.wait(artReady());   // the loading screen stays until the slots and the first rows of art are there
+FL.wait(new Promise(r => setTimeout(() => { rollFun(); r() }, 80)));   // fun comps are heavy (~0.4s): roll them behind the loading screen so the panel never pops in afterwards
 </script></body></html>

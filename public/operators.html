@@ -11,10 +11,11 @@
 <script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script>
 <script>
 const f = { el: '', cls: '', rar: 0 };
+let made = 0;
 const cards = new Map();   // one node per operator, so searching and filtering never reload the art
 function card(o) {
   let el = cards.get(o.name);
-  if (!el) { const t = document.createElement('template'); t.innerHTML = opBox(o, { db: true }).trim(); el = t.content.firstChild; cards.set(o.name, el) }
+  if (!el) { const t = document.createElement('template'); t.innerHTML = opBox(o, { db: true }).trim(); el = t.content.firstChild; cards.set(o.name, el); if (made++ < 12) artEager(el) }   // the first rows load first, the rest lazily
   return el;
 }
 function draw() {
@@ -38,4 +39,5 @@ document.onclick = e => {
 };
 $('#s').oninput = draw;
 draw();
+FL.wait(artReady());   // the loading screen stays until the art on screen is there
 </script></body></html>

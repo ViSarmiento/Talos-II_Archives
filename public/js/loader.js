@@ -1,4 +1,4 @@
-/* Talos-II Archives loading screen: a Protocol-Originium style inverted pyramid with a "fluctlight" inside.
+/* Talos-II Archives loading screen: an inverted pyramid with a "fluctlight" inside.
    Dependency-free (plain canvas 2D, own 3D projection). Loaded synchronously in <head> so the page never flashes.
    Tune the look in CFG below. Force it with ?loader=1 . */
 (function () {
@@ -8,39 +8,43 @@
     gold: [255, 210, 31],        // site signal gold
     goldHi: [255, 232, 150],     // hot core
     goldLo: [176, 126, 36],      // deep gold
-    firstMs: 2800,               // minimum time on the first page of a visit
-    nextMs: 650,                 // minimum time on later pages
+    firstMs: 3400,               // minimum time on the first page of a visit
+    nextMs: 1100,                 // minimum time on later pages
     maxMs: 10000,                // never block longer than this
-    breathSec: 4.6,              // one breath in+out
-    spin: 0.42,                  // rad/s
-    particles: 620
+    breathSec: 6.2,              // one breath in+out
+    spin: 0.3,                  // rad/s
+    particles: 620,
+    speed: 0.74                  // global animation speed (1 = original)
   };
 
   var reduce = false, first = true;
   try { reduce = matchMedia('(prefers-reduced-motion:reduce)').matches } catch (e) {}
   try { first = !sessionStorage.getItem('et.fl') } catch (e) {}
   if (/[?&]loader=1/.test(location.search)) first = true;
+  var NAMES = { '/': 'Home', '/index': 'Home', '/account': 'Account', '/operators': 'Operators', '/team': 'Team Builder' };
+  function pageName(path) { path = String(path || '/').replace(/\.html$/, '').replace(/(.)\/$/, '$1'); return NAMES[path] || 'Archives' }
+  var PN = pageName(location.pathname);
   var MIN = reduce ? 500 : (first ? CFG.firstMs : CFG.nextMs);
 
   /* ---------- DOM ---------- */
   var css = document.createElement('style');
   css.textContent =
-    '#fl{position:fixed;inset:0;z-index:99999;overflow:hidden;background:radial-gradient(ellipse at 50% 46%,#2b2c30 0%,#1b1c1f 42%,#0c0c0e 100%);transition:opacity .75s ease,visibility .75s;touch-action:none}' +
-    '#fl.out{opacity:0;visibility:hidden;pointer-events:none}' +
-    '#fl canvas{position:absolute;inset:0;width:100%;height:100%;display:block}' +
-    '#fl .fl-ui{position:absolute;left:0;right:0;bottom:clamp(28px,7vh,64px);display:flex;flex-direction:column;align-items:center;gap:12px;font:500 12px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.2em;text-transform:uppercase;color:#b39a55}' +
-    '#fl .fl-ui b{font:700 13px/1 "Chakra Petch",system-ui,sans-serif;letter-spacing:.34em;color:#ffd21f}' +
-    '#fl .fl-bar{width:min(260px,64vw);height:2px;background:#3a3b40;position:relative;overflow:hidden}' +
-    '#fl .fl-bar i{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#b07e24,#ffd21f 70%,#fff0b0);box-shadow:0 0 10px rgba(255,210,31,.7)}' +
-    '#fl .fl-t{position:absolute;top:clamp(18px,4vh,34px);left:clamp(18px,4vw,40px);right:clamp(18px,4vw,40px);display:flex;justify-content:space-between;font:500 11px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.2em;text-transform:uppercase;color:#6d6a5c}' +
-    '#fl .fl-t span:first-child{color:#a38a43}' +
-    '@media(prefers-reduced-motion:reduce){#fl{transition-duration:.01s}}';
+    '#ldr{position:fixed;inset:0;z-index:99999;overflow:hidden;background:radial-gradient(ellipse at 50% 46%,#2b2c30 0%,#1b1c1f 42%,#0c0c0e 100%);transition:opacity .75s ease,visibility .75s;touch-action:none}' +
+    '#ldr.out{opacity:0;visibility:hidden;pointer-events:none}' +
+    '#ldr canvas{position:absolute;inset:0;width:100%;height:100%;display:block}' +
+    '#ldr .fl-ui{position:absolute;left:0;right:0;bottom:clamp(28px,7vh,64px);display:flex;flex-direction:column;align-items:center;gap:12px;font:500 12px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.2em;text-transform:uppercase;color:#b39a55}' +
+    '#ldr .fl-ui b{font:700 13px/1 "Chakra Petch",system-ui,sans-serif;letter-spacing:.34em;color:#ffd21f}' +
+    '#ldr .fl-bar{width:min(260px,64vw);height:2px;background:#3a3b40;position:relative;overflow:hidden}' +
+    '#ldr .fl-bar i{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#b07e24,#ffd21f 70%,#fff0b0);box-shadow:0 0 10px rgba(255,210,31,.7)}' +
+    '#ldr .fl-t{position:absolute;top:clamp(18px,4vh,34px);left:clamp(18px,4vw,40px);right:clamp(18px,4vw,40px);display:flex;justify-content:space-between;font:500 11px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.2em;text-transform:uppercase;color:#6d6a5c}' +
+    '#ldr .fl-t span:first-child{color:#a38a43}' +
+    '@media(prefers-reduced-motion:reduce){#ldr{transition-duration:.01s}}';
   document.documentElement.appendChild(css);
 
   var root = document.createElement('div');
-  root.id = 'fl'; root.setAttribute('role', 'status'); root.setAttribute('aria-label', 'Loading Talos-II Archives');
-  root.innerHTML = '<canvas></canvas><div class="fl-t"><span>Talos-II Archives</span><span>Protocol-Originium</span></div>' +
-    '<div class="fl-ui"><b>SYNCING CORE</b><div class="fl-bar"><i></i></div><span class="fl-p">0%</span></div>';
+  root.id = 'ldr'; root.setAttribute('role', 'status'); root.setAttribute('aria-label', 'Loading Talos-II Archives');
+  root.innerHTML = '<canvas></canvas><div class="fl-t"><span>Talos-II Archives</span></div>' +
+    '<div class="fl-ui"><b>' + (first ? 'SYNCING CORE' : 'SYNCING TO ' + PN.toUpperCase()) + '</b><div class="fl-bar"><i></i></div><span class="fl-p">0%</span></div>';
   document.documentElement.appendChild(root);
   var cv = root.querySelector('canvas'), ctx = cv.getContext('2d');
   var bar = root.querySelector('.fl-bar i'), pct = root.querySelector('.fl-p'), lab = root.querySelector('.fl-ui b');
@@ -128,8 +132,11 @@
   var ripples = [], lastRip = -9, wasLoud = false;
 
   /* ---------- progress ---------- */
-  var t0 = performance.now(), loaded = document.readyState === 'complete', shown = 0, finishing = 0, done = false;
-  addEventListener('load', function () { loaded = true });
+  var t0 = performance.now(), loaded = false, shown = 0, finishing = 0, done = false;
+  var winLoaded = document.readyState === 'complete', holds = 0;
+  addEventListener('load', function () { winLoaded = true });
+  /* pages call FL.wait(promise) for content that must be on screen before the loader leaves (e.g. the art in view) */
+  window.FL = { wait: function (p) { holds++; var d = function () { holds-- }; Promise.resolve(p).then(d, d) } };
 
   function finish() {
     if (done) return; done = true;
@@ -147,20 +154,22 @@
   var last = performance.now(), T0 = last;
   function frame(now) {
     if (done && finishing > 1.2) return;
-    var dt = Math.min(0.05, (now - last) / 1000); last = now;
-    var t = reduce ? 1.6 : (now - T0) / 1000;
+    var rdt = Math.min(0.05, (now - last) / 1000); last = now;
+    var dt = rdt * CFG.speed;
+    var t = reduce ? 1.6 : (now - T0) / 1000 * CFG.speed;
     var el = now - t0;
 
     /* progress: eases to 92% while loading, to 100% once the page has loaded and the minimum time passed */
+    loaded = winLoaded && holds === 0 && !!window.__flReady;
     if (el > CFG.maxMs) loaded = true;
     var want = loaded ? 1 : 0.92 * (1 - Math.exp(-el / 1700));
     want = Math.min(want, el / MIN);
-    shown += (want - shown) * Math.min(1, dt * 6);
+    shown += (want - shown) * Math.min(1, rdt * 3.2);
     var pr = Math.min(1, shown);
     bar.style.transform = 'scaleX(' + pr + ')';
     pct.textContent = Math.round(pr * 100) + '%';
-    if (pr > 0.985 && !finishing) { finishing = 0.001; lab.textContent = 'CORE ONLINE'; }
-    if (finishing) { finishing += dt; if (finishing > 0.42 && !done) finish(); }
+    if (pr > 0.985 && !finishing) { finishing = 0.001; if (first) lab.textContent = 'WELCOME ENDMINISTRATOR'; }
+    if (finishing) { finishing += rdt; if (finishing > (first ? 1.1 : 0.5) && !done) finish(); }
 
     /* breathing + voice */
     var br = Math.sin(t * 6.2832 / CFG.breathSec - 1.2);            // -1..1
@@ -356,6 +365,31 @@
   }
 
   requestAnimationFrame(frame);
+  window.__flReady = false;
+  addEventListener('DOMContentLoaded', function () { setTimeout(function () { window.__flReady = true }, 0) });
   /* hard safety net if rAF is throttled (background tab): never leave the page covered */
   setTimeout(function () { if (!done) finish() }, CFG.maxMs + 4000);
+
+  /* ---------- leaving a page: cover the old page at once so nothing of it (or the next page) shows bare ---------- */
+  var out = null;
+  function leave(href) {
+    if (out) return;
+    var nm = pageName(new URL(href, location.href).pathname);
+    out = document.createElement('div');
+    out.id = 'ldr-out';
+    out.setAttribute('aria-hidden', 'true');
+    out.style.cssText = 'position:fixed;inset:0;z-index:99998;opacity:0;transition:opacity .22s ease;pointer-events:all;background:radial-gradient(ellipse at 50% 46%,#2b2c30 0%,#1b1c1f 42%,#0c0c0e 100%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:clamp(28px,7vh,64px);font:700 13px/1 \"Chakra Petch\",system-ui,sans-serif;letter-spacing:.34em;color:#ffd21f';
+    out.textContent = 'SYNCING TO ' + nm.toUpperCase();
+    document.documentElement.appendChild(out);
+    void out.offsetWidth; out.style.opacity = '1';
+    try { sessionStorage.setItem('et.fl', '1') } catch (e) {}
+  }
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.target || a.hasAttribute('download') || a.origin !== location.origin) return;
+    if (a.pathname === location.pathname && a.search === location.search) return;   // same page / hash link: no navigation
+    leave(a.href);
+  }, true);
+  addEventListener('pageshow', function (e) { if (e.persisted && out) { out.remove(); out = null } });
 })();
