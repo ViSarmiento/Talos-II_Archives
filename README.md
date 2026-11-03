@@ -1,8 +1,14 @@
-# Talos-II Archives beta 1.9.1 (formerly End:Tech)
+# Talos-II Archives beta 1.9.3 (formerly End:Tech)
 Static site in `public/` + one Vercel function `api/uid.js` (Enka proxy). No build step.
 
 Deploy: push to GitHub, import on Vercel (framework: Other). Local: `npx vercel dev` (a plain static server has no `/api`).
 Tests (no network needed): `npm test`.
+
+## Loading screen (1.9.3)
+- `public/js/loader.js` (loaded first in every page's `<head>`): a gold-and-dark-gray **fluctlight inside an inverted pyramid**, modelled on the Protocol-Originium core. Plain canvas, no libraries, no audio.
+- Features: flowing light that swirls down to the point, a slow **breathing** (scale + glow, `breathSec`), a simulated **speech fluctuation** (edges ripple, light surges, a ripple spreads under the apex), nested core pyramid, progress bar tied to the real page `load` event.
+- First page of a visit shows it for at least `firstMs` (2.8s); later pages only `nextMs`. Add `?loader=1` to the URL to force the full version. Reduced-motion users get a still frame.
+- Title decrypt and sidebar slide-in now wait until the loader is gone. Colours and timings are in `CFG` at the top of `loader.js`.
 
 ## What changed in 1.9.1
 - **Landing circle**: the violet backdrop art and glow are gone; the Dijiang is the only subject, about 1.5x bigger. `--dj-x` / `--dj-y` now pin its **centre**, so `--dj-w` (size) can be changed without it drifting.

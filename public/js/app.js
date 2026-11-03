@@ -75,5 +75,6 @@ function decrypt(el, { delay = 0, duration = 1800, accent = '' } = {}) {
   const els = [...document.querySelectorAll('[data-decrypt]')]; // page titles only, the nav tabs stay static
   els.forEach(e => { e.style.visibility = 'hidden' });
   const go = () => els.forEach((e, i) => decrypt(e, e.dataset.decrypt ? { delay: 200, duration: e.tagName === 'H1' ? 1500 : 900, accent: e.dataset.accent || '' } : { delay: 80 + i * 100, duration: 800 }));
-  Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 1200))]).then(go, go);
+  const run = () => window.__flDone ? go() : addEventListener('fl:done', go, { once: true }); // wait for the loading screen so the title decrypt is seen
+  Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 1200))]).then(run, run);
 })();
