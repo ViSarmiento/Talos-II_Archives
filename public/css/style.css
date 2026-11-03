@@ -194,18 +194,13 @@ footer{position:fixed;left:var(--rw);right:0;bottom:0;z-index:4;padding:7px 16px
 
 /* ---- landing circle: still stars, purple operator backdrop, Dijiang ---- */
 .orb canvas{position:absolute;inset:0;width:100%;height:100%}
-.orb .glow{position:absolute;inset:0;background:radial-gradient(ellipse 26% 42% at 15% 56%,rgba(150,90,255,.16),transparent 70%)}
-/* purple fill, cut out by the transparency of operator-art.png (stacked twice to strengthen it) */
-.orb .oart i{display:block;width:100%;height:100%;background:linear-gradient(180deg,#a678ff,#7c4ee0);-webkit-mask:url(/img/bg/operator-art.png) center/100% 100%,url(/img/bg/operator-art.png) center/100% 100%;mask:url(/img/bg/operator-art.png) center/100% 100%,url(/img/bg/operator-art.png) center/100% 100%;-webkit-mask-composite:source-over;mask-composite:add}
-/* operator backdrop (the dark purple halftone art with its grid, left half of the circle, as in beta 1.5) */
-.orb .oart{position:absolute;left:3%;top:33%;height:70%;aspect-ratio:720/1360;width:auto;opacity:.62;-webkit-mask-image:radial-gradient(ellipse 62% 58% at 46% 52%,#000 38%,transparent 100%);mask-image:radial-gradient(ellipse 62% 58% at 46% 52%,#000 38%,transparent 100%);transform:translate3d(calc(var(--px,0)*-6px),calc(var(--py,0)*-4px),0);transition:transform .6s ease-out}
-/* Dijiang: bottom right of the circle, tilted so it looks like it is passing through; the rim hides only a sliver of its tail.
-   Move/resize with --dj-x / --dj-y (position of its top-left, % of the circle), --dj-w (width) and --dj-r (tilt). --dj-b dims it. */
-.orb{--dj-x:31%;--dj-y:67%;--dj-w:56%;--dj-r:13deg;--dj-b:.8}
-.orb .dwrap{position:absolute;left:var(--dj-x);top:var(--dj-y);width:var(--dj-w);rotate:var(--dj-r);transform:translate3d(calc(var(--px,0)*-8px),calc(var(--py,0)*-5px),0);transition:transform .6s ease-out}
-.orb .dij{position:static;inset:auto;display:block;width:100%;height:auto;object-fit:fill;filter:drop-shadow(0 26px 40px rgba(0,0,0,.85)) saturate(.88) brightness(var(--dj-b));animation:hover 12s ease-in-out infinite alternate}
+/* Dijiang: the main focus of the circle. Its CENTRE is pinned at --dj-x / --dj-y (share of the circle's width / height), so changing
+   --dj-w only grows or shrinks it around that point. --dj-r tilts it, --dj-b dims it. */
+.orb{--dj-x:59%;--dj-y:79%;--dj-w:86%;--dj-r:13deg;--dj-b:1}
+.orb .dwrap{position:absolute;left:var(--dj-x);top:var(--dj-y);width:var(--dj-w);translate:-50% -50%;rotate:var(--dj-r);transform:translate3d(calc(var(--px,0)*-8px),calc(var(--py,0)*-5px),0);transition:transform .6s ease-out}
+.orb .dij{position:static;inset:auto;display:block;width:100%;height:auto;object-fit:fill;filter:drop-shadow(0 26px 40px rgba(0,0,0,.85)) saturate(.95) brightness(var(--dj-b));animation:hover 12s ease-in-out infinite alternate}
 @keyframes hover{0%{transform:translate(0,4px) rotate(-.5deg)}100%{transform:translate(-8px,-6px) rotate(.5deg)}}
-@media(max-width:820px){.orb{--dj-x:30%;--dj-y:62%;--dj-w:66%}.orb .oart{left:4%;top:12%;height:44%}}
+@media(max-width:820px){.orb{--dj-x:63%;--dj-y:76%;--dj-w:98%}}
 
 /* ---- sidebar sections ---- */
 .rail nav .sec{position:relative;flex:none;height:34px;display:flex;align-items:flex-end;padding:0 calc((var(--rw) - 28px)/2) 6px;margin-top:10px;color:#6b6f7b;font:700 11px "Chakra Petch",sans-serif;letter-spacing:.22em;text-transform:uppercase}
@@ -290,3 +285,129 @@ body.addmode .oc{cursor:copy;outline:1px dashed color-mix(in srgb,var(--sig) 55%
 body.addmode .oc.in::after{display:none}
 #am[aria-pressed=true]{background:var(--sig);color:#14120a;border-color:var(--sig)}
 .tools #am{margin-left:auto}
+
+/* ================= 1.9.1: UID terminal, account switcher, locked slots, team style + fun comps ================= */
+.uhint{font-size:13px;margin:10px 0 0;color:#26262a}
+.uhint a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+body:not([data-page=home]) .uhint{color:var(--dim)}
+body:not([data-page=home]) .uhint a{color:var(--sig)}
+.acsearch{max-width:560px}
+
+/* ---- Endfield-style terminal ---- */
+.tmhost[hidden]{display:none}
+.tmhost{position:relative;z-index:6}
+.tmhost.home{position:fixed;right:clamp(16px,4vw,64px);top:50%;transform:translateY(-50%);width:min(560px,calc(100vw - 52vw - 24px));min-width:420px;display:block}
+.tmhost.home .tm{width:100%;max-height:calc(100vh - 132px)}
+body:not([data-page=home]) .tmhost{margin:16px 0 4px;max-width:760px}
+.tm{--k:var(--sig);position:relative;display:flex;flex-direction:column;min-height:0;font:13px/1.5 "IBM Plex Mono",monospace;color:#d7d3c6;background:linear-gradient(180deg,rgba(14,15,19,.97),rgba(8,9,12,.97));border:1px solid #3a3d46;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));box-shadow:0 24px 70px rgba(0,0,0,.6);animation:tmOpen .35s cubic-bezier(.2,.9,.25,1) both}
+.tm::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:5;background:repeating-linear-gradient(0deg,rgba(255,255,255,.028) 0 1px,transparent 1px 3px)}
+.tm::after{content:"";position:absolute;left:0;right:0;top:0;height:46px;pointer-events:none;z-index:5;background:linear-gradient(180deg,transparent,rgba(255,210,31,.07),transparent);animation:tmSweep 5s linear infinite}
+@keyframes tmOpen{from{opacity:0;transform:translateX(18px) scaleY(.96);filter:brightness(2)}}
+@keyframes tmSweep{from{transform:translateY(-60px)}to{transform:translateY(520px)}}
+.tm-c{position:absolute;width:11px;height:11px;border:0 solid var(--k);z-index:6;pointer-events:none}
+.tm-c.a{left:5px;top:5px;border-width:2px 0 0 2px}.tm-c.b{right:22px;top:5px;border-width:2px 2px 0 0}
+.tm-c.c{left:22px;bottom:5px;border-width:0 0 2px 2px}.tm-c.d{right:5px;bottom:5px;border-width:0 2px 2px 0}
+.tm-h{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 14px 9px 16px;border-bottom:1px solid #2c2f37;background:repeating-linear-gradient(-45deg,rgba(255,210,31,.08) 0 8px,transparent 8px 16px)}
+.tm-ttl{font:700 12px "Chakra Petch",sans-serif;letter-spacing:.16em;color:var(--sig);white-space:nowrap}
+.tm-ttl em{font-style:normal;color:#8d909a;letter-spacing:.1em}
+.tm-dot{display:inline-block;width:8px;height:8px;margin-right:9px;background:var(--sig);animation:tmBlink 1.2s steps(1) infinite}
+@keyframes tmBlink{50%{opacity:.25}}
+.tm-x{position:relative;z-index:7;padding:3px 10px;background:transparent;color:#b9bcc6;border:1px solid #3a3d46;font:700 11px "Chakra Petch",sans-serif;letter-spacing:.12em}
+.tm-x:hover{color:#14120a;background:var(--sig);border-color:var(--sig);filter:none}.tm-x b{margin-left:4px}
+.tm-b{flex:1 1 auto;padding:14px 16px 12px;overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#3a3d46 transparent}
+.tm .tl{margin:0 0 3px;animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.16s)}
+.tm .tl .pr{color:var(--sig)}.tm code{color:#fff;background:none;font:inherit}
+.tm .tl b{font-weight:500;float:right}.tm .tl b.ok{color:var(--nat)}.tm .tl b.er{color:#ff8a7a}
+@keyframes tmIn{from{opacity:0;transform:translateX(-8px)}}
+.tm .dots::after{content:"";animation:tmDots 1.2s steps(4) infinite}
+@keyframes tmDots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.tm-bar{height:3px;margin-top:14px;background:#1d1f26;overflow:hidden}
+.tm-bar i{display:block;width:34%;height:100%;background:var(--sig);box-shadow:0 0 10px var(--sig);animation:tmBar 1s ease-in-out infinite alternate}
+@keyframes tmBar{to{transform:translateX(200%)}}
+.tm-err{margin:12px 0 2px;padding:8px 12px;border-left:3px solid #ff6a3d;background:rgba(255,106,61,.08);color:#ffb3a2}
+.tm-id{padding-bottom:10px;border-bottom:1px dashed #33363f}
+.tm-name{font:700 clamp(24px,3vw,32px)/1.1 "Chakra Petch",sans-serif;color:#fff;letter-spacing:.02em;min-height:1.1em}
+.tm-sub{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;color:var(--sig);font-size:12px;letter-spacing:.08em;animation:tmIn .3s both;animation-delay:calc(var(--i,0)*.06s)}
+.tm-sig{margin-top:6px;color:#8d909a;animation:tmIn .3s both;animation-delay:calc(var(--i,0)*.06s)}
+.tm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin:12px 0;background:#2c2f37;border:1px solid #2c2f37}
+.tm .tc{padding:8px 11px;background:#0d0e13;animation:tmIn .3s both;animation-delay:calc(var(--i,0)*.06s)}
+.tm .tc small{display:block;color:#8d909a;font-size:10px;letter-spacing:.14em}
+.tm .tc b{font:700 19px/1.2 "Chakra Petch",sans-serif;color:#fff}
+.tm-sec{display:flex;align-items:center;gap:10px;margin:14px 0 6px;color:var(--sig);font:700 11px "Chakra Petch",sans-serif;letter-spacing:.2em;animation:tmIn .3s both;animation-delay:calc(var(--i,0)*.06s)}
+.tm-sec::after{content:"";flex:1;height:1px;background:#33363f}
+.tm-sec em{order:2;font-style:normal;color:#fff;border:1px solid #3a3d46;padding:0 7px}
+.tm-ops{list-style:none;margin:0;padding:0;max-height:280px;overflow:auto;scrollbar-width:thin;scrollbar-color:#3a3d46 transparent}
+.tm-ops li{--r:var(--line);display:grid;grid-template-columns:4px minmax(0,1.5fr) auto auto auto auto;align-items:center;gap:10px;padding:5px 10px 5px 0;border-bottom:1px solid rgba(255,255,255,.05);animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.05s)}
+.tm-ops li[data-rar="6"]{--r:#ff8a2e}.tm-ops li[data-rar="5"]{--r:#ffd21f}.tm-ops li[data-rar="4"]{--r:#b58cff}
+.tm-ops li:hover{background:rgba(255,210,31,.05)}
+.tm-ops .rb{align-self:stretch;background:var(--r)}
+.tm-ops b{font:700 14px "Chakra Petch",sans-serif;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-ops .tg{display:flex;align-items:center;gap:6px;color:var(--c,#8d909a)}.tm-ops .tg i{font-style:normal;color:#9b9ea8;font-size:11px}
+.tm-ops .tg .ico{width:13px;height:13px}
+.tm-ops .st{color:var(--r);font-size:10px;letter-spacing:.04em}.tm-ops .lv{color:#d7d3c6}.tm-ops .pt{color:var(--sig);min-width:1.8em;text-align:right}
+.tm-ops li.unk{color:#8d909a}.tm-ops li.unk .rb{background:#444}.tm-ops li.unk b{color:#8d909a}
+.tm-none{margin:6px 0 0;color:#ffb3a2}
+.tm-f{position:static;z-index:7;pointer-events:auto;text-align:left;font-size:inherit;color:inherit;flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;padding:10px 16px;border-top:1px solid #2c2f37;background:rgba(255,255,255,.02)}
+.tm-hint{color:#8d909a;font-size:11px;letter-spacing:.06em}
+.tm-add{position:relative;z-index:7;padding:9px 22px;font:700 14px "Chakra Petch",sans-serif;letter-spacing:.14em;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.tm-add:disabled{background:#23252d;color:var(--nat);cursor:default;filter:none}
+@media(max-width:1000px){
+  .tmhost.home{position:relative;right:auto;top:auto;transform:none;width:auto;min-width:0;margin:18px 16px 90px;display:block}
+  .tmhost.home .tm{max-height:none}
+}
+@media(max-width:820px){
+  .tm-grid{grid-template-columns:repeat(2,1fr)}
+  .tm-ops li{grid-template-columns:4px minmax(0,1fr) auto auto}.tm-ops .tg i,.tm-ops .st{display:none}
+}
+
+/* ---- account bar + switch dropdown ---- */
+.acct{margin:16px 0 4px;padding:12px 16px;border:1px solid var(--line);border-left:3px solid var(--sig);background:var(--panel)}
+.acct .who small{display:block;color:var(--sig);font:700 10px "Chakra Petch",sans-serif;letter-spacing:.2em}
+.acct .who b{font:700 20px "Chakra Petch",sans-serif;margin-right:12px}.acct .who span{color:var(--dim);font:13px "IBM Plex Mono",monospace}
+.acct .acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sw{position:relative}.sw #swb{border-color:var(--sig);color:var(--sig)}
+.swm{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:260px;max-height:320px;overflow:auto;background:#0b0c10;border:1px solid #3a3d46;box-shadow:0 18px 50px rgba(0,0,0,.65);animation:tmOpen .2s both}
+.swm[hidden]{display:none}
+.swi{display:grid;grid-template-columns:1fr auto;width:100%;text-align:left;padding:9px 14px;background:transparent;color:var(--text);border:0;border-bottom:1px solid rgba(255,255,255,.06);font-weight:400;gap:0 10px}
+.swi:last-child{border-bottom:0}.swi:hover{background:rgba(255,210,31,.08);filter:none}
+.swi b{font:700 15px "Chakra Petch",sans-serif}.swi small{grid-column:1;color:var(--dim);font:12px "IBM Plex Mono",monospace}
+.swi i{grid-row:1/3;grid-column:2;align-self:center;font:700 10px "Chakra Petch",sans-serif;letter-spacing:.14em;color:#14120a;background:var(--sig);padding:1px 7px;font-style:normal}
+.swi.on{box-shadow:inset 3px 0 0 var(--sig)}
+#st.empty{min-height:26vh}
+
+/* ---- team slots: a locked operator stays locked in its slot ---- */
+.slot.lk .art .pic.hi{display:none}
+.slot .art .pic.sil{filter:brightness(0) drop-shadow(0 0 1.5px var(--c)) drop-shadow(0 0 14px color-mix(in srgb,var(--c) 50%,transparent));animation:idle 6s ease-in-out infinite alternate}
+.slot .art .pic.sil.ico{display:none}
+.slot.lk .art{background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--c) 22%,#14151b),#08090d 78%)}
+.slot.lk .art .mono{opacity:.55}
+.slot .lock{position:absolute;left:50%;top:44%;width:46px;height:46px;margin:-23px 0 0 -23px;display:none;z-index:2;color:#e9e6dc;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.9))}
+.slot .lock svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.slot.lk .lock{display:block}
+
+/* ---- team style banner + flair ---- */
+.arch{margin:0 0 12px;padding:9px 12px;border:1px solid #2c2f37;border-left:3px solid var(--sig);background:rgba(255,210,31,.05)}
+.arch .ah{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px}
+.arch b{font:700 18px "Chakra Petch",sans-serif;letter-spacing:.03em}
+.arch p{margin:3px 0 0;font-size:13px;color:#b9bcc6}
+.fl{display:inline-flex;align-items:center;gap:8px;font:700 10px "Chakra Petch",sans-serif;letter-spacing:.16em;color:var(--dim)}
+.fl .fb{display:block;width:84px;height:5px;background:#23252d}.fl .fb i{display:block;height:100%;background:linear-gradient(90deg,var(--ember),var(--sig))}
+.fl em{font:700 13px "Chakra Petch",sans-serif;font-style:normal;color:var(--sig);letter-spacing:0}
+.sg em.sty{color:var(--ember)}
+
+/* ---- fun comps ---- */
+.fun{margin:14px 0 4px}
+.funh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;margin-bottom:8px}
+.funh b{font:700 17px "Chakra Petch",sans-serif}
+.funh .ghost.on{border-color:var(--sig);color:var(--sig)}
+.fcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.fc{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px solid var(--line);border-top:3px solid var(--sig);background:var(--panel);animation:tmIn .3s both}
+.fc:nth-child(2){animation-delay:.07s}.fc:nth-child(3){animation-delay:.14s}
+.fc .fa{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.fc .fa b{font:700 17px "Chakra Petch",sans-serif}
+.fc p{margin:0;font-size:13px;color:#b9bcc6;flex:1}
+.fc .fm{display:flex;flex-wrap:wrap;gap:6px}
+.fc .m{display:inline-flex;align-items:center;gap:6px;padding:2px 9px 2px 7px;font:13px "IBM Plex Mono",monospace;color:#e8e4d6;border:1px solid color-mix(in srgb,var(--c) 55%,transparent);background:rgba(255,255,255,.03)}
+.fc .m .ico{width:12px;height:12px;color:var(--c)}
+.fc .ff{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
+.fc .use{padding:6px 14px;font-size:13px}

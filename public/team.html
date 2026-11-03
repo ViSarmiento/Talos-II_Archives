@@ -6,6 +6,7 @@
 <div class="links" id="links"></div>
 <div class="panel" id="an"></div>
 <div id="sugbox"></div>
+<div class="fun" id="fun"></div>
 <div class="tools">
   <div class="uidbar" style="flex:1;min-width:200px"><input id="s" placeholder="Search operators" aria-label="Search operators"></div>
   <button class="ghost" id="cp">Copy team link</button><button class="ghost" id="cl">Clear</button><button class="ghost" id="am" type="button" aria-pressed="false">＋ Add operators</button>
@@ -19,8 +20,13 @@
 const fromHash = () => location.hash.length > 1 ? decodeURIComponent(location.hash.slice(1)).split('~') : null;
 let team = (fromHash() || load('et.team', [])).map(n => lookup(n)?.name).filter(Boolean).filter((n, i, a) => a.indexOf(n) === i).slice(0, 4);
 const f = { el: '', cls: '', rar: 0, own: false };
-let OS = ownState(), own = OS.keys(), addMode = false;   // fetched from Enka + added here
-const refreshOwn = () => { OS = ownState(); own = OS.keys() };
+// With an account on the Account tab: locked silhouettes, unlock animation, reveal (as before).
+// Without one: no locks and no decryption, every operator is a plain card, so the builder works for people who do not want to add an account.
+const hasAcct = load('et.accts', []).length > 0;
+const NOACC = { fetched: new Set(), manual: new Set(), has: () => false, keys: () => new Set() };
+let OS = hasAcct ? ownState() : NOACC, own = OS.keys(), addMode = false;   // fetched from Enka + added here
+const refreshOwn = () => { OS = hasAcct ? ownState() : NOACC; own = OS.keys() };
+const isOwn = o => hasAcct && own.has(key(o.name));
 
 // One DOM node per operator, created once. Filtering, searching and unlocking only re-order or re-class these nodes,
 // so the splash images are never re-created (re-creating them is what made every art vanish for a moment).
@@ -29,7 +35,7 @@ function card(o) {
   let el = cards.get(o.name);
   if (!el) {
     const t = document.createElement('template');
-    t.innerHTML = opBox(o, { own: OS.has(o), attrs: `data-a="${esc(o.name)}" tabindex="0" role="button"` }).trim();
+    t.innerHTML = opBox(o, { own: OS.has(o), db: !hasAcct, attrs: `data-a="${esc(o.name)}" tabindex="0" role="button"` }).trim();
     el = t.content.firstChild; cards.set(o.name, el);
   }
   return el;
@@ -41,8 +47,9 @@ const set = t => { team = t; save('et.team', t); history.replaceState(null, '', 
 function drawSlots() {
   $('#slots').innerHTML = [0, 1, 2, 3].map(i => {
     const o = team[i] && lookup(team[i]);
-    return o ? `<div class="slot f" data-rar="${o.rarity}" style="--c:${COL[o.element]}">${artHtml(o, 480, { whole: true })}<span class="shade"></span><span class="el">${icoEl(o.element)}${esc(o.element)}</span><button class="x" data-r="${i}" aria-label="Remove ${esc(o.name)}">×</button><div class="meta"><b>${esc(o.name)}</b><small>${esc(o.cls)} · ${esc(o.weapon)}<span class="ow" data-n="${esc(o.name)}">${own.has(key(o.name)) ? ' · owned' : ''}</span></small></div></div>`
-      : `<div class="slot"><span class="n">0${i + 1}</span><span class="plus">+</span></div>`;
+    if (!o) return `<div class="slot"><span class="n">0${i + 1}</span><span class="plus">+</span></div>`;
+    const lk = hasAcct && !isOwn(o);   // a locked operator stays in locked form here too: dark silhouette and a lock, no splash art
+    return `<div class="slot f${lk ? ' lk' : ''}" data-rar="${o.rarity}" style="--c:${COL[o.element]}">${artHtml(o, 480, { whole: true, sil: lk })}<span class="shade"></span>${lk ? `<span class="lock" aria-hidden="true">${LOCK_SVG}</span>` : ''}<span class="el">${icoEl(o.element)}${esc(o.element)}</span><button class="x" data-r="${i}" aria-label="Remove ${esc(o.name)}">×</button><div class="meta"><b>${esc(o.name)}</b><small>${esc(o.cls)} · ${esc(o.weapon)}<span class="ow" data-n="${esc(o.name)}">${!hasAcct ? '' : lk ? ' · locked' : ' · owned'}</span></small></div></div>`
   }).join('');
 }
 const setHtml = (sel, html) => { const el = $(sel); if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = html } };   // skip identical updates so thumbnails do not reload
@@ -56,11 +63,11 @@ function drawAnalysis() {
   const bars = Object.entries(PARTS).map(([p, [name, max]]) => `<div class="bar">${name}<div><i style="width:${Math.round((a.parts[p] || 0) * 100)}%"></i></div></div>`).join('');
   const ic = { good: '✓', warn: '!', info: 'i' };
   setHtml('#an', `<div class="syn"><div class="score"><div class="ring" style="--p:${a.score};--k:${col}"><b>${a.score}</b></div><div class="lbl" style="color:${col}">${a.label}</div><small>${a.n < 4 ? `${4 - a.n} slot${a.n === 3 ? '' : 's'} open` : 'synergy score'}</small></div>
-    <div><div class="bars">${bars}</div>${a.checks.map(c => `<div class="chk ${c.level}"><span class="ic">${ic[c.level]}</span><div><b>${esc(c.title)}</b><br><span>${esc(c.text)}</span></div></div>`).join('')}
+    <div>${a.arch ? `<div class="arch"><div class="ah"><b>${esc(a.arch.name)}</b><span class="fl" title="How unusual this team style is. It does not change the synergy score."><span>FLAIR</span><span class="fb"><i style="width:${a.flair}%"></i></span><em>${a.flair}</em></span></div><p>${esc(a.arch.text)}</p></div>` : ''}<div class="bars">${bars}</div>${a.checks.map(c => `<div class="chk ${c.level}"><span class="ic">${ic[c.level]}</span><div><b>${esc(c.title)}</b><br><span>${esc(c.text)}</span></div></div>`).join('')}
     <p class="kit">Skill-level data for ${a.known} of ${a.n} operators; the rest are judged by class and element. Heuristic only, not a damage calculator.</p></div></div>`);
 
   const sg = suggest(team, own);
-  setHtml('#sugbox', sg.length ? `<div class="dim" style="margin:6px 0 2px">Best fits for the next slot${own.size ? ' (• = on your account)' : ''}</div><div class="sug">${sg.map(s => `<button class="sg" data-a="${esc(s.op.name)}" style="--c:${COL[s.op.element]}">${artHtml(s.op, 120)}<span><b>${own.has(key(s.op.name)) ? '• ' : ''}${esc(s.op.name)}</b><small>${esc(s.op.cls)} · ${esc(s.op.element)}<br>improves <em>${esc(s.why)}</em> (${s.score})</small></span></button>`).join('')}</div>` : '');
+  setHtml('#sugbox', sg.length ? `<div class="dim" style="margin:6px 0 2px">Best fits for the next slot${own.size ? ' (• = on your account)' : ''}, mixed across classes and elements</div><div class="sug">${sg.map(s => `<button class="sg" data-a="${esc(s.op.name)}" style="--c:${COL[s.op.element]}">${artHtml(s.op, 120)}<span><b>${own.has(key(s.op.name)) ? '• ' : ''}${esc(s.op.name)}</b><small>${esc(s.op.cls)} · ${esc(s.op.element)}<br>improves <em>${esc(s.why)}</em> (${s.score})${s.style ? `<br>makes <em class="sty">${esc(s.style)}</em>` : ''}</small></span></button>`).join('')}</div>` : '');
 }
 const drawTeam = () => { drawSlots(); drawAnalysis() };
 
@@ -69,9 +76,13 @@ function drawFilters() {
   const chip = (attr, val, label, on, c, ic = '') => `<button class="chip ${on ? 'on' : ''}" data-${attr}="${val}" ${c ? `style="--c:${c}"` : ''}>${ic}${label}</button>`;
   setHtml('#fl', `<div class="chips">${Object.keys(COL).map(e => chip('fe', e, e, f.el === e, COL[e], icoEl(e))).join('')}</div><span class="sep"></span>
     <div class="chips">${CLASSES.map(c => chip('fc', c, c, f.cls === c, '', icoCls(c))).join('')}</div><span class="sep"></span>
-    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + '★', f.rar === r)).join('')}${own.size ? chip('fo', 1, 'Owned only', f.own) : ''}</div>`);
+    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + '★', f.rar === r)).join('')}${hasAcct && own.size ? chip('fo', 1, 'Owned only', f.own) : ''}</div>`);
 }
-function drawCount() { $('#own').textContent = `${shown.length} of ${ROSTER.length} operators shown. ${own.size} unlocked. Dark silhouettes with a lock are operators you do not own yet. Fetch your account or use Add operators, then hover an unlocked silhouette once to reveal it for good.` }
+function drawCount() {
+  $('#own').textContent = hasAcct
+    ? `${shown.length} of ${ROSTER.length} operators shown. ${own.size} unlocked. Dark silhouettes with a lock are operators you do not own on your account yet. Use Add operators to unlock more, then hover an unlocked silhouette once to reveal it for good.`
+    : `${shown.length} of ${ROSTER.length} operators shown. No account added, so every operator is open for planning. Add an account on the Account tab if you want the Team Builder to lock the operators you do not own.`;
+}
 
 function drawPool() {
   const q = key($('#s').value);
@@ -86,6 +97,9 @@ function drawPool() {
 
 document.onclick = e => {
   const t = e.target, a = t.closest('[data-a]'), x = t.closest('[data-r]'), fe = t.closest('[data-fe]'), fc = t.closest('[data-fc]'), fr = t.closest('[data-fr]'), fo = t.closest('[data-fo]');
+  if (t.closest('#froll')) return rollFun();
+  if (t.closest('#fmine')) { funMine = !funMine; return rollFun() }
+  const use = t.closest('[data-use]'); if (use) { set(use.dataset.use.split('~')); scrollTo({ top: 0, behavior: 'smooth' }); return }
   if (x) return set(team.filter((_, i) => i != x.dataset.r));
   if (a && addMode && a.classList.contains('oc')) return toggleOwn(a.dataset.a);
   if (a) { const n = a.dataset.a; return team.includes(n) ? set(team.filter(m => m !== n)) : team.length < 4 ? set([...team, n]) : undefined }
@@ -105,10 +119,11 @@ function toggleOwn(name) {
   save('et.owned', [...m]); refreshOwn();
   opSetState(el, gain, o, true);
   document.querySelectorAll('.slot .ow').forEach(s => { s.textContent = own.has(key(s.dataset.n)) ? ' · owned' : '' });
-  drawAnalysis(); drawFilters(); drawCount();
+  drawAnalysis(); drawFilters(); drawCount(); drawFun();
   if (f.own && !gain) drawPool();   // "Owned only" is on and this one just left the list
 }
 const ADD_NOTE = 'Add mode: click an operator to unlock it, click again to lock it. Operators on your fetched account are already unlocked. Press Done adding, then hover an unlocked silhouette once to reveal its art for good.';
+if (!hasAcct) $('#am').hidden = true;
 $('#am').onclick = () => {
   addMode = !addMode; document.body.classList.toggle('addmode', addMode);
   $('#am').setAttribute('aria-pressed', addMode); $('#am').textContent = addMode ? 'Done adding' : '＋ Add operators'; $('#amn').hidden = !addMode;
@@ -117,5 +132,20 @@ $('#am').onclick = () => {
 document.onkeydown = e => { const a = e.target.closest?.('[data-a]'); if (a && a.tagName === 'DIV' && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); a.click() } };
 $('#s').oninput = drawPool; $('#cl').onclick = () => set([]);
 $('#cp').onclick = () => { navigator.clipboard?.writeText(location.href); $('#cp').textContent = 'Link copied'; setTimeout(() => $('#cp').textContent = 'Copy team link', 1500) };
-drawTeam(); drawPool();
+
+// ---- fun comps: random squads that score well AND have a distinctive style (see funComps in synergy.js) ----
+let fun = [], funMine = true;
+const mineOk = () => hasAcct && own.size >= 4;
+function rollFun() {
+  const pool = funMine && mineOk() ? ROSTER.filter(o => own.has(key(o.name))) : ROSTER;
+  fun = funComps(pool); drawFun();
+}
+function drawFun() {
+  const card = c => `<div class="fc"><div class="fa"><b>${esc(c.arch.name)}</b><span class="fl"><span>FLAIR</span><span class="fb"><i style="width:${c.flair}%"></i></span><em>${c.flair}</em></span></div><p>${esc(c.arch.text)}</p>
+    <div class="fm">${c.names.map(n => { const o = lookup(n); return `<span class="m" style="--c:${COL[o.element]}">${icoEl(o.element)}${esc(n)}</span>` }).join('')}</div>
+    <div class="ff"><span class="dim">Synergy ${c.score}</span><button type="button" class="use" data-use="${esc(c.names.join('~'))}">Use this team</button></div></div>`;
+  const on = mineOk() && funMine;
+  setHtml('#fun', `<div class="funh"><div><b>Fun comps</b> <span class="dim">${on ? 'built from the operators you own' : 'built from every operator'}</span></div><div class="row">${mineOk() ? `<button type="button" class="ghost${on ? ' on' : ''}" id="fmine" aria-pressed="${on}">My operators only</button>` : ''}<button type="button" class="ghost" id="froll">⟳ Roll new comps</button></div></div>${fun.length ? `<div class="fcards">${fun.map(card).join('')}</div>` : '<p class="dim" style="margin:6px 0">Not enough operators to build a squad from. Turn off My operators only or unlock more.</p>'}`);
+}
+drawTeam(); drawPool(); setTimeout(rollFun, 0);
 </script></body></html>

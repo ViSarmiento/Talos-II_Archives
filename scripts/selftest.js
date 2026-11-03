@@ -1,8 +1,8 @@
 // node scripts/selftest.js  -- runs the pure logic (no browser needed)
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const dir = path.join(__dirname, '..', 'public', 'js');
-const src = ['data.js', 'core.js', 'synergy.js'].map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
-const api = vm.runInNewContext(src + '\n({ROSTER,ID_MAP,TAGS,normalize,resolveTemplate,analyze,suggest,lookup,artChain,key,fitMath,artHtml,artLayer,ART_DUO})', { localStorage: { getItem() { return null }, setItem() {} } });
+const src = ['data.js', 'core.js', 'synergy.js', 'terminal.js'].map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
+const api = vm.runInNewContext(src + '\n({ROSTER,ID_MAP,TAGS,normalize,resolveTemplate,analyze,suggest,funComps,parseQuery,lookup,artChain,key,fitMath,artHtml,artLayer,ART_DUO})', { localStorage: { getItem() { return null }, setItem() {} } });
 const assert = require('assert');
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok  ' + name) };
 
@@ -42,6 +42,37 @@ t('a wide-armed pose does not push the operator off centre (cx is the median, no
 t('Endministrator renders male and female splash in one frame', () => { const h = api.artHtml(api.lookup('Endministrator'), 360); assert(/Endministrator_\(Male\)_Splash_Art/.test(h) && /Endministrator_\(Female\)_Splash_Art/.test(h)); assert(/class="art duo"/.test(h)); assert.equal((h.match(/<img/g) || []).length, 2) });
 t('other operators render a single image', () => { assert.equal((api.artHtml(api.lookup('Rossi'), 360).match(/<img/g) || []).length, 1) });
 t('every roster operator produces art markup', () => api.ROSTER.forEach(r => assert(/<img/.test(api.artHtml(r, 360)), r.name)));
+
+
+// ---- 1.9.1: UID query parsing, team styles, diversified suggestions, fun comps ----
+t('parseQuery accepts a UID, spaces and demo, rejects names and short numbers', () => {
+  assert.equal(api.parseQuery(' 4225 399080 ').uid, '4225399080'); assert.equal(api.parseQuery('DEMO').uid, 'demo');
+  assert(/Name search/.test(api.parseQuery('Endmin').err)); assert(api.parseQuery('123').err); assert(api.parseQuery('').err);
+});
+t('team style: mono-element, rainbow, glass cannon, underdogs', () => {
+  assert.equal(A('Laevatain', 'Camille', 'Ember', 'Wulfgard').arch.name, 'Inferno Squad');
+  assert.equal(A('Akekuri', 'Antal', 'Catcher', 'Estella').arch.name, 'Underdog Union');
+  assert(A('Laevatain', 'Wulfgard').arch === null);   // needs 3+
+  const fc = A('Laevatain', 'Wulfgard', 'Da Pan', 'Akekuri'); assert.equal(fc.arch.name, 'Glass Cannon');
+  assert(A('Perlica', 'Camille', 'Fluorite', 'Si').flair >= 80);
+});
+t('flair is 0..100 and never changes the score', () => api.ROSTER.slice(0, 12).forEach((r, i) => { const a = A(r.name, api.ROSTER[i + 5].name, api.ROSTER[i + 9].name); assert(a.flair >= 0 && a.flair <= 100) }));
+t('suggest is mixed: at most 2 of one class or element, and names the style it creates', () => {
+  const s = api.suggest(['Laevatain', 'Camille']); assert.equal(s.length, 6);
+  const c = {}, e = {}; s.forEach(x => { c[x.op.cls] = (c[x.op.cls] || 0) + 1; e[x.op.element] = (e[x.op.element] || 0) + 1 });
+  assert(Math.max(...Object.values(c)) <= 2 && Math.max(...Object.values(e)) <= 2, JSON.stringify([c, e]));
+});
+let sd = 3; const rnd = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646 };
+t('funComps returns distinct, valid, distinctive squads', () => {
+  const out = api.funComps(api.ROSTER, { rnd }); assert.equal(out.length, 3);
+  assert.equal(new Set(out.map(o => o.arch.name)).size, 3);
+  out.forEach(o => { assert.equal(new Set(o.names).size, 4); o.names.forEach(n => assert(api.lookup(n))); assert(o.score >= 50 && o.flair >= 40) });
+});
+t('funComps only uses the pool it is given, and needs 4 operators', () => {
+  const pool = ['Laevatain', 'Camille', 'Ember', 'Gilberta', 'Perlica', 'Rossi'];
+  api.funComps(pool, { rnd }).forEach(o => o.names.forEach(n => assert(pool.includes(n))));
+  assert.deepEqual(api.funComps(['Rossi', 'Si', 'Ember'], { rnd }), []);
+});
 
 // print a sample for eyeballing
 const a = A('Laevatain', 'Camille', 'Gilberta', 'Ember'); console.log('\nsample:', a.score, a.label, a.checks.map(c => c.level + ': ' + c.title).join(' | '));

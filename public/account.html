@@ -2,30 +2,48 @@
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
 <body data-page="account"><main>
 <h2 data-decrypt>Account</h2>
-<div class="acct" id="bar" hidden><div class="chips" id="recent"></div><a class="chip" href="/">Change UID</a></div>
+<form id="q" class="uidbar acsearch"><input id="uid" placeholder="Search a UID" aria-label="Endfield UID" autocomplete="off"><button>Search</button></form>
+<p class="uhint dim">Search a UID to view it in the terminal, then press <b>Add account</b> to keep it here. <a href="#" id="dm">Try demo data</a></p>
+<section id="tmh" class="tmhost" hidden aria-live="polite"></section>
+<div class="acct" id="bar" hidden></div>
 <p id="st" class="dim" role="status"></p>
 <section id="out"></section>
 </main>
-<script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script>
+<script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script><script src="/js/terminal.js"></script>
 <script>
 const st = (m, empty) => { const e = $('#st'); e.className = empty ? 'dim empty' : 'dim'; e.innerHTML = m };
-const recent = () => { $('#recent').innerHTML = load('et.recent', []).map(u => `<button class="chip" data-u="${esc(u)}">${esc(u)}</button>`).join('') + '<button class="chip" data-u="demo">Demo data</button>' };
-// same shape as the real Enka Endfield response, so the demo exercises the real code path
-const DEMO = { uid: 'demo', region: 'Demo', ttl: 0, playerInfo: { businessCard: { name: 'Demo Endministrator', shortId: 'DEMO', signature: 'Sample data, not a real account', adventureLevel: 42, worldLevel: 6, createTime: 1769040000,
-  statistic: { charNum: 12, weaponNum: 21, docNum: 34 },
-  charList: [['chr_0016_laevat', 60, 1], ['chr_0013_aglina', 60, 0], ['chr_0004_pelica', 50, 2], ['chr_0006_wolfgd', 55, 0], ['chr_0009_azrila', 50, 1], ['chr_0033_camille', 40, 0], ['chr_0099_notmapped', 20, 0]].map(([templateId, level, potentialLevel]) => ({ templateId, level, potentialLevel })) } } };
+const host = $('#tmh'), form = $('#q'), inp = $('#uid');
+const accts = () => load('et.accts', []), activeUid = () => load('et.acct', null), isAdded = uid => accts().some(a => a.uid === uid);
 
-async function getData(uid) {
-  if (uid === 'demo') return { data: DEMO, note: '' };
-  const ck = 'et.cache.' + uid, c = load(ck, null);
-  if (c && Date.now() < c.t + c.ttl * 1000) return { data: c.data, note: `Showing saved data. Enka refreshes this UID in about ${Math.ceil((c.t + c.ttl * 1000 - Date.now()) / 1000)}s.` };
-  let r, j;
-  try { r = await fetch('/api/uid?uid=' + encodeURIComponent(uid)) } catch { throw Error('Could not reach the site\'s /api/uid function. Check your connection.') }
-  try { j = await r.json() } catch { throw Error('/api/uid did not return JSON. If you are running locally, start the site with "npx vercel dev" (a plain static server has no API).') }
-  if (!r.ok) throw Error(j.error || 'Request failed (HTTP ' + r.status + ')');
-  save(ck, { t: Date.now(), ttl: Math.min(Math.max(Number(j.ttl) || 60, 30), 600), data: j });
-  return { data: j, note: '' };
+// ---- account bar: who is active, switch dropdown (only with 2+ accounts), remove ----
+function drawBar() {
+  const l = accts(), cur = l.find(a => a.uid === activeUid()) || l[0], bar = $('#bar');
+  bar.hidden = !l.length; if (!l.length) return;
+  bar.innerHTML = `<div class="who"><small>ACTIVE ACCOUNT</small><b>${esc(cur.name || 'Unnamed player')}</b><span>UID ${esc(cur.uid)}</span></div>
+    <div class="acts">${l.length > 1 ? `<div class="sw"><button type="button" class="ghost" id="swb" aria-haspopup="true" aria-expanded="false">Switch account ▾</button><div class="swm" id="swm" role="menu" hidden>${l.map(a => `<button type="button" role="menuitem" class="swi${a.uid === cur.uid ? ' on' : ''}" data-sw="${esc(a.uid)}"><b>${esc(a.name || 'Unnamed player')}</b><small>UID ${esc(a.uid)}${a.level != null ? ' · AL ' + esc(a.level) : ''}</small>${a.uid === cur.uid ? '<i>ACTIVE</i>' : ''}</button>`).join('')}</div></div>` : ''}<button type="button" class="ghost" id="rm">Remove account</button></div>`;
 }
+$('#bar').onclick = e => {
+  const swb = e.target.closest('#swb'), it = e.target.closest('[data-sw]'), rm = e.target.closest('#rm');
+  if (swb) { const m = $('#swm'); m.hidden = !m.hidden; swb.setAttribute('aria-expanded', !m.hidden); return }
+  if (it) return activate(it.dataset.sw);
+  if (rm) {
+    const cur = activeUid(), a = accts().find(x => x.uid === cur); if (!a || !confirm(`Remove ${a.name || a.uid} from your accounts?`)) return;
+    const l = accts().filter(x => x.uid !== cur); save('et.accts', l);
+    if (l.length) activate(l[0].uid); else { save('et.acct', null); save('et.ops', []); drawBar(); $('#out').innerHTML = ''; empty(); host._cur = null }
+  }
+};
+document.addEventListener('click', e => { const m = $('#swm'); if (m && !m.hidden && !e.target.closest('.sw')) { m.hidden = true; $('#swb')?.setAttribute('aria-expanded', 'false') } });
+addEventListener('keydown', e => { if (e.key === 'Escape') { const m = $('#swm'); if (m && !m.hidden) { m.hidden = true; $('#swb').focus() } else if (!host.hidden) host.querySelector('[data-tm=close]')?.click() } });
+
+const empty = () => st('No account added yet. Search a UID above and press Add account. Once you have one, the Team Builder locks the operators you do not own.', true);
+function activate(uid) { save('et.acct', uid); drawBar(); return go(uid) }
+async function onAdd(uid, n) {   // the terminal's ADD ACCOUNT button
+  const p = n.profile, l = accts().filter(a => a.uid !== uid);
+  l.push({ uid, name: p.name || 'Unnamed player', level: p.level, t: Date.now() });
+  save('et.accts', l); await activate(uid);
+}
+form.onsubmit = e => { e.preventDefault(); if (!inp.value.trim()) { form.classList.remove('bad'); void form.offsetWidth; form.classList.add('bad'); inp.focus(); return } tmRun(host, inp.value, { onAdd, isAdded }) };
+$('#dm').onclick = e => { e.preventDefault(); inp.value = 'demo'; form.requestSubmit() };
 
 const opCard = (o, i) => o.known
   ? `<button class="op" data-i="${i}" data-rar="${o.rarity}" style="--c:${COL[o.element]}">${artHtml(o, 360)}<span class="shade"></span><span class="el">${esc(o.element)}</span><span class="badge">Lv ${esc(o.level ?? '?')}</span><span class="meta"><b>${esc(o.name)}</b><small><span class="st">${stars(o.rarity)}</span><br>${esc(o.cls)}${o.potential != null ? ' · P' + esc(o.potential) : ''}</small></span></button>`
@@ -34,15 +52,14 @@ const opCard = (o, i) => o.known
 const manCard = o => `<button class="op" data-n="${esc(o.name)}" data-rar="${o.rarity}" style="--c:${COL[o.element]}">${artHtml(o, 360)}<span class="shade"></span><span class="el">${esc(o.element)}</span><span class="badge man">Added</span><span class="meta"><b>${esc(o.name)}</b><small><span class="st">${stars(o.rarity)}</span><br>${esc(o.cls)}</small></span></button>`;
 
 async function go(uid) {
-  $('#bar').hidden = false; recent(); try { sessionStorage.setItem('et.uid', uid) } catch {}
   st('Scanning…'); $('#out').innerHTML = '<div class="sk"><i style="width:40%;height:22px"></i><i style="width:60%"></i><i style="width:80%"></i></div><div class="sk"><div class="grid">' + '<i></i>'.repeat(6) + '</div></div>'; let got;
   try { got = await getData(uid) } catch (e) { return st(`<span class="err">${esc(e.message)}</span>`) }
   const j = got.data, n = normalize(j, uid), p = n.profile, known = n.ops.filter(o => o.known), unk = n.ops.filter(o => !o.known);
   const have = new Set(known.map(o => key(o.name))); // owned by hand (Operators tab) and not already fetched from Enka
   const manual = [...new Set(load('et.owned', []).map(x => lookup(x)?.name).filter(Boolean))].filter(x => !have.has(key(x))).map(lookup).sort((a, b) => b.rarity - a.rarity || a.name.localeCompare(b.name));
   save('et.ops', n.ops);
-  if (uid !== 'demo') save('et.recent', [uid, ...load('et.recent', []).filter(u => u !== uid)].slice(0, 5));
-  recent();
+  const l = accts(), me = l.find(a => a.uid === uid);   // keep the stored name / level fresh
+  if (me && (me.name !== p.name || me.level !== p.level)) { me.name = p.name || me.name; me.level = p.level; save('et.accts', l); drawBar() }
   st(n.ops.length ? `<span class="ok">Found ${n.ops.length} showcase operator${n.ops.length === 1 ? '' : 's'}.</span> ${esc(got.note)}`
     : `<span class="err">No operators in the showcase.</span> Make sure the character showcase is public in-game, then fetch again. ${esc(got.note)}`);
   const stat = (l, v) => v == null || v === '' ? '' : `<div>${l}<b>${esc(v)}</b></div>`;
@@ -55,7 +72,6 @@ async function go(uid) {
     ${unk.length ? `<div class="note"><b>${unk.length} operator${unk.length === 1 ? ' is' : 's are'} not mapped yet</b>: ${unk.map(o => `<code>${esc(o.id)}</code>`).join(', ')}. Add ${unk.length === 1 ? 'it' : 'each'} to <code>ID_MAP</code> in <code>public/js/data.js</code> (id: 'Operator Name').</div>` : ''}
     ${known.length ? '<p class="row"><a href="/team"><button type="button">Open team builder</button></a><span class="dim">Click an operator to add it to your team.</span></p>' : ''}`;
 }
-$('#recent').onclick = e => { const u = e.target.dataset.u; if (u) { history.replaceState(null, '', '?uid=' + u); go(u) } };
 $('#out').onclick = e => {
   const b = e.target.closest('.op[data-i],.op[data-n]'); if (!b) return;
   const o = b.dataset.n ? lookup(b.dataset.n) : load('et.ops', [])[b.dataset.i], t = load('et.team', []);
@@ -64,8 +80,12 @@ $('#out').onclick = e => {
   else if (t.length >= 4) st('Team is full. Remove someone in the team builder first.');
   else { save('et.team', [...t, o.name]); b.classList.add('in'); st(`${esc(o.name)} added to your team (${t.length + 1}/4).`) }
 };
-let q = new URLSearchParams(location.search).get('uid') || '';
-if (q !== 'demo') q = q.replace(/\D/g, '');
-if (!q) { try { q = sessionStorage.getItem('et.uid') || '' } catch {} } // UID entered on the home page this session
-if (q) go(q); else st('To see account information, insert UID from the Home tab.', true);
+// start: open the active account, or show the empty state
+{
+  const l = accts(); let act = activeUid();
+  if (l.length && !l.some(a => a.uid === act)) { act = l[0].uid; save('et.acct', act) }
+  drawBar(); if (act) go(act); else empty();
+  const q = new URLSearchParams(location.search).get('uid');   // old links: /account?uid=... just run the search
+  if (q) { inp.value = q; form.requestSubmit() }
+}
 </script></body></html>

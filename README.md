@@ -1,8 +1,17 @@
-# Talos-II Archives beta 1.9 (formerly End:Tech)
+# Talos-II Archives beta 1.9.1 (formerly End:Tech)
 Static site in `public/` + one Vercel function `api/uid.js` (Enka proxy). No build step.
 
 Deploy: push to GitHub, import on Vercel (framework: Other). Local: `npx vercel dev` (a plain static server has no `/api`).
 Tests (no network needed): `npm test`.
+
+## What changed in 1.9.1
+- **Landing circle**: the violet backdrop art and glow are gone; the Dijiang is the only subject, about 1.5x bigger. `--dj-x` / `--dj-y` now pin its **centre**, so `--dj-w` (size) can be changed without it drifting.
+- **UID search (Home)**: no longer routes to /account. The result opens in an Endfield-style terminal on the right of the page (boot lines, "awaiting response", then name, stats and showcase operators; Esc or CLOSE dismisses it). View only. Code: `public/js/terminal.js`.
+- **UID search (Account)**: same terminal, plus **ADD ACCOUNT**. Added accounts are stored (`et.accts`, active one in `et.acct`). With 2+ accounts a **Switch account** dropdown appears; **Remove account** removes the active one. The old recent-UID chips and "Change UID" link are gone.
+- **Name search**: Enka only looks accounts up by numeric UID, so typing a name shows a clear message instead of a lookup. "Try demo data" still works.
+- **Team Builder, account vs no account**: with at least one account added it works as before (locks, unlock animation, reveal). With **no account** there are no locks, silhouettes or decryption: every operator is a plain card, and the Add operators button and Owned only filter are hidden.
+- **Locked operator in a team slot**: a locked operator you click onto the team now stays a dark silhouette with a lock in its slot (marked "locked") instead of showing its splash art.
+- **Synergy checker**: new **team styles** (Inferno Squad, Rainbow Reactor, Four Corners, Glass Cannon, Underdog Union, Ultimate Spam and more) with a **flair** rating for how unusual the squad is (it does not change the synergy score). **Best fits** are now mixed across classes and elements and say which style a pick creates. New **Fun comps** panel rolls three random squads that score well and have different, distinctive styles; "My operators only" limits it to your account. Rules live in `archetype()` and `funComps()` in `public/js/synergy.js`.
 
 ## What changed in 1.9
 - **Landing circle**: restyled to match the beta 1.5 look. The dark purple halftone backdrop (with its grid) fills the left half, no warm glow. Stars are **still** (no twinkle, no cross-flares, no shooting stars; a fixed seed, drawn once). The Dijiang sits in the **bottom right** of the circle, tilted so it looks like it is passing through, with the rim hiding only a sliver of its tail. Tune it with `--dj-x`, `--dj-y`, `--dj-w`, `--dj-r` (tilt) and `--dj-b` (brightness) on `.orb` in `style.css`.

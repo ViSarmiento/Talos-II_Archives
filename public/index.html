@@ -1,16 +1,22 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Talos-II Archives – Endfield account checker and team builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
 <body data-page="home"><main class="hero">
-<div class="site-tag">Endfield field terminal, beta 1.9</div>
+<div class="site-tag">Endfield field terminal, beta 1.9.1</div>
 <h1 data-decrypt data-accent="-" aria-label="Talos-II Archives">TALOS-II
 ARCHIVES</h1>
 <p>Look up any Endfield account by UID, see which operators are on its showcase, and plan a four-operator squad.</p>
-<form id="q" class="uidbar"><input id="uid" inputmode="numeric" placeholder="Enter your Endfield UID" aria-label="Endfield UID" autocomplete="off" autofocus><button>Check account</button></form>
-</main><script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script>
+<form id="q" class="uidbar"><input id="uid" placeholder="Enter your Endfield UID" aria-label="Endfield UID" autocomplete="off" autofocus><button>Search</button></form>
+<p class="uhint">Searches by UID. <a href="#" id="dm">Try demo data</a></p>
+</main>
+<section id="tmh" class="tmhost home" hidden aria-live="polite"></section>
+<script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script><script src="/js/terminal.js"></script>
 <script>
-const u=$('#uid'),bar=$('#q');u.value=load('et.recent',[])[0]||'';
-bar.onsubmit=e=>{e.preventDefault();const v=u.value.replace(/\D/g,'');
-  if(!v){bar.classList.remove('bad');void bar.offsetWidth;bar.classList.add('bad');u.focus();return}
-  try{sessionStorage.setItem('et.uid',v)}catch{}
-  location.href='/account?uid='+v};
+// Landing search: the result opens in the terminal on this page (view only). It no longer routes to /account.
+const u=$('#uid'),bar=$('#q'),host=$('#tmh');
+bar.onsubmit=e=>{e.preventDefault();
+  if(!u.value.trim()){bar.classList.remove('bad');void bar.offsetWidth;bar.classList.add('bad');u.focus();return}
+  document.body.classList.add('tm-open');tmRun(host,u.value)};
+$('#dm').onclick=e=>{e.preventDefault();u.value='demo';bar.requestSubmit()};
+host.addEventListener('tmclose',()=>document.body.classList.remove('tm-open'));
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!host.hidden)host.querySelector('[data-tm=close]')?.click()});
 </script></body></html>

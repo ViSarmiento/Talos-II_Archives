@@ -1,12 +1,10 @@
 // ---- page chrome: nav, footer, shared background (helpers live in core.js) ----
 const HOME=document.body.dataset.page==='home';
-const SU=(()=>{try{return sessionStorage.getItem('et.uid')||''}catch{return ''}})(); // UID entered on the home page this session
 const PAGE=document.body.dataset.page;
-const NAV=[['/','Home','home','/img/icons/home.png'],['/account'+(SU?'?uid='+SU:''),'Account','account','/img/icons/account.svg'],{sec:'Database'},['/operators','Operators','operators','/img/icons/operators.svg'],{sec:'Tools'},['/team','Team Builder','team','/img/icons/team.svg']];
+const NAV=[['/','Home','home','/img/icons/home.png'],['/account','Account','account','/img/icons/account.svg'],{sec:'Database'},['/operators','Operators','operators','/img/icons/operators.svg'],{sec:'Tools'},['/team','Team Builder','team','/img/icons/team.svg']];
 const pinned=load('et.rail',false);
 document.body.insertAdjacentHTML('afterbegin',`<aside class="rail${pinned?' pin':''}" id="rail" aria-label="Site"><a class="rl-logo" href="/" aria-label="Talos-II Archives"><span class="mk">T<i>II</i></span><span class="tx">TALOS<i>-</i>II<br>ARCHIVES</span></a><nav><i class="ind" aria-hidden="true"></i>${NAV.map(n=>n.sec?`<div class="sec" aria-hidden="true"><span class="tx">${n.sec}</span></div>`:(([h,t,p,ic])=>`<a href="${h}" class="${PAGE===p?'on':''}"${PAGE===p?' aria-current="page"':''} title="${t}"><span class="ic" style="--m:url(${ic})" aria-hidden="true"></span><span class="tx">${t}</span></a>`)(n)).join('')}</nav><button class="rl-pin" type="button" id="rlp" aria-label="Keep sidebar open" aria-pressed="${pinned}"><span aria-hidden="true">${pinned?'‹':'›'}</span><span class="tx">Collapse</span></button></aside>`);
 (()=>{const r=document.getElementById('rail');try{if(sessionStorage.getItem('et.railin'))r.style.animation='none';else sessionStorage.setItem('et.railin','1')}catch{}})(); // slide-in intro only on the first page of a visit, not on every tab change
-if(SU)document.querySelectorAll('a.card[href="/account"]').forEach(a=>a.href='/account?uid='+SU);
 (()=>{ // the highlight glides to whichever tab you point at, and back to the current page
   const rail=$('#rail'),nav=$('nav',rail),ind=$('.ind',nav),cur=$('a.on',nav);
   const place=a=>{if(!a){ind.style.opacity=0;return}ind.style.opacity=1;ind.style.height=a.offsetHeight+'px';ind.style.transform=`translateY(${a.offsetTop}px)`};
@@ -18,10 +16,10 @@ if(SU)document.querySelectorAll('a.card[href="/account"]').forEach(a=>a.href='/a
 // fixed footer: sits at the bottom of the window and never scrolls
 document.body.insertAdjacentHTML('beforeend','<footer>Talos-II Archives is an unofficial fan project, not affiliated with Hypergryph or Gryphline. Player data via Enka.Network. Operator art and data: Hypergryph/Gryphline, shown via the Endfield Talos Wiki (CC BY-SA).</footer>');
 
-// ---- background: gray field, black-space circle with still stars, the purple operator backdrop, the Dijiang passing through ----
+// ---- background: gray field, black-space circle with still stars, the Dijiang passing through ----
 (()=>{
   const lines='<svg class="lines" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#000" stroke-width="1.2"><circle cx="360" cy="640" r="330"/><circle cx="360" cy="640" r="250" stroke-dasharray="3 9"/><circle cx="360" cy="640" r="120"/><path d="M-20 780 L760 150 M40 900 L900 220 M-20 520 L420 120"/><path d="M0 700H800M360 280V900" stroke-dasharray="2 10"/><path d="M110 560l-14 0m14 0l14 0M96 560l14 -10M610 740l18 0M619 731v18"/></svg>';
-  document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><canvas id="space"></canvas><div class="glow"></div><div class="oart"><i></i></div><div class="dwrap"><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"></div><i class="rim"></i></div><i class="vig"></i></div>`);
+  document.body.insertAdjacentHTML('afterbegin',`<div class="scene" aria-hidden="true">${lines}<div class="orb"><canvas id="space"></canvas><div class="dwrap"><img class="dij" alt="" src="${esc(DIJIANG_IMG)}" onerror="this.remove()"></div><i class="rim"></i></div><i class="vig"></i></div>`);
   const orb=$('.orb'),c=$('#space'),x=c.getContext('2d');let w=0,h=0;
   // Still stars: no twinkle, no shooting stars. A fixed seed keeps the same sky on every load and every resize.
   let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
