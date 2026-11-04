@@ -1,1 +1,5 @@
-{ "cleanUrls": true, "outputDirectory": "public" }
+{
+  "cleanUrls": true,
+  "outputDirectory": "public",
+  "rewrites": [{ "source": "/operators/:slug", "destination": "/operator.html" }]
+}

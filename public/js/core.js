@@ -6,6 +6,8 @@ const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catc
 const COL = { Cryo: 'var(--cryo)', Heat: 'var(--heat)', Nature: 'var(--nat)', Electric: 'var(--ele)', Physical: 'var(--phy)' };
 const CLASSES = ['Guard', 'Caster', 'Striker', 'Supporter', 'Vanguard', 'Defender'];
 const key = s => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const opSlug = n => String(n ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');   // "Argent Flow" -> "argent-flow" (the /operators/<slug> page)
+const opBySlug = s => ROSTER.find(r => opSlug(r.name) === opSlug(s)) || null;
 
 // exact name match only (substring matching misfires on short names like "Si" inside "Rossi")
 const lookup = n => ROSTER.find(r => key(r.name) === key(n)) || null;
@@ -166,13 +168,15 @@ function artErr(img) { // CORS attempt failed -> same file without CORS (cannot 
   const box = img.parentElement; img.remove(); if (box) { box.dataset.lost = (+box.dataset.lost || 0) + 1; if (!box.querySelector('.pic')) box.classList.add('lost'); box.dispatchEvent(new CustomEvent('artlost', { bubbles: true })) }
   if (box && box.classList.contains('duo')) box.querySelectorAll('.pic').forEach(p => { p.dataset.cx = '.5'; p.dataset.wmax = '1.08'; artFit(p) });
 }
-const stars = n => '★'.repeat(n || 0);
+// rarity star: wiki Star.svg when it can be loaded (same probe as the class/element icons), else a stand-in glyph
+const STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/></svg>';
+const stars = n => `<span class="ico rs" data-k="rar-star" role="img" aria-label="${n || 0} star">${STAR_SVG}</span>`.repeat(n || 0);
 const fmtDate = t => { const n = Number(t); if (!n) return ''; const d = new Date(n < 1e12 ? n * 1000 : n); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) };
 
 // ---- class and element icons ----
 // Stand-in glyphs (24x24, currentColor) are always in the markup. Real icons replace them when a file exists:
-//   1. your own files: /img/icons/element/<name>.svg|png and /img/icons/class/<name>.svg|png (lowercase: heat.svg, guard.png ...)
-//   2. best-guess wiki files (<Name>_icon.png)
+//   1. your own files: /img/icons/element/<name>.svg|png, /img/icons/class/<name>.svg|png and /img/icons/rarity/star.svg|png (lowercase)
+//   2. the official icons on endfield.wiki.gg (Guard.png, Heat.png, Star.svg ...)
 // Which one answers is probed once per browser and cached (et.icoMap). Nothing breaks if none exist: the glyphs stay.
 const ICO_EL = {
   Heat: '<path d="M12 2c.5 3.5 4.5 5.2 4.5 10a4.5 4.5 0 0 1-9 0c0-1.8.8-3 1.8-4 .1 1.5.7 2.4 1.7 2.8C10.7 8 11 5 12 2z"/>',
@@ -192,10 +196,13 @@ const ICO_CLS = {
 const ico = (set, name, kind) => `<span class="ico" data-k="${kind}-${esc(name)}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor">${set[name] || '<circle cx="12" cy="12" r="5"/>'}</svg></span>`;
 const icoEl = n => ico(ICO_EL, n, 'el'), icoCls = n => ico(ICO_CLS, n, 'cls');
 
-const ICO_ALT = { Supporter: ['Support'] };
+const ICO_ALT = { Supporter: ['Support', 'Supporter'] };   // the wiki file for Supporter is Support.png
+// Official wiki files (endfield.wiki.gg/images/<File>): classes Guard.png, Caster.png, Striker.png, Support.png, Vanguard.png, Defender.png;
+// elements Heat.png (confirmed) and, by the same naming, Cryo / Nature / Electric / Physical.png; rarity Star.svg.
 const icoCandidates = (kind, name) => {
-  const k = key(name), dir = kind === 'el' ? 'element' : 'class', names = [name, ...(ICO_ALT[name] || [])];
-  return [`/img/icons/${dir}/${k}.svg`, `/img/icons/${dir}/${k}.png`, ...names.flatMap(n => [`${WIKI_IMG}/${n}_icon.png`, `${WIKI_IMG}/${n}_Icon.png`, `${WIKI_IMG}/${n}_${kind === 'el' ? 'element' : 'class'}_icon.png`])];
+  const k = key(name), dir = kind === 'el' ? 'element' : kind === 'cls' ? 'class' : 'rarity', names = kind === 'rar' ? ['Star'] : (ICO_ALT[name] || [name]);
+  const wiki = kind === 'rar' ? [`${WIKI_IMG}/Star.svg`] : names.flatMap(n => [`${WIKI_IMG}/${n}.png`, `${WIKI_IMG}/${n}.svg`, `${WIKI_IMG}/${n}_icon.png`, `${WIKI_IMG}/${n}_Icon.png`]);
+  return [`/img/icons/${dir}/${k}.svg`, `/img/icons/${dir}/${k}.png`, ...wiki];
 };
 const probeImg = (url, cors) => new Promise(res => { const i = new Image(); if (cors) i.crossOrigin = 'anonymous'; i.referrerPolicy = 'no-referrer'; i.onload = () => res(i.naturalWidth > 0); i.onerror = () => res(false); i.src = url });
 async function probeIcon(kind, name) {   // -> { u, m: 'mask' | 'img' } | null.  mask = tinted with the box colour (needs CORS or same-origin); img = untinted
@@ -210,14 +217,14 @@ function icoApply(map) {
   st.textContent = Object.entries(map).filter(([, v]) => v).map(([k, v]) => `.ico[data-k="${k}"]{${v.m === 'mask' ? `background:currentColor;-webkit-mask:url("${v.u}") center/contain no-repeat;mask:url("${v.u}") center/contain no-repeat` : `background:url("${v.u}") center/contain no-repeat`}}.ico[data-k="${k}"] svg{display:none}`).join('');
 }
 async function icoInit() {
-  const cached = load('et.icoMap.v2', null);
+  const cached = load('et.icoMap.v3', null);
   if (cached && Date.now() - cached.t < 864e5) return icoApply(cached.m);
-  const jobs = [...Object.keys(ICO_EL).map(n => ['el', n]), ...Object.keys(ICO_CLS).map(n => ['cls', n])];
+  const jobs = [...Object.keys(ICO_EL).map(n => ['el', n]), ...Object.keys(ICO_CLS).map(n => ['cls', n]), ['rar', 'star']];
   const map = {}; await Promise.all(jobs.map(async ([kind, n]) => { map[kind + '-' + n] = await probeIcon(kind, n) }));
-  save('et.icoMap.v2', { t: Date.now(), m: map }); icoApply(map);
+  save('et.icoMap.v3', { t: Date.now(), m: map }); icoApply(map);
 }
 if (typeof document !== 'undefined' && typeof Image !== 'undefined') {
-  const had = (() => { const c = load('et.icoMap.v2', null); return c && Date.now() - c.t < 864e5 })();
+  const had = (() => { const c = load('et.icoMap.v3', null); return c && Date.now() - c.t < 864e5 })();
   const p = icoInit();   // cached map is applied synchronously; a first run swaps glyphs for real icons, so the loader waits for it (briefly) instead of letting them pop in
   if (!had && window.FL) window.FL.wait(Promise.race([p, new Promise(r => setTimeout(r, 2200))]));
 }

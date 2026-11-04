@@ -21,9 +21,9 @@ async function getData(uid) {
 // what the person typed -> { uid } or { err }. Enka only looks accounts up by numeric UID (there is no name search).
 function parseQuery(raw) {
   const v = String(raw ?? '').trim();
-  if (!v) return { err: 'Enter a UID.' };
+  if (!v) return { err: 'You need to enter a UID.' };
   if (v.toLowerCase() === 'demo') return { uid: 'demo' };
-  if (/[^\d\s-]/.test(v)) return { err: 'Name search is not available. Enka looks accounts up by numeric UID only, so enter the UID.' };
+  if (/[^\d\s-]/.test(v)) return { err: 'You need to enter a UID.' };
   const d = v.replace(/\D/g, '');
   if (d.length < 6 || d.length > 14) return { err: 'That is not a valid UID. UIDs are 6 to 14 digits.' };
   return { uid: d };
@@ -67,7 +67,7 @@ async function tmRun(host, raw, opts = {}) {
     });
   }
   host._cur = null;
-  if (q.err) { host.innerHTML = tmFrame(tmLog([['PARSE QUERY', 'ERR']]) + `<p class="tm-err">${esc(q.err)}</p>`); return }
+  if (q.err) { host.innerHTML = tmFrame(`<p class="tm-deny" role="alert"><i class="tm-dg" aria-hidden="true">!</i><span>${esc(q.err)}</span></p>`); return }
   host.innerHTML = tmFrame(`<div class="tm-log">${tmLog([['OPEN LINK TO ENKA.NETWORK', 'OK'], [`QUERY UID <code>${esc(q.uid)}</code>`, '']])}<p class="tl wait" style="--i:2"><span class="pr">&gt;</span> AWAITING RESPONSE<span class="dots"></span></p></div><div class="tm-bar"><i></i></div>`);
   let got, n;
   const t0 = performance.now();

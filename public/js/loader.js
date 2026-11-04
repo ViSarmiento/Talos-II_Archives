@@ -12,7 +12,7 @@
     nextMs: 1100,                 // minimum time on later pages
     maxMs: 10000,                // never block longer than this
     breathSec: 6.2,              // one breath in+out
-    spin: 0.3,                  // rad/s
+    spin: 1.0,                  // rad/s: rotation speed of the pyramid only (was 0.3); timings below are unchanged
     particles: 620,
     speed: 0.74                  // global animation speed (1 = original)
   };
@@ -22,7 +22,7 @@
   try { first = !sessionStorage.getItem('et.fl') } catch (e) {}
   if (/[?&]loader=1/.test(location.search)) first = true;
   var NAMES = { '/': 'Home', '/index': 'Home', '/account': 'Account', '/operators': 'Operators', '/team': 'Team Builder' };
-  function pageName(path) { path = String(path || '/').replace(/\.html$/, '').replace(/(.)\/$/, '$1'); return NAMES[path] || 'Archives' }
+  function pageName(path) { path = String(path || '/').replace(/\.html$/, '').replace(/(.)\/$/, '$1'); return NAMES[path] || (/^\/operators\/[^/]+$/.test(path) ? 'Operators' : 'Archives') }
   var PN = pageName(location.pathname);
   var MIN = reduce ? 500 : (first ? CFG.firstMs : CFG.nextMs);
 

@@ -2,7 +2,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
 <body data-page="operators"><main>
 <h2 data-decrypt>Operators</h2>
-<p class="dim" style="margin:0 0 6px">Every operator in the game, with their full splash art. Use the Team Builder to plan a squad.</p>
+<p class="dim" style="margin:0 0 6px">Every operator in the game, with their full splash art. Click one for their skills and details, or use the Team Builder to plan a squad.</p>
 <div class="tools"><div class="uidbar" style="flex:1;min-width:200px"><input id="s" placeholder="Search operators" aria-label="Search operators"></div></div>
 <div class="fbar" id="fl"></div>
 <p class="dim" id="cnt"></p>
@@ -15,7 +15,7 @@ let made = 0;
 const cards = new Map();   // one node per operator, so searching and filtering never reload the art
 function card(o) {
   let el = cards.get(o.name);
-  if (!el) { const t = document.createElement('template'); t.innerHTML = opBox(o, { db: true }).trim(); el = t.content.firstChild; cards.set(o.name, el); if (made++ < 12) artEager(el) }   // the first rows load first, the rest lazily
+  if (!el) { const t = document.createElement('template'); t.innerHTML = opBox(o, { db: true, tag: 'a', attrs: `href="/operators/${opSlug(o.name)}"` }).trim(); el = t.content.firstChild; cards.set(o.name, el); if (made++ < 12) artEager(el) }   // the first rows load first, the rest lazily
   return el;
 }
 function draw() {
@@ -26,7 +26,7 @@ function draw() {
   const chip = (attr, val, label, on, c, ic = '') => `<button class="chip ${on ? 'on' : ''}" data-${attr}="${val}" ${c ? `style="--c:${c}"` : ''}>${ic}${label}</button>`;
   $('#fl').innerHTML = `<div class="chips">${Object.keys(COL).map(e => chip('fe', e, e, f.el === e, COL[e], icoEl(e))).join('')}</div><span class="sep"></span>
     <div class="chips">${CLASSES.map(c => chip('fc', c, c, f.cls === c, '', icoCls(c))).join('')}</div><span class="sep"></span>
-    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + '★', f.rar === r)).join('')}</div>`;
+    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + stars(1), f.rar === r)).join('')}</div>`;
   $('#cnt').textContent = `${list.length} of ${ROSTER.length} operators shown.`;
 }
 document.onclick = e => {

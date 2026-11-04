@@ -1,0 +1,100 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script src="/js/loader.js"></script><title>Operator – Talos-II Archives</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
+<body data-page="operators"><main class="od">
+<a class="od-back" href="/operators">‹ All operators</a>
+<h2 data-decrypt id="nm">Operator</h2>
+<div id="od"></div>
+</main>
+<script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/synergy.js"></script><script src="/js/opdata.js"></script><script src="/js/app.js"></script>
+<script>
+// which operator: /operators/<slug> (rewritten to this page) or ?op=<name>
+const slugIn = decodeURIComponent((location.pathname.match(/^\/operators\/([^/]+)\/?$/) || [])[1] || new URLSearchParams(location.search).get('op') || '');
+const o = opBySlug(slugIn), root = $('#od');
+const PROV = { vuln: 'Vulnerable', status: 'Physical status', amp: 'Amp and debuffs', heal: 'Healing', shield: 'Shield', protect: 'Protection', sp: 'SP supply', ultgain: 'Ultimate gain' };
+const chipsOf = (arr, lab) => arr.length ? arr.map(x => `<span class="od-chip">${esc(lab[x] || x)}</span>`).join('') : '<span class="dim">Nothing specific</span>';
+const sorted = ROSTER.slice().sort((x, y) => y.rarity - x.rarity || x.name.localeCompare(y.name));
+
+function skillCard(o, slot, d) {
+  const ic = skillIconUrl(o, slot);
+  return `<article class="od-sk" data-t="${esc(slot.type)}"><span class="ic"><img alt="" loading="lazy" referrerpolicy="no-referrer" src="${esc(ic)}" onerror="this.remove()"></span>
+    <div><small>${esc(slot.type)}</small><b>${esc(d ? d[1] : '…')}</b><p>${d ? esc(d[2]) : '<span class="dim">Loading from the wiki…</span>'}</p></div></article>`;
+}
+function skillsHtml(o, list) {
+  return SKILL_SLOTS.map(s => skillCard(o, s, list.find(x => x[0] === s.type))).join('');
+}
+
+if (!o) {
+  document.title = 'Operator not found – Talos-II Archives';
+  $('#nm').textContent = 'Operator not found';
+  root.innerHTML = `<p class="dim">There is no operator called “${esc(slugIn)}”. Pick one from the <a href="/operators">Operators</a> list.</p>`;
+  FL.wait(Promise.resolve());
+} else {
+  document.title = `${o.name} – Operators – Talos-II Archives`;
+  $('#nm').textContent = o.name;
+  const x = OP_DETAIL[o.name] || {}, k = kitOf(o), ids = Object.entries(ID_MAP).filter(([, n]) => n === o.name).map(([i]) => i);
+  const fact = (l, v) => v ? `<div><dt>${l}</dt><dd>${v}</dd></div>` : '';
+  const idx = sorted.findIndex(r => r.name === o.name), prev = sorted[(idx + sorted.length - 1) % sorted.length], next = sorted[(idx + 1) % sorted.length];
+  const picks = suggest([o.name], new Set(), 4);
+  const note = x.strategy || k.note || '';
+  const seeded = (x.skills || []).length >= 4;
+
+  root.innerHTML = `<section class="od-hero" style="--c:${COL[o.element]}" data-rar="${o.rarity}">
+      <div class="od-art">${artHtml(o, 720, { whole: true })}<span class="od-bar"></span></div>
+      <div class="od-id">
+        <div class="od-stars">${stars(o.rarity)}</div>
+        <div class="od-tags"><span class="el">${icoEl(o.element)}${esc(o.element)}</span><span class="cl">${icoCls(o.cls)}${esc(o.cls)}</span><span class="wp">${esc(o.weapon)}</span></div>
+        ${x.quote ? `<p class="od-quote">“${esc(x.quote)}”</p>` : ''}
+        <dl class="od-facts">
+          ${fact('Rarity', `${o.rarity}-star`)}${fact('Class', esc(o.cls))}${fact('Element', esc(o.element))}${fact('Weapon', esc(o.weapon))}
+          ${fact('Faction', esc(x.faction))}${fact('Race', esc(x.race))}${fact('Attributes', esc(x.attrs))}${fact('Role tags', esc((x.tags || []).join(', ')))}${fact('How to obtain', esc(x.obtain))}
+          ${fact('Internal ID', ids.length ? ids.map(i => `<code>${esc(i)}</code>`).join(' ') : '')}
+        </dl>
+        <div class="od-links"><a class="od-btn" href="${esc(wikiUrl(o))}" target="_blank" rel="noopener">Full page on the wiki ↗</a><a class="od-btn ghost" href="${esc(wikiUrl(o, '/Overview'))}" target="_blank" rel="noopener">Strategy overview ↗</a></div>
+      </div>
+    </section>
+
+    <section class="od-sec"><h3>Overview</h3>
+      <p>${esc(CLASS_INFO[o.cls])}</p>
+      ${note ? `<p>${esc(note)}</p>` : ''}
+      <div class="od-kit">
+        <div><small>Consumes / wants</small>${x.consumes ? chipsOf(x.consumes, {}) : chipsOf([...k.wants], WANT_LABEL)}</div>
+        <div><small>Inflicts / applies</small>${x.inflicts ? chipsOf([...x.inflicts, ...[...k.applies].filter(a => a.startsWith('inf:')).map(a => WANT_LABEL[a] || a)], {}) : chipsOf([...k.applies], { ...WANT_LABEL, 'inf:any': 'Any Arts Infliction' })}</div>
+        <div><small>Provides</small>${chipsOf([...k.provides], PROV)}</div>
+      </div>
+    </section>
+
+    <section class="od-sec"><h3>Skills</h3><div class="od-skills" id="sk">${skillsHtml(o, x.skills || [])}</div><p class="dim od-fine" id="skn"></p>
+      ${(x.talents || []).length ? `<h4>Talent</h4>${x.talents.map(([n, t]) => `<p class="od-line"><b>${esc(n)}</b> ${esc(t)}</p>`).join('')}` : ''}
+    </section>
+
+    ${x.stats ? `<section class="od-sec"><h3>Stats at max Elite</h3><div class="od-stats">${x.stats.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div></section>` : ''}
+
+    ${(x.potentials || []).length ? `<section class="od-sec"><h3>Potentials</h3><ol class="od-pot">${x.potentials.map(([n, t], i) => `<li><span>P${i + 1}</span><div><b>${esc(n)}</b><p>${esc(t)}</p></div></li>`).join('')}</ol></section>` : ''}
+
+    ${(x.weapons || []).length ? `<section class="od-sec"><h3>Recommended weapons</h3><div class="od-kit"><div>${x.weapons.map(w => `<a class="od-chip" target="_blank" rel="noopener" href="${esc(WIKI_PAGE + '/' + encodeURIComponent(w.replace(/ /g, '_')))}">${esc(w)} ↗</a>`).join('')}</div></div></section>` : ''}
+
+    <section class="od-sec"><h3>Team play</h3>
+      ${(x.partners || []).map(([n, t]) => { const p = lookup(n); return `<p class="od-line">${p ? `<a href="/operators/${opSlug(p.name)}"><b>${esc(p.name)}</b></a>` : `<b>${esc(n)}</b>`} ${esc(t)}</p>` }).join('')}
+      ${picks.length ? `<h4>Best fits from the squad checker</h4><div class="od-picks">${picks.map(s => `<a class="od-pick" href="/operators/${opSlug(s.op.name)}" style="--c:${COL[s.op.element]}"><b>${esc(s.op.name)}</b><small>${esc(s.op.element)} · ${esc(s.op.cls)} · ${esc(s.why)}${s.style ? ' · ' + esc(s.style) : ''}</small></a>`).join('')}</div>` : ''}
+      <p class="od-fine"><a href="/team">Open the Team Builder</a> to try ${esc(o.name)} in a squad.</p>
+    </section>
+
+    <section class="od-sec"><h3>${esc(o.element)} and ${esc(o.cls)}</h3>
+      <p>${esc(ELEMENT_INFO[o.element].text)} <span class="dim">Damage numbers are shown in ${ELEMENT_INFO[o.element].dmg}.</span></p>
+    </section>
+
+    <nav class="od-nav"><a href="/operators/${opSlug(prev.name)}">‹ ${esc(prev.name)}</a><a href="/operators">All operators</a><a href="/operators/${opSlug(next.name)}">${esc(next.name)} ›</a></nav>
+    <p class="dim od-fine">Operator data from the Endfield Talos Wiki (CC BY-SA). Always check the wiki for exact skill numbers.</p>`;
+
+  // skills: shipped data shows at once; otherwise load them from the wiki and fall back to a link
+  if (!seeded) {
+    const sk = $('#sk'), skn = $('#skn');
+    const done = wikiSkills(o).then(list => {
+      if (list.length) { sk.innerHTML = skillsHtml(o, list); return }
+      sk.innerHTML = skillsHtml(o, [['Basic Attack', 'Not available here yet', ''], ['Battle Skill', 'Not available here yet', ''], ['Combo Skill', 'Not available here yet', ''], ['Ultimate', 'Not available here yet', '']].map(r => r)).replace(/<p><\/p>/g, '');
+      skn.innerHTML = `The skill text could not be loaded. <a href="${esc(wikiUrl(o, '#Combat_Skills'))}" target="_blank" rel="noopener">Read ${esc(o.name)}'s skills on the wiki ↗</a>`;
+    }).catch(() => { skn.innerHTML = `The skill text could not be loaded. <a href="${esc(wikiUrl(o, '#Combat_Skills'))}" target="_blank" rel="noopener">Read ${esc(o.name)}'s skills on the wiki ↗</a>` });
+    FL.wait(Promise.race([Promise.all([artReady(), done]), new Promise(r => setTimeout(r, 4500))]));
+  } else FL.wait(artReady());
+}
+</script></body></html>

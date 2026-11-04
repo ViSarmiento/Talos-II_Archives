@@ -77,7 +77,7 @@ function drawFilters() {
   const chip = (attr, val, label, on, c, ic = '') => `<button class="chip ${on ? 'on' : ''}" data-${attr}="${val}" ${c ? `style="--c:${c}"` : ''}>${ic}${label}</button>`;
   setHtml('#fl', `<div class="chips">${Object.keys(COL).map(e => chip('fe', e, e, f.el === e, COL[e], icoEl(e))).join('')}</div><span class="sep"></span>
     <div class="chips">${CLASSES.map(c => chip('fc', c, c, f.cls === c, '', icoCls(c))).join('')}</div><span class="sep"></span>
-    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + '★', f.rar === r)).join('')}${hasAcct && own.size ? chip('fo', 1, 'Owned only', f.own) : ''}</div>`);
+    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + stars(1), f.rar === r)).join('')}${hasAcct && own.size ? chip('fo', 1, 'Owned only', f.own) : ''}</div>`);
 }
 function drawCount() {
   $('#own').textContent = hasAcct

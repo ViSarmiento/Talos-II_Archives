@@ -2,7 +2,7 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const dir = path.join(__dirname, '..', 'public', 'js');
 const src = ['data.js', 'core.js', 'synergy.js', 'terminal.js'].map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
-const api = vm.runInNewContext(src + '\n({ROSTER,ID_MAP,TAGS,normalize,resolveTemplate,analyze,suggest,funComps,parseQuery,lookup,artChain,key,fitMath,artHtml,artLayer,ART_DUO})', { localStorage: { getItem() { return null }, setItem() {} } });
+const api = vm.runInNewContext(src + '\n({ROSTER,ID_MAP,TAGS,normalize,resolveTemplate,analyze,suggest,funComps,parseQuery,lookup,artChain,key,fitMath,artHtml,artLayer,ART_DUO,opSlug,opBySlug,icoCandidates,stars})', { localStorage: { getItem() { return null }, setItem() {} } });
 const assert = require('assert');
 let n = 0; const t = (name, fn) => { fn(); n++; console.log('ok  ' + name) };
 
@@ -47,7 +47,7 @@ t('every roster operator produces art markup', () => api.ROSTER.forEach(r => ass
 // ---- 1.5: UID query parsing, team styles, diversified suggestions, fun comps ----
 t('parseQuery accepts a UID, spaces and demo, rejects names and short numbers', () => {
   assert.equal(api.parseQuery(' 4225 399080 ').uid, '4225399080'); assert.equal(api.parseQuery('DEMO').uid, 'demo');
-  assert(/Name search/.test(api.parseQuery('Endmin').err)); assert(api.parseQuery('123').err); assert(api.parseQuery('').err);
+  assert.equal(api.parseQuery('Endmin').err, 'You need to enter a UID.'); assert.equal(api.parseQuery('gogo').err, 'You need to enter a UID.'); assert(api.parseQuery('123').err); assert(api.parseQuery('').err);
 });
 t('team style: mono-element, rainbow, glass cannon, underdogs', () => {
   assert.equal(A('Laevatain', 'Camille', 'Ember', 'Wulfgard').arch.name, 'Inferno Squad');
@@ -76,4 +76,19 @@ t('funComps only uses the pool it is given, and needs 4 operators', () => {
 
 // print a sample for eyeballing
 const a = A('Laevatain', 'Camille', 'Gilberta', 'Ember'); console.log('\nsample:', a.score, a.label, a.checks.map(c => c.level + ': ' + c.title).join(' | '));
+
+// ---- 1.5: operator pages, wiki icons, rarity icon ----
+t('opSlug / opBySlug round-trip every operator and are unique', () => {
+  const seen = new Set();
+  for (const o of api.ROSTER) { const s = api.opSlug(o.name); assert(/^[a-z0-9]+(-[a-z0-9]+)*$/.test(s), s); assert(!seen.has(s), 'dup ' + s); seen.add(s); assert.equal(api.opBySlug(s).name, o.name) }
+  assert.equal(api.opSlug('Argent Flow'), 'argent-flow'); assert.equal(api.opBySlug('nobody'), null);
+});
+t('icon candidates try the official wiki files first, after local overrides', () => {
+  const g = api.icoCandidates('cls', 'Guard'), s = api.icoCandidates('cls', 'Supporter'), h = api.icoCandidates('el', 'Heat'), r = api.icoCandidates('rar', 'star');
+  assert(g.includes('https://endfield.wiki.gg/images/Guard.png')); assert(s.includes('https://endfield.wiki.gg/images/Support.png'));
+  assert(h.includes('https://endfield.wiki.gg/images/Heat.png')); assert(r.includes('https://endfield.wiki.gg/images/Star.svg'));
+  assert(g[0].startsWith('/img/icons/class/') && r[0].startsWith('/img/icons/rarity/'));
+});
+t('stars() draws one icon per star', () => { assert.equal((api.stars(6).match(/data-k="rar-star"/g) || []).length, 6); assert.equal(api.stars(0), '') });
+
 console.log('\n' + n + ' tests passed');
