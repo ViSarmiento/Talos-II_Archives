@@ -91,4 +91,13 @@ t('icon candidates try the official wiki files first, after local overrides', ()
 });
 t('stars() draws one icon per star', () => { assert.equal((api.stars(6).match(/data-k="rar-star"/g) || []).length, 6); assert.equal(api.stars(0), '') });
 
+t('vercel.json routes /operators/<slug> to a real page for every operator', () => {
+  const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8')), pub = path.join(__dirname, '..', cfg.outputDirectory);
+  const rw = cfg.rewrites.find(r => r.source === '/operators/:slug'); assert(rw, 'missing /operators/:slug rewrite');
+  if (cfg.cleanUrls) assert(!/\.html$/.test(rw.destination), 'with cleanUrls the destination must not end in .html: ' + rw.destination);
+  assert(fs.existsSync(path.join(pub, rw.destination.replace(/^\//, '') + '.html')), 'rewrite destination has no page: ' + rw.destination);
+  const re = /^\/operators\/([^/]+)$/; api.ROSTER.forEach(o => assert(re.test('/operators/' + api.opSlug(o.name)), o.name));
+  assert(fs.existsSync(path.join(pub, '404.html')), 'public/404.html (slug fallback) is missing');
+});
+
 console.log('\n' + n + ' tests passed');

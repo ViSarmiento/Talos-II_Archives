@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Not found – Talos-II Archives</title>
+	<style>body{margin:0;background:#0c0c0e;color:#d8d4c4;font:16px/1.5 system-ui,sans-serif;display:grid;place-items:center;min-height:100vh}a{color:#ffd21f}</style>
+	<script>
+		// Safety net: if /operators/<slug> ever misses the rewrite in vercel.json, hand it to the same page via ?op=<slug>
+		var m = location.pathname.match(/^\/operators\/([^/]+)\/?$/);
+		if (m) location.replace('/operator?op=' + m[1]);
+	</script>
+</head>
+<body>
+	<p>This page doesn’t exist. <a href="/operators">Back to Operators</a></p>
+</body>
+</html>
