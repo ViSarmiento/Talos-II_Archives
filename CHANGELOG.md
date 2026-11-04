@@ -2,6 +2,8 @@
 Newest first. A new minor version is only used for a big change; small fixes are folded into the version they belong to.
 
 ## 1.5 (current)
+- **Operator pages now read a local, synced data file.** `npm run sync` (`scripts/sync-operators.mjs`) pulls every operator from `endfield.wiki.gg/api.php`, writes `public/data/operators.json` and downloads the icons to `public/img/wiki/`. The page no longer calls the wiki while someone browses (the live skill loader and its 7-day browser cache are gone).
+- Operator page: new terminal-style **Basic Info** panel (gender, authentication, date of birth, race, Oripathy status, physical exam, expertise, hobbies, recommended weapons with icons); header facts now include faction, main and sub attribute, role tags and how to obtain; **combat skills** are collapsible with their icons and an Expand all button; new **Talents** and **Base skills** sections with tier-by-tier effects. The page structure is otherwise unchanged. Laevatain's and Si's hand-written strategy, stats and potentials stay.
 - New **loading screen**: a gold and dark-gray fluctlight inside an inverted pyramid (plain canvas, no libraries or audio) with flowing light, slow breathing, a simulated speech fluctuation and a progress bar tied to the real page load.
 - Runs at about 74% speed. Minimum display time is 3.4s on the first page of a visit and 1.1s on later pages; `?loader=1` forces the full version; reduced-motion users get a still frame.
 - Shown on **every page and tab switch**. Clicking a tab covers the old page at once, and the next page's loader continues it.

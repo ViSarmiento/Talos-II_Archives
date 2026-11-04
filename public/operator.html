@@ -14,13 +14,36 @@ const PROV = { vuln: 'Vulnerable', status: 'Physical status', amp: 'Amp and debu
 const chipsOf = (arr, lab) => arr.length ? arr.map(x => `<span class="od-chip">${esc(lab[x] || x)}</span>`).join('') : '<span class="dim">Nothing specific</span>';
 const sorted = ROSTER.slice().sort((x, y) => y.rarity - x.rarity || x.name.localeCompare(y.name));
 
-function skillCard(o, slot, d) {
-  const ic = skillIconUrl(o, slot);
-  return `<article class="od-sk" data-t="${esc(slot.type)}"><span class="ic"><img alt="" loading="lazy" referrerpolicy="no-referrer" src="${esc(ic)}" onerror="this.remove()"></span>
-    <div><small>${esc(slot.type)}</small><b>${esc(d ? d[1] : '…')}</b><p>${d ? esc(d[2]) : '<span class="dim">Loading from the wiki…</span>'}</p></div></article>`;
-}
-function skillsHtml(o, list) {
-  return SKILL_SLOTS.map(s => skillCard(o, s, list.find(x => x[0] === s.type))).join('');
+// description paragraphs: a leading "LABEL:" (BASIC ATTACK:, COMBO TRIGGER: ...) is shown as a small caps tag
+const para = t => { const m = /^([A-Z][A-Z' -]{2,}):\s*(.*)$/.exec(t); return m ? `<p><b class="lab">${esc(m[1])}</b> ${esc(m[2])}</p>` : `<p>${esc(t)}</p>` };
+const icImg = u => u ? `<img alt="" loading="lazy" src="${esc(u)}" onerror="this.remove()">` : '';
+// one collapsible combat skill: icon, type and name in the summary, the description folds open below
+const skillItem = s => `<details class="od-sk" data-t="${esc(s.label || SKILL_LABEL[s.type] || s.type)}"><summary><span class="ic">${icImg(s.icon)}</span><div><small>${esc(s.label || SKILL_LABEL[s.type] || s.type)}</small><b>${esc(s.name || '…')}</b></div><i class="chev" aria-hidden="true"></i></summary><div class="od-skd">${(s.desc || []).map(para).join('') || '<p class="dim">No description.</p>'}</div></details>`;
+// talents and base skills: icon, name, then one row per tier
+const tierItem = e => `<article class="od-tl"><span class="ic">${icImg(e.icon)}</span><div><b>${esc(e.name)}</b>${(e.tiers || []).length ? `<ol class="od-tiers">${e.tiers.map(t => `<li>${t.label ? `<span class="lv">${esc(t.label)}</span>` : '<span class="lv nl"></span>'}<p>${esc(t.text)}</p></li>`).join('')}</ol>` : ''}</div></article>`;
+// terminal-style text (same look as the account terminal)
+let tmN = 0;
+const kv = (k, v) => v ? `<div class="tm-kv" style="--i:${++tmN}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>` : '';
+const tmSec = t => `<div class="tm-sec" style="--i:${++tmN}">${esc(t)}</div>`;
+const tmTx = t => t ? `<p class="tm-tx" style="--i:${++tmN}">${esc(t)}</p>` : '';
+const tmEntry = (lab, e) => `<div class="tm-xp" style="--i:${++tmN}"><div class="h"><span class="k">${esc(lab)} ${e.n || ''}</span> ${esc(e.category)}${e.name ? ` <span class="sl">//</span> ${esc(e.name)}` : ''}</div>${e.desc ? `<p class="tm-tx">${esc(e.desc)}</p>` : ''}</div>`;
+function terminal(o, d, x) {
+  tmN = 0;
+  const P = d && d.profile, frame = body => `<section class="tm od-tm" role="region" aria-label="Operator file"><i class="tm-c a"></i><i class="tm-c b"></i><i class="tm-c c"></i><i class="tm-c d"></i>
+    <header class="tm-h"><span class="tm-ttl"><i class="tm-dot"></i>TALOS-II TERMINAL<em> // OPERATOR FILE // ${esc(o.name.toUpperCase())}</em></span></header><div class="tm-b">${body}</div></section>`;
+  if (!P) return frame(`<p class="tm-none">NO SYNCED FILE FOR ${esc(o.name.toUpperCase())}. Run <code>npm run sync</code> to pull the profile from the wiki.</p>`);
+  const ex = P.exam || {}, wp = (P.weapons && P.weapons.length ? P.weapons : (x.weapons || []).map(n => ({ name: n, icon: '', match: '' })));
+  const wRow = w => `<a class="tm-wp" style="--i:${++tmN}" target="_blank" rel="noopener" href="${esc(WIKI_PAGE + '/' + encodeURIComponent(w.name.replace(/ /g, '_')))}">${icImg(w.icon)}<span>${esc(w.name)}</span></a>`;
+  const groups = ['Skills', 'Stats', ''].map(g => [g, wp.filter(w => (w.match || '') === g)]).filter(([, l]) => l.length);
+  return frame(`<div class="tm-cols"><div>
+      ${tmSec('BASIC INFO')}${kv('Codename', o.name)}${kv('Gender', P.gender)}${kv('Authentication', P.authentication)}${kv('Date of birth', P.dob)}${kv('Race', P.race)}
+      ${P.oripathy ? tmSec('ORIPATHY INFECTION STATUS') + tmTx(P.oripathy) : ''}
+      ${Object.values(ex).some(Boolean) ? tmSec('INTEGRATED PHYSICAL EXAM') + kv('Physiological strength', ex.physiologicalStrength) + kv('Combat skill', ex.combatSkill) + kv('Tactical acumen', ex.tacticalAcumen) + kv('Originium arts assimilation', ex.originiumArtsAssimilation) : ''}
+    </div><div>
+      ${(P.expertise || []).length ? tmSec('EXPERTISE') + P.expertise.map(e => tmEntry('EXP', e)).join('') : ''}
+      ${(P.hobbies || []).length ? tmSec('HOBBIES') + P.hobbies.map(e => tmEntry('HOB', e)).join('') : ''}
+    </div></div>
+    ${wp.length ? tmSec('RECOMMENDED WEAPONS') + groups.map(([g, l]) => `<div class="tm-wg">${g ? `<small>MATCHING ${g.toUpperCase()}</small>` : ''}<div class="tm-wl">${l.map(wRow).join('')}</div></div>`).join('') : ''}`);
 }
 
 if (!o) {
@@ -29,6 +52,11 @@ if (!o) {
   root.innerHTML = `<p class="dim">There is no operator called “${esc(slugIn)}”. Pick one from the <a href="/operators">Operators</a> list.</p>`;
   FL.wait(Promise.resolve());
 } else {
+  // operator data is one static file written by `npm run sync`; the loader screen waits for it and for the art
+  FL.wait(loadOperatorDb().then(db => { render(db); return artReady() }));
+}
+
+function render(db) {
   document.title = `${o.name} – Operators – Talos-II Archives`;
   $('#nm').textContent = o.name;
   const x = OP_DETAIL[o.name] || {}, k = kitOf(o), ids = Object.entries(ID_MAP).filter(([, n]) => n === o.name).map(([i]) => i);
@@ -36,22 +64,33 @@ if (!o) {
   const idx = sorted.findIndex(r => r.name === o.name), prev = sorted[(idx + sorted.length - 1) % sorted.length], next = sorted[(idx + 1) % sorted.length];
   const picks = suggest([o.name], new Set(), 4);
   const note = x.strategy || k.note || '';
-  const seeded = (x.skills || []).length >= 4;
+  const d = opRecord(db, o), P = d && d.profile;
+  // synced record first; the hand-written OP_DETAIL entry (Laevatain, Si) fills in whatever the record lacks
+  const skills = d && d.skills.length ? d.skills : (x.skills || []).map(([t, n, desc]) => ({ label: t, name: n, desc: [desc], icon: '' }));
+  const talents = d && d.talents.length ? d.talents : (x.talents || []).map(([n, t]) => ({ name: n, icon: '', tiers: [{ label: '', text: t }] }));
+  const baseSk = d ? d.baseSkills : [];
+  const attrs = d && (d.mainAttr || d.subAttr) ? '' : x.attrs;
+  const attr = (n, ic) => n ? `${ic ? `<img class="od-ai" alt="" src="${esc(ic)}" onerror="this.remove()">` : ''}${esc(n)}` : '';
+  const synced = db && db.generatedAt ? fmtDate(Date.parse(db.generatedAt)) : '';
 
   root.innerHTML = `<section class="od-hero" style="--c:${COL[o.element]}" data-rar="${o.rarity}">
       <div class="od-art">${artHtml(o, 720, { whole: true })}<span class="od-bar"></span></div>
       <div class="od-id">
         <div class="od-stars">${stars(o.rarity)}</div>
         <div class="od-tags"><span class="el">${icoEl(o.element)}${esc(o.element)}</span><span class="cl">${icoCls(o.cls)}${esc(o.cls)}</span><span class="wp">${esc(o.weapon)}</span></div>
-        ${x.quote ? `<p class="od-quote">“${esc(x.quote)}”</p>` : ''}
+        ${(d && d.quote) || x.quote ? `<p class="od-quote">“${esc((d && d.quote) || x.quote)}”</p>` : ''}
         <dl class="od-facts">
           ${fact('Rarity', `${o.rarity}-star`)}${fact('Class', esc(o.cls))}${fact('Element', esc(o.element))}${fact('Weapon', esc(o.weapon))}
-          ${fact('Faction', esc(x.faction))}${fact('Race', esc(x.race))}${fact('Attributes', esc(x.attrs))}${fact('Role tags', esc((x.tags || []).join(', ')))}${fact('How to obtain', esc(x.obtain))}
+          ${fact('Faction', d && d.faction ? `${d.factionIcon ? `<img class="od-ai" alt="" src="${esc(d.factionIcon)}" onerror="this.remove()">` : ''}${esc(d.faction)}` : esc(x.faction))}${d ? '' : fact('Race', esc(x.race))}
+          ${fact('Main attribute', attr(d && d.mainAttr, d && d.mainAttrIcon))}${fact('Sub attribute', attr(d && d.subAttr, d && d.subAttrIcon))}${fact('Attributes', esc(attrs))}
+          ${fact('Role tags', esc(((d && d.tags && d.tags.length ? d.tags : x.tags) || []).join(', ')))}${fact('How to obtain', esc((d && d.obtain) || x.obtain))}
           ${fact('Internal ID', ids.length ? ids.map(i => `<code>${esc(i)}</code>`).join(' ') : '')}
         </dl>
         <div class="od-links"><a class="od-btn" href="${esc(wikiUrl(o))}" target="_blank" rel="noopener">Full page on the wiki ↗</a><a class="od-btn ghost" href="${esc(wikiUrl(o, '/Overview'))}" target="_blank" rel="noopener">Strategy overview ↗</a></div>
       </div>
     </section>
+
+    ${terminal(o, d, x)}
 
     <section class="od-sec"><h3>Overview</h3>
       <p>${esc(CLASS_INFO[o.cls])}</p>
@@ -63,15 +102,17 @@ if (!o) {
       </div>
     </section>
 
-    <section class="od-sec"><h3>Skills</h3><div class="od-skills" id="sk">${skillsHtml(o, x.skills || [])}</div><p class="dim od-fine" id="skn"></p>
-      ${(x.talents || []).length ? `<h4>Talent</h4>${x.talents.map(([n, t]) => `<p class="od-line"><b>${esc(n)}</b> ${esc(t)}</p>`).join('')}` : ''}
+    <section class="od-sec"><div class="od-hd"><h3>Combat skills</h3>${skills.length ? '<button type="button" class="ghost od-xa" id="xa" data-open="0">Expand all</button>' : ''}</div>
+      ${skills.length ? `<div class="od-skl" id="sk">${skills.map(skillItem).join('')}</div>` : `<p class="dim">No skill data for ${esc(o.name)} yet. Run <code>npm run sync</code>, or read them <a href="${esc(wikiUrl(o, '#Combat_Skills'))}" target="_blank" rel="noopener">on the wiki ↗</a>.</p>`}
     </section>
+
+    ${talents.length ? `<section class="od-sec"><h3>Talents</h3><div class="od-tls">${talents.map(tierItem).join('')}</div></section>` : ''}
+
+    ${baseSk.length ? `<section class="od-sec"><h3>Base skills</h3><p class="dim od-fine">Assignment effects when ${esc(o.name)} works in a facility, by tier.</p><div class="od-tls">${baseSk.map(tierItem).join('')}</div></section>` : ''}
 
     ${x.stats ? `<section class="od-sec"><h3>Stats at max Elite</h3><div class="od-stats">${x.stats.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div></section>` : ''}
 
     ${(x.potentials || []).length ? `<section class="od-sec"><h3>Potentials</h3><ol class="od-pot">${x.potentials.map(([n, t], i) => `<li><span>P${i + 1}</span><div><b>${esc(n)}</b><p>${esc(t)}</p></div></li>`).join('')}</ol></section>` : ''}
-
-    ${(x.weapons || []).length ? `<section class="od-sec"><h3>Recommended weapons</h3><div class="od-kit"><div>${x.weapons.map(w => `<a class="od-chip" target="_blank" rel="noopener" href="${esc(WIKI_PAGE + '/' + encodeURIComponent(w.replace(/ /g, '_')))}">${esc(w)} ↗</a>`).join('')}</div></div></section>` : ''}
 
     <section class="od-sec"><h3>Team play</h3>
       ${(x.partners || []).map(([n, t]) => { const p = lookup(n); return `<p class="od-line">${p ? `<a href="/operators/${opSlug(p.name)}"><b>${esc(p.name)}</b></a>` : `<b>${esc(n)}</b>`} ${esc(t)}</p>` }).join('')}
@@ -84,17 +125,9 @@ if (!o) {
     </section>
 
     <nav class="od-nav"><a href="/operators/${opSlug(prev.name)}">‹ ${esc(prev.name)}</a><a href="/operators">All operators</a><a href="/operators/${opSlug(next.name)}">${esc(next.name)} ›</a></nav>
-    <p class="dim od-fine">Operator data from the Endfield Talos Wiki (CC BY-SA). Always check the wiki for exact skill numbers.</p>`;
+    <p class="dim od-fine">Operator data from the Endfield Talos Wiki (CC BY-SA)${synced ? `, synced ${esc(synced)}` : ''}. Always check the wiki for exact skill numbers.</p>`;
 
-  // skills: shipped data shows at once; otherwise load them from the wiki and fall back to a link
-  if (!seeded) {
-    const sk = $('#sk'), skn = $('#skn');
-    const done = wikiSkills(o).then(list => {
-      if (list.length) { sk.innerHTML = skillsHtml(o, list); return }
-      sk.innerHTML = skillsHtml(o, [['Basic Attack', 'Not available here yet', ''], ['Battle Skill', 'Not available here yet', ''], ['Combo Skill', 'Not available here yet', ''], ['Ultimate', 'Not available here yet', '']].map(r => r)).replace(/<p><\/p>/g, '');
-      skn.innerHTML = `The skill text could not be loaded. <a href="${esc(wikiUrl(o, '#Combat_Skills'))}" target="_blank" rel="noopener">Read ${esc(o.name)}'s skills on the wiki ↗</a>`;
-    }).catch(() => { skn.innerHTML = `The skill text could not be loaded. <a href="${esc(wikiUrl(o, '#Combat_Skills'))}" target="_blank" rel="noopener">Read ${esc(o.name)}'s skills on the wiki ↗</a>` });
-    FL.wait(Promise.race([Promise.all([artReady(), done]), new Promise(r => setTimeout(r, 4500))]));
-  } else FL.wait(artReady());
+  const xa = $('#xa');
+  if (xa) xa.onclick = () => { const open = xa.dataset.open !== '1'; $('#sk').querySelectorAll('details').forEach(el => { el.open = open }); xa.dataset.open = open ? '1' : '0'; xa.textContent = open ? 'Collapse all' : 'Expand all' };
 }
 </script></body></html>

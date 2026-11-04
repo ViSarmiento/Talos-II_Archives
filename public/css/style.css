@@ -495,3 +495,55 @@ a.od-chip:hover{border-color:var(--sig);color:var(--sig)}
 .od-nav a{color:var(--text);text-decoration:none;padding:8px 14px;border:1px solid var(--line);font:700 14px "Chakra Petch",sans-serif}
 .od-nav a:hover{border-color:var(--sig);color:var(--sig)}
 @media(max-width:760px){.od-hero{grid-template-columns:1fr}.od-art{max-width:340px}}
+
+/* ================= 1.6: operator page from synced wiki data ================= */
+/* basic info: the account terminal's look, reused (frame, header, section rules) with key / value rows */
+.od-tm{margin:16px 0;animation:none}
+.od-tm .tm-b{padding:14px 18px 16px}
+.tm-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:0 36px}
+.tm-kv{display:grid;grid-template-columns:minmax(120px,17em) 1fr;gap:0 16px;padding:4px 0;border-bottom:1px dotted rgba(255,255,255,.08);animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.04s)}
+.tm-kv .k,.tm-xp .k{color:var(--sig);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;padding-top:1px}
+.tm-kv .k::before{content:"> ";opacity:.6}
+.tm-kv .v{color:#fff;overflow-wrap:anywhere}
+.tm-tx{margin:3px 0 8px;color:#b9b5a8;animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.04s)}
+.tm-tx::before{content:"// ";color:#6b6e78}
+.tm-xp{margin:0 0 8px;animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.04s)}
+.tm-xp .h{color:#fff}.tm-xp .sl{color:#6b6e78}
+.tm-xp .tm-tx{margin:2px 0 0}
+.tm-wg{margin:2px 0 6px}.tm-wg small{display:block;color:#8d909a;font-size:10px;letter-spacing:.16em;margin:6px 0 2px}
+.tm-wl{display:flex;flex-wrap:wrap;gap:4px 22px}
+.tm-wp{display:inline-flex;align-items:center;gap:9px;padding:3px 0;color:#fff;text-decoration:none;animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.04s)}
+.tm-wp img{width:26px;height:26px;object-fit:contain;background:#0b0c10;border:1px solid #2c2f37}
+.tm-wp:hover span{color:var(--sig);text-decoration:underline}
+.tm-wp::before{content:">";color:var(--sig);opacity:.6}
+.od-tm .tm-none code{background:none;color:#fff}
+.od-ai{width:18px;height:18px;object-fit:contain;vertical-align:-4px;margin-right:6px}
+/* section heading with a button on the right */
+.od-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.od-hd h3{margin:0!important}
+.od-xa{padding:6px 12px;font-size:12px;letter-spacing:.08em;text-transform:uppercase}.od-xa:hover{border-color:var(--sig);color:var(--sig);filter:none}
+/* combat skills: icon + type + name, description folds open */
+.od-skl{display:grid;gap:10px}
+details.od-sk{display:block;padding:0}
+details.od-sk>summary{display:flex;gap:14px;align-items:center;padding:12px 14px;cursor:pointer;list-style:none}
+details.od-sk>summary::-webkit-details-marker{display:none}
+details.od-sk>summary:hover b{color:var(--sig)}
+details.od-sk summary b{margin:0}
+details.od-sk .chev{flex:none;margin-left:auto;width:9px;height:9px;border-right:2px solid var(--dim);border-bottom:2px solid var(--dim);transform:rotate(45deg) translate(-2px,-2px);transition:transform .15s}
+details[open].od-sk .chev{transform:rotate(225deg) translate(-2px,-2px);border-color:var(--sig)}
+details.od-sk[open]{background:rgba(255,255,255,.035)}
+.od-skd{padding:0 18px 14px 84px}
+.od-skd p{margin:0 0 7px;font-size:14px;color:#cfcbbf}.od-skd p:last-child{margin:0}
+.od-skd .lab{display:inline-block;margin-right:6px;color:var(--sig);font:700 11px "Chakra Petch",sans-serif;letter-spacing:.14em}
+.od-sk .ic img,.od-tl .ic img{width:100%;height:100%;object-fit:contain}
+/* talents and base skills: tier by tier */
+.od-tls{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.od-tl{display:flex;gap:14px;padding:14px;border:1px solid var(--line);border-left:3px solid var(--sig);background:rgba(255,255,255,.02)}
+.od-tl .ic{flex:none;width:56px;height:56px;display:grid;place-items:center;background:#0b0c10;border:1px solid var(--line)}
+.od-tl>div{min-width:0;flex:1}
+.od-tl b{display:block;font:700 18px/1.2 "Chakra Petch",sans-serif}
+.od-tiers{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.od-tiers li{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:start}
+.od-tiers .lv{padding:2px 6px;text-align:center;background:var(--sig);color:#14120a;font:700 12px "Chakra Petch",sans-serif;letter-spacing:.05em;white-space:nowrap}
+.od-tiers .lv.nl{display:none}.od-tiers li:has(.lv.nl){grid-template-columns:1fr}
+.od-tiers p{margin:0;font-size:14px;color:#cfcbbf}
+@media(max-width:760px){.od-skd{padding-left:18px}.tm-kv{grid-template-columns:1fr}.od-tls{grid-template-columns:1fr}}

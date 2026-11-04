@@ -1,7 +1,7 @@
 // ---- operator detail page data (used by /operators/<name>) ----
-// Needs data.js and core.js. Everything here is either (a) confirmed on the Endfield Talos Wiki (CC BY-SA) and written in short form,
-// or (b) loaded live from the wiki by wikiSkills() below. Add an entry to OP_DETAIL to ship an operator's skills with the site
-// (they then show instantly and offline); operators without an entry use the live loader.
+// Needs data.js and core.js. OP_DETAIL is hand-written extra context (strategy, partners, stats, potentials), confirmed on the Endfield Talos Wiki
+// (CC BY-SA) and kept short. The profile, skills, talents and base skills of EVERY operator come from /data/operators.json, which
+// `npm run sync` (scripts/sync-operators.mjs) writes from the wiki. Nothing here calls the wiki while a visitor browses.
 
 const WIKI_PAGE = 'https://endfield.wiki.gg/wiki';
 const wikiUrl = (o, sub = '') => `${WIKI_PAGE}/${encodeURIComponent(o.name.replace(/ /g, '_'))}${sub}`;
@@ -25,14 +25,8 @@ const ELEMENT_INFO = {
   Electric: { dmg: 'yellow', text: 'Electric Infliction on a different Arts Infliction triggers Electrification, which deals Electric DMG and makes the target take more Arts DMG for a while.' },
 };
 
-// skill slot order and the wiki's icon file name for each
-const SKILL_SLOTS = [
-  { type: 'Basic Attack', icon: (o, w) => `Attack-${w}`, },
-  { type: 'Battle Skill', icon: o => `Skill-${o.name.replace(/ /g, '_')}` },
-  { type: 'Combo Skill', icon: o => `Combo-${o.name.replace(/ /g, '_')}` },
-  { type: 'Ultimate', icon: o => `Ult-${o.name.replace(/ /g, '_')}` },
-];
-const skillIconUrl = (o, slot) => `${WIKI_IMG}/${encodeURI(slot.icon(o, (o.weapon || '').replace(/ /g, '_')))}.png`;
+// combat skill types as the synced data names them -> the label shown on the page
+const SKILL_LABEL = { Basic: 'Basic Attack', Battle: 'Battle Skill', Combo: 'Combo Skill', Ultimate: 'Ultimate' };
 
 // ---- shipped operator data ----
 // skills: [type, name, description]; stats: max-level (Elite max) values; keep descriptions short, the wiki has the full numbers.
@@ -73,45 +67,11 @@ const OP_DETAIL = {
   },
 };
 
-// ---- live skill loader ----
-// Reads the operator's wiki page through the MediaWiki API (CORS enabled with origin=*), finds the "Combat Skills" section and pairs each
-// skill type label (Basic Attack / Battle Skill / Combo Skill / Ultimate) with the skill name above it and the description below it.
-// Cached for 7 days per operator in localStorage (et.skill.<key>). Resolves [] if the page cannot be read or parsed.
-async function wikiSkills(o) {
-  const ck = 'et.skill.' + key(o.name), c = load(ck, null);
-  if (c && Date.now() - c.t < 6048e5 && c.s?.length) return c.s;
-  const page = o.name.replace(/ /g, '_');
-  const u = `https://endfield.wiki.gg/api.php?action=parse&page=${encodeURIComponent(page)}&prop=text&format=json&formatversion=2&redirects=1&origin=*`;
-  const r = await fetch(u); if (!r.ok) return [];
-  const j = await r.json(); const html = j?.parse?.text; if (!html) return [];
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  doc.querySelectorAll('table, img, sup, style, script, .mw-editsection, .reference').forEach(n => n.remove());
-  // text blocks in document order, each tagged with the heading id it sits under
-  const blocks = []; let cur = null, head = '';
-  const it = doc.createNodeIterator(doc.body, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
-  for (let n = it.nextNode(); n; n = it.nextNode()) {
-    if (n.nodeType === 1) {
-      if (/^H[2-4]$/.test(n.tagName) && n.id) head = n.id;
-      if (n.tagName === 'BR' && cur) cur.t += '\n';
-      continue;
-    }
-    const txt = n.nodeValue.replace(/\s+/g, ' ');
-    if (!txt.trim()) { if (cur) cur.t += ' '; continue; }
-    const blk = n.parentElement?.closest('p,div,li,dd,dt,h2,h3,h4,h5');
-    if (!cur || cur.el !== blk) { cur = { el: blk, t: '', head }; blocks.push(cur) }
-    cur.t += txt;
-  }
-  const lines = blocks.map(b => ({ t: b.t.replace(/[ \t]+\n/g, '\n').trim(), head: b.head })).filter(b => b.t);
-  const stop = ['Skill_upgrades', 'Talents', 'Talent_upgrades', 'Base_Skills'];
-  const from = lines.findIndex(b => b.head === 'Combat_Skills'); if (from < 0) return [];
-  let to = lines.findIndex((b, i) => i > from && stop.includes(b.head)); if (to < 0) to = lines.length;
-  const sec = lines.slice(from, to), types = SKILL_SLOTS.map(s => s.type), out = [];
-  const at = sec.map((b, i) => types.includes(b.t) ? i : -1).filter(i => i > 0);
-  at.forEach((i, k) => {
-    const name = sec[i - 1].t, end = k + 1 < at.length ? at[k + 1] - 1 : sec.length;
-    const desc = sec.slice(i + 1, end).map(b => b.t.replace(/\n+/g, ' ').replace(/\s+/g, ' ')).join(' ').replace(/SKILL DESCRIPTION:\s*/i, '').trim();
-    if (name && desc) out.push([sec[i].t, name, desc]);
-  });
-  if (out.length) save(ck, { t: Date.now(), s: out });
-  return out;
+// ---- synced data: public/data/operators.json (written by `npm run sync`) ----
+// One static file, fetched once per page view and kept in memory. Resolves null when the file is missing or unreadable, so the
+// page can say "run the sync" instead of breaking. Shape: { generatedAt, source, count, operators: { <slug>: record } }; see scripts/lib/parse-operator.mjs.
+let _opdb;
+function loadOperatorDb() {
+  return _opdb ||= fetch('/data/operators.json').then(r => r.ok ? r.json() : null).then(j => j && j.operators ? j : null).catch(() => null);
 }
+const opRecord = (db, o) => (db && db.operators && db.operators[opSlug(o.name)]) || null;
