@@ -2445,8 +2445,9 @@ a.oc {
 .od-hero {
   --r: var(--sig);
   display: grid;
-  grid-template-columns: minmax(220px, 340px) 1fr;
+  grid-template-columns: minmax(300px, 1.08fr) minmax(360px, 1fr);
   gap: 28px;
+  align-items: stretch;
   margin: 6px 0 10px;
 }
 .od-hero[data-rar="6"] {
@@ -2768,9 +2769,6 @@ a.od-chip:hover {
   .od-hero {
     grid-template-columns: 1fr;
   }
-  .od-art {
-    max-width: 340px;
-  }
 }
 
 /* ================= 1.6: operator page from synced wiki data ================= */
@@ -3048,5 +3046,162 @@ details.od-sk[open] {
   }
   .od-tls {
     grid-template-columns: 1fr;
+  }
+}
+/* ================= operator page: big splash art + paged terminal ================= */
+.od-term {
+  display: flex;
+  min-width: 0;
+}
+.od-term .od-tm {
+  flex: 1;
+  margin: 0;
+  max-height: 100%;
+  min-height: 420px;
+  outline: none;
+}
+.od-term .od-tm:focus-visible {
+  box-shadow: 0 0 0 2px var(--sig), 0 24px 70px rgba(0, 0, 0, .6);
+}
+/* the art sets the hero height; the terminal fills it and scrolls inside if a page is longer */
+.od-term {
+  position: relative;
+}
+.od-term .od-tm {
+  position: absolute;
+  inset: 0;
+  max-height: none;
+}
+.tm-pn {
+  font: 700 11px "Chakra Petch", sans-serif;
+  letter-spacing: .14em;
+  color: #b9bcc6;
+  white-space: nowrap;
+}
+.tm-pg {
+  touch-action: pan-y;
+}
+.tm-pg .tm-kv {
+  grid-template-columns: minmax(110px, 13em) 1fr;
+}
+.tm-stars {
+  color: var(--r);
+  font-size: 17px;
+  line-height: 1;
+}
+.tm-kv .v .ico {
+  width: 16px;
+  height: 16px;
+  margin-right: 7px;
+  vertical-align: -3px;
+}
+.tm-kv .v .ico.rs {
+  width: 1em;
+  height: 1em;
+  margin: 0 1px 0 0;
+  vertical-align: -.14em;
+}
+.tm-kv .v .od-ai {
+  width: 20px;
+  height: 20px;
+  vertical-align: -5px;
+}
+.tm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tm-chips > span {
+  padding: 1px 9px;
+  border: 1px solid #3a3d46;
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: .04em;
+}
+.tm-pg .tm-wl {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px 14px;
+}
+.tm-pg .tm-wp img {
+  width: 44px;
+  height: 44px;
+}
+.tm-pg .tm-wg small {
+  margin: 10px 0 6px;
+}
+.tm-pg .tm-xp {
+  margin-bottom: 12px;
+}
+.tm-nav {
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+.tm-nb {
+  position: relative;
+  z-index: 7;
+  min-width: 92px;
+  padding: 7px 14px;
+  background: transparent;
+  color: #d7d3c6;
+  border: 1px solid #3a3d46;
+  font: 700 12px "Chakra Petch", sans-serif;
+  letter-spacing: .14em;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+.tm-nb:hover {
+  color: #14120a;
+  background: var(--sig);
+  border-color: var(--sig);
+  filter: none;
+}
+.tm-dots {
+  display: flex;
+  gap: 8px;
+}
+.tm-dots i {
+  width: 18px;
+  height: 3px;
+  background: #3a3d46;
+  transition: background .2s;
+}
+.tm-dots i.on {
+  background: var(--sig);
+  box-shadow: 0 0 8px var(--sig);
+}
+@media(max-width:760px) {
+  .od-hero {
+    grid-template-columns: 1fr;
+  }
+  .od-art {
+    max-width: none;
+  }
+  .od-term {
+    min-height: 480px;
+  }
+  .tm-pg .tm-kv {
+    grid-template-columns: 1fr;
+  }
+}
+/* keep the whole terminal (and its Prev / Next buttons) on screen on a normal laptop window */
+.od-hero .od-art {
+  aspect-ratio: auto;
+  height: clamp(520px, calc(100vh - 200px), 820px);
+}
+@media(max-width:760px) {
+  .od-hero .od-art {
+    height: auto;
+    aspect-ratio: 3/4.1;
+  }
+}
+.tm-nav {
+  padding: 10px 26px;
+}
+.od-tm .tm-h {
+  padding-right: 30px;
+}
+@media(max-width:1180px) {
+  .od-tm .tm-ttl em {
+    display: none;
   }
 }

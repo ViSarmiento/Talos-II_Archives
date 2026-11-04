@@ -17,8 +17,6 @@
   // which operator: /operators/<slug> (rewritten to this page) or ?op=<name>
   const slugIn = decodeURIComponent((location.pathname.match(/^\/operators\/([^/]+)\/?$/) || [])[1] || new URLSearchParams(location.search).get('op') || '');
   const o = opBySlug(slugIn), root = $('#od');
-  const PROV = { vuln: 'Vulnerable', status: 'Physical status', amp: 'Amp and debuffs', heal: 'Healing', shield: 'Shield', protect: 'Protection', sp: 'SP supply', ultgain: 'Ultimate gain' };
-  const chipsOf = (arr, lab) => arr.length ? arr.map(x => `<span class="od-chip">${esc(lab[x] || x)}</span>`).join('') : '<span class="dim">Nothing specific</span>';
   const sorted = ROSTER.slice().sort((x, y) => y.rarity - x.rarity || x.name.localeCompare(y.name));
 
   // description paragraphs: a leading "LABEL:" (BASIC ATTACK:, COMBO TRIGGER: ...) is shown as a small caps tag
@@ -26,31 +24,84 @@
   const icImg = u => u ? `<img alt="" loading="lazy" src="${esc(u)}" onerror="this.remove()">` : '';
   // one collapsible combat skill: icon, type and name in the summary, the description folds open below
   const skillItem = s => `<details class="od-sk" data-t="${esc(s.label || SKILL_LABEL[s.type] || s.type)}"><summary><span class="ic">${icImg(s.icon)}</span><div><small>${esc(s.label || SKILL_LABEL[s.type] || s.type)}</small><b>${esc(s.name || '…')}</b></div><i class="chev" aria-hidden="true"></i></summary><div class="od-skd">${(s.desc || []).map(para).join('') || '<p class="dim">No description.</p>'}</div></details>`;
-  // talents and base skills: icon, name, then one row per tier
-  const tierItem = e => `<article class="od-tl"><span class="ic">${icImg(e.icon)}</span><div><b>${esc(e.name)}</b>${(e.tiers || []).length ? `<ol class="od-tiers">${e.tiers.map(t => `<li>${t.label ? `<span class="lv">${esc(t.label)}</span>` : '<span class="lv nl"></span>'}<p>${esc(t.text)}</p></li>`).join('')}</ol>` : ''}</div></article>`;
-  // terminal-style text (same look as the account terminal)
+  // ---- terminal carousel: four pages, same frame, rows and text animation as the account terminal ----
   let tmN = 0;
-  const kv = (k, v) => v ? `<div class="tm-kv" style="--i:${++tmN}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>` : '';
-  const tmSec = t => `<div class="tm-sec" style="--i:${++tmN}">${esc(t)}</div>`;
+  // data-dc marks short text that is decrypted (scrambled glyphs locking in left to right) on top of the row's tmIn slide-in
+  const dc = t => `<span data-dc>${esc(t)}</span>`;
+  const kvh = (k, html) => html ? `<div class="tm-kv" style="--i:${++tmN}"><span class="k">${esc(k)}</span><span class="v">${html}</span></div>` : '';
+  const kv = (k, v) => v ? kvh(k, dc(v)) : '';
+  const tmSec = t => `<div class="tm-sec" style="--i:${++tmN}"><span data-dc>${esc(t)}</span></div>`;
   const tmTx = t => t ? `<p class="tm-tx" style="--i:${++tmN}">${esc(t)}</p>` : '';
-  const tmEntry = (lab, e) => `<div class="tm-xp" style="--i:${++tmN}"><div class="h"><span class="k">${esc(lab)} ${e.n || ''}</span> ${esc(e.category)}${e.name ? ` <span class="sl">//</span> ${esc(e.name)}` : ''}</div>${e.desc ? `<p class="tm-tx">${esc(e.desc)}</p>` : ''}</div>`;
-  function terminal(o, d, x) {
-    tmN = 0;
-    const P = d && d.profile, frame = body => `<section class="tm od-tm" role="region" aria-label="Operator file"><i class="tm-c a"></i><i class="tm-c b"></i><i class="tm-c c"></i><i class="tm-c d"></i>
-      <header class="tm-h"><span class="tm-ttl"><i class="tm-dot"></i>TALOS-II TERMINAL<em> // OPERATOR FILE // ${esc(o.name.toUpperCase())}</em></span></header><div class="tm-b">${body}</div></section>`;
-    if (!P) return frame(`<p class="tm-none">NO SYNCED FILE FOR ${esc(o.name.toUpperCase())}. Run <code>npm run sync</code> to pull the profile from the wiki.</p>`);
-    const ex = P.exam || {}, wp = (P.weapons && P.weapons.length ? P.weapons : (x.weapons || []).map(n => ({ name: n, icon: '', match: '' })));
+  const tmEntry = (lab, e) => `<div class="tm-xp" style="--i:${++tmN}"><div class="h"><span class="k">${esc(lab)} ${e.n || ''}</span> ${dc(e.category)}${e.name ? ` <span class="sl">//</span> ${dc(e.name)}` : ''}</div>${e.desc ? `<p class="tm-tx">${esc(e.desc)}</p>` : ''}</div>`;
+  const noFile = (o, what) => `<p class="tm-none" style="--i:${++tmN}">NO SYNCED ${what} FOR ${esc(o.name.toUpperCase())}. Run <code>npm run sync</code> to pull it from the wiki.</p>`;
+
+  // returns [{ id, title, html() }]; html() restarts the row counter so every page staggers in from the top
+  function tmPages(o, d, x) {
+    const P = d && d.profile, ex = (P && P.exam) || {};
+    const wp = P && P.weapons && P.weapons.length ? P.weapons : (x.weapons || []).map(n => ({ name: n, icon: '', match: '' }));
+    const withIcon = (ic, t) => `${ic ? `<img class="od-ai" alt="" src="${esc(ic)}" onerror="this.remove()">` : ''}${dc(t)}`;
+    const attr = (n, ic) => n ? withIcon(ic, n) : '';
+    const tags = (d && d.tags && d.tags.length ? d.tags : x.tags) || [];
     const wRow = w => `<a class="tm-wp" style="--i:${++tmN}" target="_blank" rel="noopener" href="${esc(WIKI_PAGE + '/' + encodeURIComponent(w.name.replace(/ /g, '_')))}">${icImg(w.icon)}<span>${esc(w.name)}</span></a>`;
     const groups = ['Skills', 'Stats', ''].map(g => [g, wp.filter(w => (w.match || '') === g)]).filter(([, l]) => l.length);
-    return frame(`<div class="tm-cols"><div>
-        ${tmSec('BASIC INFO')}${kv('Codename', o.name)}${kv('Gender', P.gender)}${kv('Authentication', P.authentication)}${kv('Date of birth', P.dob)}${kv('Race', P.race)}
-        ${P.oripathy ? tmSec('ORIPATHY INFECTION STATUS') + tmTx(P.oripathy) : ''}
-        ${Object.values(ex).some(Boolean) ? tmSec('INTEGRATED PHYSICAL EXAM') + kv('Physiological strength', ex.physiologicalStrength) + kv('Combat skill', ex.combatSkill) + kv('Tactical acumen', ex.tacticalAcumen) + kv('Originium arts assimilation', ex.originiumArtsAssimilation) : ''}
-      </div><div>
-        ${(P.expertise || []).length ? tmSec('EXPERTISE') + P.expertise.map(e => tmEntry('EXP', e)).join('') : ''}
-        ${(P.hobbies || []).length ? tmSec('HOBBIES') + P.hobbies.map(e => tmEntry('HOB', e)).join('') : ''}
-      </div></div>
-      ${wp.length ? tmSec('RECOMMENDED WEAPONS') + groups.map(([g, l]) => `<div class="tm-wg">${g ? `<small>MATCHING ${g.toUpperCase()}</small>` : ''}<div class="tm-wl">${l.map(wRow).join('')}</div></div>`).join('') : ''}`);
+    return [
+      { id: 'badges', title: 'TOP BADGES', html: () => (tmN = 0, tmSec('TOP BADGES')
+        + kvh('Rarity', `<span class="tm-stars" aria-label="${o.rarity}-star">${stars(o.rarity)}</span>`)
+        + kvh('Class', icoCls(o.cls) + dc(o.cls))
+        + kvh('Weapon', dc(o.weapon))
+        + kvh('Element', icoEl(o.element) + dc(o.element))
+        + kvh('Faction', d && d.faction ? withIcon(d.factionIcon, d.faction) : (x.faction ? dc(x.faction) : ''))
+        + kvh('Role tags', tags.length ? `<span class="tm-chips">${tags.map(t => `<span>${dc(t)}</span>`).join('')}</span>` : '')
+        + kvh('Main attribute', attr(d && d.mainAttr, d && d.mainAttrIcon))
+        + kvh('Sub attribute', attr(d && d.subAttr, d && d.subAttrIcon))) },
+      { id: 'basic', title: 'BASIC INFO', html: () => (tmN = 0, !P ? tmSec('BASIC INFO') + noFile(o, 'PROFILE')
+        : tmSec('BASIC INFO') + kv('Codename', o.name) + kv('Gender', P.gender) + kv('Authentication', P.authentication) + kv('Date of birth', P.dob) + kv('Race', P.race)
+        + (P.oripathy ? tmSec('ORIPATHY INFECTION STATUS') + tmTx(P.oripathy) : '')
+        + (Object.values(ex).some(Boolean) ? tmSec('INTEGRATED PHYSICAL EXAM') + kv('Physiological strength', ex.physiologicalStrength) + kv('Combat skill', ex.combatSkill) + kv('Tactical acumen', ex.tacticalAcumen) + kv('Originium arts assimilation', ex.originiumArtsAssimilation) : '')) },
+      { id: 'expertise', title: 'EXPERTISE & HOBBIES', html: () => (tmN = 0, !P ? tmSec('EXPERTISE') + noFile(o, 'PROFILE')
+        : ((P.expertise || []).length ? tmSec('EXPERTISE') + P.expertise.map(e => tmEntry('EXP', e)).join('') : '')
+        + ((P.hobbies || []).length ? tmSec('HOBBIES') + P.hobbies.map(e => tmEntry('HOB', e)).join('') : '')
+        || tmSec('EXPERTISE') + '<p class="tm-none">No expertise or hobbies listed.</p>') },
+      { id: 'weapons', title: 'RECOMMENDED WEAPONS', html: () => (tmN = 0, !wp.length ? tmSec('RECOMMENDED WEAPONS') + noFile(o, 'WEAPONS')
+        : tmSec('RECOMMENDED WEAPONS') + groups.map(([g, l]) => `<div class="tm-wg">${g ? `<small style="--i:${++tmN}">MATCHING ${g.toUpperCase()}</small>` : ''}<div class="tm-wl">${l.map(wRow).join('')}</div></div>`).join('')) },
+    ];
+  }
+
+  // frame + carousel wiring. The body is rebuilt on every page change, which restarts the CSS tmIn stagger; decrypt() then types the short values.
+  function terminal(o, d, x) {
+    const pages = tmPages(o, d, x), last = pages.length - 1;
+    const host = document.createElement('section');
+    host.className = 'tm od-tm'; host.tabIndex = 0; host.setAttribute('role', 'region'); host.setAttribute('aria-label', 'Operator file');
+    host.innerHTML = `<i class="tm-c a"></i><i class="tm-c b"></i><i class="tm-c c"></i><i class="tm-c d"></i>
+      <header class="tm-h"><span class="tm-ttl"><i class="tm-dot"></i>TALOS-II TERMINAL<em> // ${esc(o.name.toUpperCase())}</em></span><span class="tm-pn" id="tmpn"></span></header>
+      <div class="tm-b tm-pg" id="tmpg" aria-live="polite"></div>
+      <footer class="tm-f tm-nav"><button type="button" class="tm-nb" id="tmprev" aria-label="Previous page">‹ <span>PREV</span></button><span class="tm-dots" id="tmdots" aria-hidden="true">${pages.map(() => '<i></i>').join('')}</span><button type="button" class="tm-nb" id="tmnext" aria-label="Next page"><span>NEXT</span> ›</button></footer>`;
+    const pg = host.querySelector('#tmpg'), prev = host.querySelector('#tmprev'), next = host.querySelector('#tmnext'), dots = [...host.querySelectorAll('#tmdots i')];
+    let at = 0;
+    const show = n => {
+      at = Math.max(0, Math.min(last, n));
+      const p = pages[at];
+      host.querySelector('#tmpn').textContent = `${String(at + 1).padStart(2, '0')}/${String(pages.length).padStart(2, '0')} // ${p.title}`;
+      pg.innerHTML = p.html(); pg.scrollTop = 0;
+      // first page hides Prev, last page hides Next; they come back as soon as there is somewhere to go
+      prev.style.visibility = at === 0 ? 'hidden' : 'visible'; prev.tabIndex = at === 0 ? -1 : 0; prev.setAttribute('aria-hidden', at === 0);
+      next.style.visibility = at === last ? 'hidden' : 'visible'; next.tabIndex = at === last ? -1 : 0; next.setAttribute('aria-hidden', at === last);
+      dots.forEach((el, i) => el.classList.toggle('on', i === at));
+      // same typing effect as the account terminal: each short value scrambles, then locks in left to right as its row slides in
+      pg.querySelectorAll('[data-dc]').forEach(el => {
+        const row = el.closest('[style*="--i"]'), i = row ? parseFloat(row.style.getPropertyValue('--i')) || 0 : 0;
+        el.style.visibility = 'hidden';
+        decrypt(el, { delay: i * 40, duration: Math.min(700, 260 + el.textContent.length * 22) });
+      });
+    };
+    prev.onclick = () => show(at - 1);
+    next.onclick = () => show(at + 1);
+    host.addEventListener('keydown', e => { if (e.key === 'ArrowLeft' && at > 0) { e.preventDefault(); show(at - 1) } else if (e.key === 'ArrowRight' && at < last) { e.preventDefault(); show(at + 1) } });
+    let sx = null;   // swipe on touch screens
+    pg.addEventListener('pointerdown', e => { sx = e.pointerType === 'touch' ? e.clientX : null });
+    pg.addEventListener('pointerup', e => { if (sx == null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 60) show(at + (dx < 0 ? 1 : -1)) });
+    host._show = show;
+    return host;
   }
 
   if (!o) {
@@ -66,73 +117,31 @@
   function render(db) {
     document.title = `${o.name} – Operators – Talos-II Archives`;
     $('#nm').textContent = o.name;
-    const x = OP_DETAIL[o.name] || {}, k = kitOf(o), ids = Object.entries(ID_MAP).filter(([, n]) => n === o.name).map(([i]) => i);
-    const fact = (l, v) => v ? `<div><dt>${l}</dt><dd>${v}</dd></div>` : '';
+    const x = OP_DETAIL[o.name] || {};
     const idx = sorted.findIndex(r => r.name === o.name), prev = sorted[(idx + sorted.length - 1) % sorted.length], next = sorted[(idx + 1) % sorted.length];
-    const picks = suggest([o.name], new Set(), 4);
-    const note = x.strategy || k.note || '';
-    const d = opRecord(db, o), P = d && d.profile;
+    const d = opRecord(db, o);
     // synced record first; the hand-written OP_DETAIL entry (Laevatain, Si) fills in whatever the record lacks
     const skills = d && d.skills.length ? d.skills : (x.skills || []).map(([t, n, desc]) => ({ label: t, name: n, desc: [desc], icon: '' }));
-    const talents = d && d.talents.length ? d.talents : (x.talents || []).map(([n, t]) => ({ name: n, icon: '', tiers: [{ label: '', text: t }] }));
-    const baseSk = d ? d.baseSkills : [];
-    const attrs = d && (d.mainAttr || d.subAttr) ? '' : x.attrs;
-    const attr = (n, ic) => n ? `${ic ? `<img class="od-ai" alt="" src="${esc(ic)}" onerror="this.remove()">` : ''}${esc(n)}` : '';
     const synced = db && db.generatedAt ? fmtDate(Date.parse(db.generatedAt)) : '';
 
     root.innerHTML = `<section class="od-hero" style="--c:${COL[o.element]}" data-rar="${o.rarity}">
-        <div class="od-art">${artHtml(o, 720, { whole: true })}<span class="od-bar"></span></div>
-        <div class="od-id">
-          <div class="od-stars">${stars(o.rarity)}</div>
-          <div class="od-tags"><span class="el">${icoEl(o.element)}${esc(o.element)}</span><span class="cl">${icoCls(o.cls)}${esc(o.cls)}</span><span class="wp">${esc(o.weapon)}</span></div>
-          ${(d && d.quote) || x.quote ? `<p class="od-quote">“${esc((d && d.quote) || x.quote)}”</p>` : ''}
-          <dl class="od-facts">
-            ${fact('Rarity', `${o.rarity}-star`)}${fact('Class', esc(o.cls))}${fact('Element', esc(o.element))}${fact('Weapon', esc(o.weapon))}
-            ${fact('Faction', d && d.faction ? `${d.factionIcon ? `<img class="od-ai" alt="" src="${esc(d.factionIcon)}" onerror="this.remove()">` : ''}${esc(d.faction)}` : esc(x.faction))}${d ? '' : fact('Race', esc(x.race))}
-            ${fact('Main attribute', attr(d && d.mainAttr, d && d.mainAttrIcon))}${fact('Sub attribute', attr(d && d.subAttr, d && d.subAttrIcon))}${fact('Attributes', esc(attrs))}
-            ${fact('Role tags', esc(((d && d.tags && d.tags.length ? d.tags : x.tags) || []).join(', ')))}${fact('How to obtain', esc((d && d.obtain) || x.obtain))}
-            ${fact('Internal ID', ids.length ? ids.map(i => `<code>${esc(i)}</code>`).join(' ') : '')}
-          </dl>
-          <div class="od-links"><a class="od-btn" href="${esc(wikiUrl(o))}" target="_blank" rel="noopener">Full page on the wiki ↗</a><a class="od-btn ghost" href="${esc(wikiUrl(o, '/Overview'))}" target="_blank" rel="noopener">Strategy overview ↗</a></div>
-        </div>
-      </section>
-
-      ${terminal(o, d, x)}
-
-      <section class="od-sec"><h3>Overview</h3>
-        <p>${esc(CLASS_INFO[o.cls])}</p>
-        ${note ? `<p>${esc(note)}</p>` : ''}
-        <div class="od-kit">
-          <div><small>Consumes / wants</small>${x.consumes ? chipsOf(x.consumes, {}) : chipsOf([...k.wants], WANT_LABEL)}</div>
-          <div><small>Inflicts / applies</small>${x.inflicts ? chipsOf([...x.inflicts, ...[...k.applies].filter(a => a.startsWith('inf:')).map(a => WANT_LABEL[a] || a)], {}) : chipsOf([...k.applies], { ...WANT_LABEL, 'inf:any': 'Any Arts Infliction' })}</div>
-          <div><small>Provides</small>${chipsOf([...k.provides], PROV)}</div>
-        </div>
+        <div class="od-art">${artHtml(o, 900, { whole: true })}<span class="od-bar"></span></div>
+        <div class="od-term" id="tmhost"></div>
       </section>
 
       <section class="od-sec"><div class="od-hd"><h3>Combat skills</h3>${skills.length ? '<button type="button" class="ghost od-xa" id="xa" data-open="0">Expand all</button>' : ''}</div>
         ${skills.length ? `<div class="od-skl" id="sk">${skills.map(skillItem).join('')}</div>` : `<p class="dim">No skill data for ${esc(o.name)} yet. Run <code>npm run sync</code>, or read them <a href="${esc(wikiUrl(o, '#Combat_Skills'))}" target="_blank" rel="noopener">on the wiki ↗</a>.</p>`}
       </section>
 
-      ${talents.length ? `<section class="od-sec"><h3>Talents</h3><div class="od-tls">${talents.map(tierItem).join('')}</div></section>` : ''}
-
-      ${baseSk.length ? `<section class="od-sec"><h3>Base skills</h3><p class="dim od-fine">Assignment effects when ${esc(o.name)} works in a facility, by tier.</p><div class="od-tls">${baseSk.map(tierItem).join('')}</div></section>` : ''}
-
-      ${x.stats ? `<section class="od-sec"><h3>Stats at max Elite</h3><div class="od-stats">${x.stats.map(([l, v]) => `<div><small>${l}</small><b>${v}</b></div>`).join('')}</div></section>` : ''}
-
-      ${(x.potentials || []).length ? `<section class="od-sec"><h3>Potentials</h3><ol class="od-pot">${x.potentials.map(([n, t], i) => `<li><span>P${i + 1}</span><div><b>${esc(n)}</b><p>${esc(t)}</p></div></li>`).join('')}</ol></section>` : ''}
-
-      <section class="od-sec"><h3>Team play</h3>
-        ${(x.partners || []).map(([n, t]) => { const p = lookup(n); return `<p class="od-line">${p ? `<a href="/operators/${opSlug(p.name)}"><b>${esc(p.name)}</b></a>` : `<b>${esc(n)}</b>`} ${esc(t)}</p>` }).join('')}
-        ${picks.length ? `<h4>Best fits from the squad checker</h4><div class="od-picks">${picks.map(s => `<a class="od-pick" href="/operators/${opSlug(s.op.name)}" style="--c:${COL[s.op.element]}"><b>${esc(s.op.name)}</b><small>${esc(s.op.element)} · ${esc(s.op.cls)} · ${esc(s.why)}${s.style ? ' · ' + esc(s.style) : ''}</small></a>`).join('')}</div>` : ''}
-        <p class="od-fine"><a href="/team">Open the Team Builder</a> to try ${esc(o.name)} in a squad.</p>
-      </section>
-
-      <section class="od-sec"><h3>${esc(o.element)} and ${esc(o.cls)}</h3>
-        <p>${esc(ELEMENT_INFO[o.element].text)} <span class="dim">Damage numbers are shown in ${ELEMENT_INFO[o.element].dmg}.</span></p>
-      </section>
-
       <nav class="od-nav"><a href="/operators/${opSlug(prev.name)}">‹ ${esc(prev.name)}</a><a href="/operators">All operators</a><a href="/operators/${opSlug(next.name)}">${esc(next.name)} ›</a></nav>
       <p class="dim od-fine">Operator data from the Endfield Talos Wiki (CC BY-SA)${synced ? `, synced ${esc(synced)}` : ''}. Always check the wiki for exact skill numbers.</p>`;
+
+    const tm = terminal(o, d, x);
+    $('#tmhost').appendChild(tm);
+    // the first page types in once the loading screen has cleared, like the title decrypt
+    let shown = false;
+    const go = () => { if (!shown) { shown = true; tm._show(0) } };
+    if (window.__flDone || !window.FL) go(); else { addEventListener('fl:done', () => setTimeout(go, 260), { once: true }); setTimeout(go, 9000) }
 
     const xa = $('#xa');
     if (xa) xa.onclick = () => { const open = xa.dataset.open !== '1'; $('#sk').querySelectorAll('details').forEach(el => { el.open = open }); xa.dataset.open = open ? '1' : '0'; xa.textContent = open ? 'Collapse all' : 'Expand all' };

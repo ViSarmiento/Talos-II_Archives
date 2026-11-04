@@ -1,6 +1,10 @@
 # Changelog
 Newest first. A new minor version is only used for a big change; small fixes are folded into the version they belong to.
 
+## 1.5.9 operator page rework
+- **Operator page trimmed to the splash art, a paged terminal and Combat skills.** The metadata table, wiki buttons, Overview, Team play, Element/Class notes, Talents, Base skills, Stats and Potentials sections are gone. The splash art is larger (about 1.1x the terminal's width, capped to the window height).
+- **Terminal carousel** with Prev/Next buttons (also arrow keys when the terminal is focused, and swipe on touch): 1 Top badges (rarity, class, weapon, element, faction, role tags, main and sub attribute), 2 Basic info (basic info, Oripathy status, physical exam), 3 Expertise and hobbies, 4 Recommended weapons (matching skills and stats, with icons). Prev is hidden on page 1, Next on the last page. Every page change replays the account terminal's row slide-in and the glyph-decrypt typing on short values.
+
 ## 1.5 (current)
 - **Operator pages now read a local, synced data file.** `npm run sync` (`scripts/sync-operators.mjs`) pulls every operator from `endfield.wiki.gg/api.php`, writes `public/data/operators.json` and downloads the icons to `public/img/wiki/`. The page no longer calls the wiki while someone browses (the live skill loader and its 7-day browser cache are gone).
 - Operator page: new terminal-style **Basic Info** panel (gender, authentication, date of birth, race, Oripathy status, physical exam, expertise, hobbies, recommended weapons with icons); header facts now include faction, main and sub attribute, role tags and how to obtain; **combat skills** are collapsible with their icons and an Expand all button; new **Talents** and **Base skills** sections with tier-by-tier effects. The page structure is otherwise unchanged. Laevatain's and Si's hand-written strategy, stats and potentials stay.
