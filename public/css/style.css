@@ -1,3054 +1,549 @@
-:root {
-  --bg: #0a0b0f;
-  --panel: rgba(16, 17, 22, .82);
-  --line: #2c2f37;
-  --text: #ebe7dc;
-  --dim: #8d909a;
-  --sig: #ffd21f;
-  --ember: #e0803c;
-  --cryo: #6fc3e8;
-  --nat: #8fd16a;
-  --ele: #c58bff;
-  --phy: #d8d3c4;
-  --heat: #ff6a3d;
-}
-* {
-  box-sizing: border-box;
-}
-html {
-  color-scheme: dark;
-}
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font: 16px/1.55 "IBM Plex Sans", system-ui, sans-serif;
-  min-height: 100vh;
-}
-#bg {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -2;
-}
-body:not([data-page=home]) #bg {
-  opacity: .45;
-}
-.hud {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(transparent 96%, rgba(255, 210, 31, .05) 96%) 0 0/100% 48px, linear-gradient(90deg, transparent 96%, rgba(255, 210, 31, .04) 96%) 0 0/48px 100%, radial-gradient(ellipse at 50% 40%, transparent 40%, rgba(0, 0, 0, .65));
-}
-h1, h2, h3, button {
-  font-family: "Chakra Petch", system-ui, sans-serif;
-}
-a {
-  color: inherit;
-}
-:focus-visible {
-  outline: 2px solid var(--sig);
-  outline-offset: 2px;
-}
-main {
-  padding: 32px clamp(16px, 4vw, 48px) 80px;
-  max-width: 1180px;
-  margin: auto;
-}
-.hero {
-  min-height: 78vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-width: 760px;
-  margin: 0 0 0 clamp(0px, 6vw, 90px);
-}
-.hero h1 {
-  font-size: clamp(46px, 9.5vw, 112px);
-  line-height: .92;
-  margin: 0 0 18px;
-  font-weight: 700;
-  letter-spacing: -.01em;
-  text-shadow: 0 0 40px rgba(255, 160, 70, .25);
-}
-.hero p {
-  max-width: 46ch;
-  color: #cfc9b8;
-  font-size: 18px;
-  margin: 0 0 26px;
-}
-.site-tag {
-  font: 13px "IBM Plex Mono", monospace;
-  color: var(--ember);
-  margin-bottom: 14px;
-}
-.uidbar {
-  display: flex;
-  gap: 0;
-  max-width: 520px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-}
-.uidbar:focus-within {
-  border-color: var(--sig);
-}
-input, select {
-  background: transparent;
-  border: 0;
-  color: var(--text);
-  font: inherit;
-  padding: 14px 16px;
-  flex: 1;
-  min-width: 0;
-}
-input:focus {
-  outline: 0;
-}
-button {
-  background: var(--sig);
-  color: #14120a;
-  border: 0;
-  font-weight: 700;
-  font-size: 15px;
-  padding: 0 22px;
-  cursor: pointer;
-}
-button:hover {
-  filter: brightness(1.1);
-}
-button.ghost {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--line);
-  padding: 8px 14px;
-}
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 14px;
-  margin-top: 34px;
-  max-width: 620px;
-}
-.card {
-  display: block;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--sig);
-  background: var(--panel);
-  text-decoration: none;
-}
-.card:hover {
-  border-left-color: var(--ember);
-}
-.card b {
-  display: block;
-  font-family: "Chakra Petch";
-  font-size: 18px;
-}
-.card span {
-  color: var(--dim);
-  font-size: 14px;
-}
-.panel {
-  border: 1px solid var(--line);
-  background: var(--panel);
-  padding: 18px 20px;
-  margin: 18px 0;
-}
-h2 {
-  font-size: 26px;
-  margin: 6px 0 14px;
-}
-.dim {
-  color: var(--dim);
-}
-.err {
-  color: #ff8a7a;
-}
-.ok {
-  color: var(--nat);
-}
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 10px 0;
-}
-.chip {
-  border: 1px solid var(--line);
-  padding: 3px 10px;
-  font-size: 13px;
-  background: rgba(255, 255, 255, .03);
-  cursor: pointer;
-  color: var(--text);
-}
-.chip.on {
-  border-color: var(--sig);
-  color: var(--sig);
-}
-details pre {
-  max-height: 320px;
-  overflow: auto;
-  background: #07080b;
-  padding: 12px;
-  font-size: 12px;
-}
-@media(prefers-reduced-motion:reduce) {
-  * {
-    animation: none !important;
-  }
-}
+:root{--bg:#0a0b0f;--panel:rgba(16,17,22,.82);--line:#2c2f37;--text:#ebe7dc;--dim:#8d909a;--sig:#ffd21f;--ember:#e0803c;--cryo:#6fc3e8;--nat:#8fd16a;--ele:#c58bff;--phy:#d8d3c4;--heat:#ff6a3d}
+*{box-sizing:border-box}html{color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 "IBM Plex Sans",system-ui,sans-serif;min-height:100vh}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:-2}
+body:not([data-page=home]) #bg{opacity:.45}
+.hud{position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(transparent 96%,rgba(255,210,31,.05) 96%) 0 0/100% 48px,linear-gradient(90deg,transparent 96%,rgba(255,210,31,.04) 96%) 0 0/48px 100%,radial-gradient(ellipse at 50% 40%,transparent 40%,rgba(0,0,0,.65))}
+h1,h2,h3,button{font-family:"Chakra Petch",system-ui,sans-serif}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+main{padding:32px clamp(16px,4vw,48px) 80px;max-width:1180px;margin:auto}
+.hero{min-height:78vh;display:flex;flex-direction:column;justify-content:center;max-width:760px;margin:0 0 0 clamp(0px,6vw,90px)}
+.hero h1{font-size:clamp(46px,9.5vw,112px);line-height:.92;margin:0 0 18px;font-weight:700;letter-spacing:-.01em;text-shadow:0 0 40px rgba(255,160,70,.25)}
+.hero p{max-width:46ch;color:#cfc9b8;font-size:18px;margin:0 0 26px}
+.site-tag{font:13px "IBM Plex Mono",monospace;color:var(--ember);margin-bottom:14px}
+.uidbar{display:flex;gap:0;max-width:520px;border:1px solid var(--line);background:var(--panel)}
+.uidbar:focus-within{border-color:var(--sig)}
+input,select{background:transparent;border:0;color:var(--text);font:inherit;padding:14px 16px;flex:1;min-width:0}
+input:focus{outline:0}
+button{background:var(--sig);color:#14120a;border:0;font-weight:700;font-size:15px;padding:0 22px;cursor:pointer}
+button:hover{filter:brightness(1.1)}button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);padding:8px 14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:34px;max-width:620px}
+.card{display:block;padding:16px 18px;border:1px solid var(--line);border-left:3px solid var(--sig);background:var(--panel);text-decoration:none}
+.card:hover{border-left-color:var(--ember)}.card b{display:block;font-family:"Chakra Petch";font-size:18px}.card span{color:var(--dim);font-size:14px}
+.panel{border:1px solid var(--line);background:var(--panel);padding:18px 20px;margin:18px 0}
+h2{font-size:26px;margin:6px 0 14px}.dim{color:var(--dim)}.err{color:#ff8a7a}.ok{color:var(--nat)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border:1px solid var(--line);padding:3px 10px;font-size:13px;background:rgba(255,255,255,.03);cursor:pointer;color:var(--text)}
+.chip.on{border-color:var(--sig);color:var(--sig)}
+details pre{max-height:320px;overflow:auto;background:#07080b;padding:12px;font-size:12px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
 
 /* ---- portrait cards (team builder, account) ---- */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px;
-}
-.op {
-  --r: var(--sig);
-  position: relative;
-  display: block;
-  padding: 0;
-  overflow: hidden;
-  text-align: left;
-  color: var(--text);
-  font: inherit;
-  cursor: pointer;
-  border: 1px solid var(--line);
-  border-bottom: 3px solid var(--r);
-  background: #0d0e13;
-  aspect-ratio: 3/4;
-  transition: transform .15s, border-color .15s, box-shadow .15s;
-}
-.op:hover {
-  transform: translateY(-3px);
-  border-color: var(--c, var(--sig));
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .5), 0 0 0 1px var(--c, var(--sig));
-}
-.op.in {
-  opacity: .35;
-  filter: grayscale(.6);
-}
-.op[data-rar="6"] {
-  --r: #ff8a2e;
-}
-.op[data-rar="5"] {
-  --r: #ffd21f;
-}
-.op[data-rar="4"] {
-  --r: #b58cff;
-}
-.op[data-rar="0"] {
-  --r: var(--line);
-}
-.art {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 28%, color-mix(in srgb, var(--c, #555) 38%, #15161c), #0b0c10 75%);
-  overflow: hidden;
-}
-.art .mono {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font: 700 clamp(34px, 5vw, 56px)/1 "Chakra Petch", sans-serif;
-  color: color-mix(in srgb, var(--c, #777) 55%, #000);
-  letter-spacing: .04em;
-}
-.art .pic {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 18%;
-}
-.op .shade {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 58%;
-  background: linear-gradient(transparent, rgba(5, 6, 9, .94) 70%);
-  pointer-events: none;
-}
-.op .meta {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 10px 11px 9px;
-}
-.op .meta b {
-  display: block;
-  font: 700 16px/1.15 "Chakra Petch";
-  text-shadow: 0 1px 6px #000;
-}
-.op .meta small {
-  display: block;
-  color: #b9bcc6;
-  font-size: 12px;
-  margin-top: 2px;
-}
-.op .meta .st {
-  color: var(--r);
-  letter-spacing: .06em;
-  font-size: 11px;
-}
-.op .el {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 1px 8px;
-  font: 700 11px "Chakra Petch";
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  background: rgba(6, 7, 10, .78);
-  color: var(--c);
-  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
-}
-.op .badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font: 12px "IBM Plex Mono", monospace;
-  background: rgba(6, 7, 10, .78);
-  padding: 1px 6px;
-  color: var(--text);
-  border: 1px solid var(--line);
-}
-.op.unk .art .mono {
-  font-size: 28px;
-}
-.op.unk .meta small {
-  font-family: "IBM Plex Mono", monospace;
-  word-break: break-all;
-}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.op{--r:var(--sig);position:relative;display:block;padding:0;overflow:hidden;text-align:left;color:var(--text);font:inherit;cursor:pointer;border:1px solid var(--line);border-bottom:3px solid var(--r);background:#0d0e13;aspect-ratio:3/4;transition:transform .15s,border-color .15s,box-shadow .15s}
+.op:hover{transform:translateY(-3px);border-color:var(--c,var(--sig));box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 0 1px var(--c,var(--sig))}
+.op.in{opacity:.35;filter:grayscale(.6)}
+.op[data-rar="6"]{--r:#ff8a2e}.op[data-rar="5"]{--r:#ffd21f}.op[data-rar="4"]{--r:#b58cff}.op[data-rar="0"]{--r:var(--line)}
+.art{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 28%,color-mix(in srgb,var(--c,#555) 38%,#15161c),#0b0c10 75%);overflow:hidden}
+.art .mono{position:absolute;inset:0;display:grid;place-items:center;font:700 clamp(34px,5vw,56px)/1 "Chakra Petch",sans-serif;color:color-mix(in srgb,var(--c,#777) 55%,#000);letter-spacing:.04em}
+.art .pic{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.op .shade{position:absolute;inset:auto 0 0 0;height:58%;background:linear-gradient(transparent,rgba(5,6,9,.94) 70%);pointer-events:none}
+.op .meta{position:absolute;left:0;right:0;bottom:0;padding:10px 11px 9px}
+.op .meta b{display:block;font:700 16px/1.15 "Chakra Petch";text-shadow:0 1px 6px #000}
+.op .meta small{display:block;color:#b9bcc6;font-size:12px;margin-top:2px}
+.op .meta .st{color:var(--r);letter-spacing:.06em;font-size:11px}
+.op .el{position:absolute;top:8px;left:8px;padding:1px 8px;font:700 11px "Chakra Petch";letter-spacing:.06em;text-transform:uppercase;background:rgba(6,7,10,.78);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
+.op .badge{position:absolute;top:8px;right:8px;font:12px "IBM Plex Mono",monospace;background:rgba(6,7,10,.78);padding:1px 6px;color:var(--text);border:1px solid var(--line)}
+.op.unk .art .mono{font-size:28px}
+.op.unk .meta small{font-family:"IBM Plex Mono",monospace;word-break:break-all}
 
 /* ---- team slots ---- */
-.slots {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 6px;
-}
-.slot {
-  --r: var(--line);
-  position: relative;
-  aspect-ratio: 3/4;
-  border: 1px dashed var(--line);
-  background: var(--panel);
-  display: grid;
-  place-items: center;
-  color: var(--dim);
-  overflow: hidden;
-}
-.slot.f {
-  border-style: solid;
-  border-bottom: 3px solid var(--r);
-  background: #0d0e13;
-}
-.slot.f[data-rar="6"] {
-  --r: #ff8a2e;
-}
-.slot.f[data-rar="5"] {
-  --r: #ffd21f;
-}
-.slot.f[data-rar="4"] {
-  --r: #b58cff;
-}
-.slot .n {
-  position: absolute;
-  left: 10px;
-  top: 8px;
-  font: 700 12px "IBM Plex Mono", monospace;
-  color: var(--dim);
-  z-index: 2;
-}
-.slot.f .n {
-  display: none;
-}
-.slot .x {
-  position: absolute;
-  right: 6px;
-  top: 4px;
-  background: rgba(6, 7, 10, .7);
-  color: var(--text);
-  padding: 0 9px;
-  font-size: 20px;
-  line-height: 26px;
-  z-index: 3;
-}
-.slot .x:hover {
-  background: var(--heat);
-}
-.slot .meta {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 12px;
-  z-index: 2;
-}
-.slot .meta b {
-  display: block;
-  font: 700 clamp(16px, 2vw, 22px)/1.1 "Chakra Petch";
-  text-shadow: 0 1px 8px #000;
-}
-.slot .meta small {
-  color: #c4c7d0;
-  font-size: 13px;
-}
-.slot .shade {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 55%;
-  background: linear-gradient(transparent, rgba(5, 6, 9, .95) 70%);
-}
-.slot .el {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 1px 8px;
-  font: 700 11px "Chakra Petch";
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  background: rgba(6, 7, 10, .78);
-  color: var(--c);
-  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
-  z-index: 2;
-}
-.slot .plus {
-  font: 300 38px "Chakra Petch";
-  opacity: .5;
-}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:6px}
+.slot{--r:var(--line);position:relative;aspect-ratio:3/4;border:1px dashed var(--line);background:var(--panel);display:grid;place-items:center;color:var(--dim);overflow:hidden}
+.slot.f{border-style:solid;border-bottom:3px solid var(--r);background:#0d0e13}
+.slot.f[data-rar="6"]{--r:#ff8a2e}.slot.f[data-rar="5"]{--r:#ffd21f}.slot.f[data-rar="4"]{--r:#b58cff}
+.slot .n{position:absolute;left:10px;top:8px;font:700 12px "IBM Plex Mono",monospace;color:var(--dim);z-index:2}
+.slot.f .n{display:none}
+.slot .x{position:absolute;right:6px;top:4px;background:rgba(6,7,10,.7);color:var(--text);padding:0 9px;font-size:20px;line-height:26px;z-index:3}
+.slot .x:hover{background:var(--heat)}
+.slot .meta{position:absolute;left:0;right:0;bottom:0;padding:12px;z-index:2}
+.slot .meta b{display:block;font:700 clamp(16px,2vw,22px)/1.1 "Chakra Petch";text-shadow:0 1px 8px #000}
+.slot .meta small{color:#c4c7d0;font-size:13px}
+.slot .shade{position:absolute;inset:auto 0 0 0;height:55%;background:linear-gradient(transparent,rgba(5,6,9,.95) 70%)}
+.slot .el{position:absolute;top:8px;left:8px;padding:1px 8px;font:700 11px "Chakra Petch";letter-spacing:.06em;text-transform:uppercase;background:rgba(6,7,10,.78);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent);z-index:2}
+.slot .plus{font:300 38px "Chakra Petch";opacity:.5}
 
 /* ---- synergy panel ---- */
-.links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 10px 0 0;
-  min-height: 8px;
-}
-.link {
-  font: 13px "IBM Plex Mono", monospace;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, .03);
-  padding: 2px 10px;
-  color: #d9d2bf;
-}
-.link i {
-  font-style: normal;
-  color: var(--sig);
-  margin: 0 6px;
-}
-.syn {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 22px;
-}
-.score {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-right: 1px solid var(--line);
-  padding-right: 22px;
-  text-align: center;
-}
-.score .ring {
-  --p: 0;
-  --k: var(--sig);
-  width: 128px;
-  height: 128px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: conic-gradient(var(--k) calc(var(--p)*1%), #23252d 0);
-}
-.score .ring::before {
-  content: "";
-  grid-area: 1/1;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: #101116;
-}
-.score .ring b {
-  grid-area: 1/1;
-  font: 700 36px "Chakra Petch";
-  z-index: 1;
-}
-.score .lbl {
-  margin-top: 10px;
-  font: 700 17px "Chakra Petch";
-  letter-spacing: .04em;
-}
-.score small {
-  color: var(--dim);
-}
-.bars {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 8px 18px;
-  margin-bottom: 12px;
-}
-.bar {
-  font-size: 12px;
-  color: var(--dim);
-}
-.bar div {
-  height: 6px;
-  background: #23252d;
-  margin-top: 3px;
-}
-.bar i {
-  display: block;
-  height: 100%;
-  background: var(--sig);
-}
-.chk {
-  display: flex;
-  gap: 10px;
-  padding: 6px 0;
-  border-top: 1px solid rgba(255, 255, 255, .05);
-  font-size: 14px;
-}
-.chk:first-of-type {
-  border-top: 0;
-}
-.chk .ic {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  display: grid;
-  place-items: center;
-  font: 700 12px "Chakra Petch";
-  background: #23252d;
-  color: #fff;
-}
-.chk.good .ic {
-  background: #2f6b3a;
-}
-.chk.warn .ic {
-  background: #a4561f;
-}
-.chk.info .ic {
-  background: #33506b;
-}
-.chk b {
-  font-family: "Chakra Petch";
-  font-weight: 700;
-}
-.chk span {
-  color: #b9bcc6;
-}
-.sug {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 4px 0 8px;
-}
-.sg {
-  --c: var(--sig);
-  flex: none;
-  width: 210px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  text-align: left;
-  background: rgba(255, 255, 255, .03);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--c);
-  color: var(--text);
-  font: inherit;
-  padding: 6px 10px 6px 6px;
-}
-.sg:hover {
-  border-color: var(--sig);
-}
-.sg .art {
-  position: relative;
-  inset: auto;
-  width: 46px;
-  height: 46px;
-  flex: none;
-}
-.sg .art .mono {
-  font-size: 18px;
-}
-.sg b {
-  display: block;
-  font: 700 15px "Chakra Petch";
-}
-.sg small {
-  display: block;
-  color: var(--dim);
-  font-size: 12px;
-  line-height: 1.3;
-}
-.sg em {
-  font-style: normal;
-  color: var(--sig);
-}
-.kit {
-  font-size: 13px;
-  color: var(--dim);
-  margin-top: 8px;
-}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;min-height:8px}
+.link{font:13px "IBM Plex Mono",monospace;border:1px solid var(--line);background:rgba(255,255,255,.03);padding:2px 10px;color:#d9d2bf}
+.link i{font-style:normal;color:var(--sig);margin:0 6px}
+.syn{display:grid;grid-template-columns:200px 1fr;gap:22px}
+.score{display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid var(--line);padding-right:22px;text-align:center}
+.score .ring{--p:0;--k:var(--sig);width:128px;height:128px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--k) calc(var(--p)*1%),#23252d 0)}
+.score .ring::before{content:"";grid-area:1/1;width:100px;height:100px;border-radius:50%;background:#101116}
+.score .ring b{grid-area:1/1;font:700 36px "Chakra Petch";z-index:1}
+.score .lbl{margin-top:10px;font:700 17px "Chakra Petch";letter-spacing:.04em}
+.score small{color:var(--dim)}
+.bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px 18px;margin-bottom:12px}
+.bar{font-size:12px;color:var(--dim)}.bar div{height:6px;background:#23252d;margin-top:3px}.bar i{display:block;height:100%;background:var(--sig)}
+.chk{display:flex;gap:10px;padding:6px 0;border-top:1px solid rgba(255,255,255,.05);font-size:14px}
+.chk:first-of-type{border-top:0}
+.chk .ic{flex:none;width:20px;height:20px;display:grid;place-items:center;font:700 12px "Chakra Petch";background:#23252d;color:#fff}
+.chk.good .ic{background:#2f6b3a}.chk.warn .ic{background:#a4561f}.chk.info .ic{background:#33506b}
+.chk b{font-family:"Chakra Petch";font-weight:700}.chk span{color:#b9bcc6}
+.sug{display:flex;gap:10px;overflow-x:auto;padding:4px 0 8px}
+.sg{--c:var(--sig);flex:none;width:210px;display:flex;gap:10px;align-items:center;text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);border-left:3px solid var(--c);color:var(--text);font:inherit;padding:6px 10px 6px 6px}
+.sg:hover{border-color:var(--sig)}
+.sg .art{position:relative;inset:auto;width:46px;height:46px;flex:none}
+.sg .art .mono{font-size:18px}
+.sg b{display:block;font:700 15px "Chakra Petch"}.sg small{display:block;color:var(--dim);font-size:12px;line-height:1.3}
+.sg em{font-style:normal;color:var(--sig)}
+.kit{font-size:13px;color:var(--dim);margin-top:8px}
 
 /* ---- filters / profile ---- */
-.tools {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-  margin: 18px 0 6px;
-}
-.fbar {
-  display: flex;
-  gap: 6px 14px;
-  flex-wrap: wrap;
-  align-items: center;
-  margin: 4px 0 10px;
-}
-.fbar .chips {
-  margin: 0;
-}
-.fbar .sep {
-  width: 1px;
-  height: 20px;
-  background: var(--line);
-}
-.chip.on {
-  background: rgba(255, 210, 31, .08);
-}
-.chip[data-fe].on {
-  box-shadow: inset 0 -2px 0 var(--c);
-}
-.pgrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 14px 22px;
-  margin-top: 12px;
-}
-.pgrid div {
-  font-size: 12px;
-  color: var(--dim);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-.pgrid b {
-  display: block;
-  font: 700 22px "Chakra Petch";
-  color: var(--text);
-  text-transform: none;
-  letter-spacing: 0;
-}
-.stat {
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 13px;
-}
-.note {
-  border-left: 3px solid var(--ember);
-  padding: 6px 12px;
-  margin: 6px 0;
-  color: #d9d2bf;
-}
-.note.ok {
-  border-color: var(--nat);
-}
-.row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-@media(max-width:820px) {
-  .syn {
-    grid-template-columns: 1fr;
-  }
-  .score {
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    padding: 0 0 18px;
-  }
-}
-@media(max-width:700px) {
-  .slots {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-  }
-}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 6px}
+.fbar{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}
+.fbar .chips{margin:0}.fbar .sep{width:1px;height:20px;background:var(--line)}
+.chip.on{background:rgba(255,210,31,.08)}
+.chip[data-fe].on{box-shadow:inset 0 -2px 0 var(--c)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px 22px;margin-top:12px}
+.pgrid div{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}.pgrid b{display:block;font:700 22px "Chakra Petch";color:var(--text);text-transform:none;letter-spacing:0}
+.stat{display:flex;gap:18px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:13px}
+.note{border-left:3px solid var(--ember);padding:6px 12px;margin:6px 0;color:#d9d2bf}
+.note.ok{border-color:var(--nat)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+@media(max-width:820px){.syn{grid-template-columns:1fr}.score{border-right:0;border-bottom:1px solid var(--line);padding:0 0 18px}}
+@media(max-width:700px){.slots{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}}
 
-.op.in::after {
-  content: 'ON TEAM';
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  transform: translate(-50%, -50%);
-  font: 700 12px 'Chakra Petch';
-  letter-spacing: .14em;
-  color: var(--text);
-  background: rgba(6, 7, 10, .85);
-  border: 1px solid var(--line);
-  padding: 3px 10px;
-}
-.op.in {
-  opacity: .5;
-}
-.grid + .note, .note + .row, .panel + .note {
-  margin-top: 14px;
-}
-.note {
-  margin: 12px 0;
-}
+.op.in::after{content:'ON TEAM';position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font:700 12px 'Chakra Petch';letter-spacing:.14em;color:var(--text);background:rgba(6,7,10,.85);border:1px solid var(--line);padding:3px 10px}
+.op.in{opacity:.5}
+.grid+.note,.note+.row,.panel+.note{margin-top:14px}.note{margin:12px 0}
 
 /* decryption text */
-.dc.u {
-  color: var(--sig);
-  opacity: .8;
-  font-size: .88em;
-}
-.dc.ac {
-  color: var(--sig);
-}
-.dc {
-  text-align: center;
-}
-h1[data-decrypt], h2[data-decrypt] {
-  white-space: pre-line;
-}
+.dc.u{color:var(--sig);opacity:.8;font-size:.88em}.dc.ac{color:var(--sig)}.dc{text-align:center}
+h1[data-decrypt],h2[data-decrypt]{white-space:pre-line}
 
 /* ---- shared background: gray field + black-space circle (see Black Space mockup) ---- */
-body {
-  background: #8d8d8f;
-}
-.scene {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  overflow: hidden;
-  background: radial-gradient(ellipse at 24% 62%, #9b9b9d, #868688 62%, #6c6c6f);
-}
-.scene .lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: .13;
-}
-.scene .vig {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 40% 50%, transparent 55%, rgba(0, 0, 0, .35));
-}
-.orb {
-  --sc: #ccc;
-  position: absolute;
-  left: 52vw;
-  top: calc(25vh - 29.5vw);
-  width: 59vw;
-  height: 59vw;
-  border-radius: 50%;
-  background: #000;
-  overflow: hidden;
-  box-shadow: 0 30px 90px rgba(0, 0, 0, .45);
-}
-.orb .dij {
-  position: absolute;
-  inset: -6%;
-  width: 112%;
-  height: 112%;
-  object-fit: cover;
-  object-position: 68% 52%;
-  animation: drift 18s ease-in-out infinite alternate;
-}
-@keyframes drift {
-  to {
-    transform: translate(-10px, 8px) rotate(-.6deg);
-  }
-}
-.orb .rim {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  box-shadow: inset 0 0 90px rgba(120, 150, 255, .14), inset 0 -40px 120px rgba(0, 0, 0, .6);
-}
-body:not([data-page=home]) main {
-  width: min(1180px, calc(100% - 32px));
-  margin: 24px auto 40px;
-  background: rgba(9, 10, 14, .8);
-  backdrop-filter: blur(3px);
-  border: 1px solid #1d1f26;
-}
-body[data-page=home] .hero {
-  max-width: min(700px, 49vw);
-}
-body[data-page=home] .hero h1 {
-  font-size: clamp(42px, 7vw, 104px);
-}
-body[data-page=home] h1 {
-  color: #0a0a0c;
-  text-shadow: none;
-}
-body[data-page=home] .hero p {
-  color: #17171a;
-}
-body[data-page=home] .site-tag {
-  color: #26262a;
-}
-body[data-page=home] .dc.u {
-  color: #3b3b40;
-}
-body[data-page=home] .dc.ac {
-  color: #a24a0c;
-}
-.uidbar button {
-  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
-}
-.uidbar.bad {
-  border-color: #ff8a7a;
-  animation: nudge .25s 2;
-}
-@keyframes nudge {
-  50% {
-    transform: translateX(5px);
-  }
-}
-@media(max-width:820px) {
-  .orb {
-    left: -22vw;
-    top: 46vh;
-    width: 144vw;
-    height: 144vw;
-  }
-  body[data-page=home] .hero {
-    max-width: none;
-    margin: 0;
-    min-height: 0;
-    padding-top: 4vh;
-  }
+body{background:#8d8d8f}
+.scene{position:fixed;inset:0;z-index:-2;overflow:hidden;background:radial-gradient(ellipse at 24% 62%,#9b9b9d,#868688 62%,#6c6c6f)}
+.scene .lines{position:absolute;inset:0;width:100%;height:100%;opacity:.13}
+.scene .vig{position:absolute;inset:0;background:radial-gradient(ellipse at 40% 50%,transparent 55%,rgba(0,0,0,.35))}
+.orb{--sc:#ccc;position:absolute;left:52vw;top:calc(25vh - 29.5vw);width:59vw;height:59vw;border-radius:50%;background:#000;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.45)}
+.orb .dij{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;object-position:68% 52%;animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(-10px,8px) rotate(-.6deg)}}
+.orb .rim{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 90px rgba(120,150,255,.14),inset 0 -40px 120px rgba(0,0,0,.6)}
+body:not([data-page=home]) main{width:min(1180px,calc(100% - 32px));margin:24px auto 40px;background:rgba(9,10,14,.8);backdrop-filter:blur(3px);border:1px solid #1d1f26}
+body[data-page=home] .hero{max-width:min(700px,49vw)}
+body[data-page=home] .hero h1{font-size:clamp(42px,7vw,104px)}
+body[data-page=home] h1{color:#0a0a0c;text-shadow:none}
+body[data-page=home] .hero p{color:#17171a}
+body[data-page=home] .site-tag{color:#26262a}
+body[data-page=home] .dc.u{color:#3b3b40}body[data-page=home] .dc.ac{color:#a24a0c}
+.uidbar button{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+.uidbar.bad{border-color:#ff8a7a;animation:nudge .25s 2}
+@keyframes nudge{50%{transform:translateX(5px)}}
+@media(max-width:820px){
+  .orb{left:-22vw;top:46vh;width:144vw;height:144vw}
+  body[data-page=home] .hero{max-width:none;margin:0;min-height:0;padding-top:4vh}
 }
 /* ---- card art framing: focus on the operator, not the whole splash ---- */
-.art .pic {
-  object-position: var(--fx, 50%) var(--fy, 14%);
-  transform: scale(var(--fz, 1.55));
-  transform-origin: var(--fx, 50%) var(--fy, 14%);
-}
-.art .pic.ico {
-  transform: none;
-  object-position: 50% 20%;
-}
+.art .pic{object-position:var(--fx,50%) var(--fy,14%);transform:scale(var(--fz,1.55));transform-origin:var(--fx,50%) var(--fy,14%)}
+.art .pic.ico{transform:none;object-position:50% 20%}
 /* ---- account: loading skeleton + header row ---- */
-.acct[hidden] {
-  display: none;
-}
-.acct {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-}
-.sk {
-  border: 1px solid var(--line);
-  background: var(--panel);
-  padding: 18px 20px;
-  margin: 18px 0;
-}
-.sk i {
-  display: block;
-  height: 14px;
-  margin: 8px 0;
-  background: linear-gradient(90deg, #1b1d24 25%, #2a2d37 50%, #1b1d24 75%) 0 0/200% 100%;
-  animation: sh 1.2s linear infinite;
-}
-.sk .grid i {
-  height: auto;
-  aspect-ratio: 3/4;
-  margin: 0;
-}
-@keyframes sh {
-  to {
-    background-position: -200% 0;
-  }
-}
-/* ================= 1.5: sidebar, fixed footer, centred art, silhouettes ================= */
-:root {
-  --rw: 64px;
-}
-body {
-  padding-left: var(--rw);
-  padding-bottom: 58px;
-}
-.rail {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--rw);
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: rgba(8, 9, 12, .92);
-  backdrop-filter: blur(8px);
-  border-right: 1px solid var(--line);
-  transition: width .3s cubic-bezier(.2, .8, .2, 1), box-shadow .3s;
-  animation: railIn .7s cubic-bezier(.2, .8, .2, 1) both;
-}
-.rail:hover, .rail:focus-within, .rail.pin {
-  width: 226px;
-  box-shadow: 14px 0 44px rgba(0, 0, 0, .55);
-}
-@keyframes railIn {
-  from {
-    transform: translateX(-100%);
-  }
-}
-.rail .tx {
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: opacity .2s, transform .3s cubic-bezier(.2, .8, .2, 1);
-}
-.rail:hover .tx, .rail:focus-within .tx, .rail.pin .tx {
-  opacity: 1;
-  transform: none;
-  transition-delay: .06s;
-}
-.rl-logo {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  height: 72px;
-  flex: none;
-  padding: 0 calc((var(--rw) - 36px)/2);
-  color: var(--text);
-  text-decoration: none;
-  font: 700 14px/1.15 "Chakra Petch", sans-serif;
-  letter-spacing: .07em;
-  border-bottom: 1px solid var(--line);
-}
-.rl-logo i {
-  color: var(--sig);
-  font-style: normal;
-}
-.rl-logo .mk {
-  flex: none;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--sig);
-  font-size: 12px;
-  letter-spacing: 0;
-  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
-}
-.rl-logo img {
-  display: block;
-  flex: none;
-  height: 52px;
-  width: auto;
-  max-width: calc(var(--rw) - 16px);
-  margin: 0 auto;
-}
-.rail nav {
-  position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 0;
-}
-.rail nav a {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 46px;
-  flex: none;
-  padding: 0 calc((var(--rw) - 28px)/2);
-  color: var(--dim);
-  text-decoration: none;
-  font: 500 15px "Chakra Petch", sans-serif;
-  letter-spacing: .03em;
-}
-.rail nav a:hover, .rail nav a.on {
-  color: var(--text);
-}
-.rail nav a.on .ic {
-  color: var(--sig);
-}
-.rail .ind {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 46px;
-  border-left: 3px solid var(--sig);
-  background: linear-gradient(90deg, rgba(255, 210, 31, .18), transparent 85%);
-  opacity: 0;
-  pointer-events: none;
-}
-.rail .ind.go {
-  transition: transform .34s cubic-bezier(.2, .9, .25, 1), height .2s, opacity .2s;
-}
-.ic {
-  flex: none;
-  width: 28px;
-  height: 28px;
-  background: currentColor;
-  -webkit-mask: var(--m) center/contain no-repeat;
-  mask: var(--m) center/contain no-repeat;
-  transition: color .2s, transform .3s;
-}
-.rail nav a:hover .ic {
-  transform: scale(1.1);
-}
-.rail .rl-pin {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 46px;
-  flex: none;
-  width: 100%;
-  padding: 0 calc((var(--rw) - 28px)/2);
-  background: transparent;
-  color: var(--dim);
-  border-top: 1px solid var(--line);
-  font: 500 13px "Chakra Petch", sans-serif;
-  text-align: left;
-}
-.rl-pin > span:first-child {
-  width: 28px;
-  text-align: center;
-  font-size: 20px;
-  line-height: 1;
-}
-.rl-pin:hover {
-  color: var(--text);
-  filter: none;
-}
+.acct[hidden]{display:none}
+.acct{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.sk{border:1px solid var(--line);background:var(--panel);padding:18px 20px;margin:18px 0}
+.sk i{display:block;height:14px;margin:8px 0;background:linear-gradient(90deg,#1b1d24 25%,#2a2d37 50%,#1b1d24 75%) 0 0/200% 100%;animation:sh 1.2s linear infinite}
+.sk .grid i{height:auto;aspect-ratio:3/4;margin:0}
+@keyframes sh{to{background-position:-200% 0}}
 
-footer {
-  position: fixed;
-  left: var(--rw);
-  right: 0;
-  bottom: 0;
-  z-index: 4;
-  padding: 7px 16px;
-  text-align: center;
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--dim);
-  background: rgba(8, 9, 12, .88);
-  border-top: 1px solid #1d1f26;
-  pointer-events: none;
-}
-.hero {
-  margin-left: clamp(0px, 4vw, 70px);
-}
+/* ================= 1.5: sidebar, fixed footer, centred art, silhouettes ================= */
+:root{--rw:64px}
+body{padding-left:var(--rw);padding-bottom:58px}
+.rail{position:fixed;left:0;top:0;bottom:0;width:var(--rw);z-index:20;display:flex;flex-direction:column;overflow:hidden;background:rgba(8,9,12,.92);backdrop-filter:blur(8px);border-right:1px solid var(--line);transition:width .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s;animation:railIn .7s cubic-bezier(.2,.8,.2,1) both}
+.rail:hover,.rail:focus-within,.rail.pin{width:226px;box-shadow:14px 0 44px rgba(0,0,0,.55)}
+@keyframes railIn{from{transform:translateX(-100%)}}
+.rail .tx{white-space:nowrap;opacity:0;transform:translateX(-10px);transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1)}
+.rail:hover .tx,.rail:focus-within .tx,.rail.pin .tx{opacity:1;transform:none;transition-delay:.06s}
+.rl-logo{display:flex;align-items:center;gap:14px;height:72px;flex:none;padding:0 calc((var(--rw) - 36px)/2);color:var(--text);text-decoration:none;font:700 14px/1.15 "Chakra Petch",sans-serif;letter-spacing:.07em;border-bottom:1px solid var(--line)}
+.rl-logo i{color:var(--sig);font-style:normal}
+.rl-logo .mk{flex:none;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--sig);font-size:12px;letter-spacing:0;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%)}
+.rail nav{position:relative;flex:1;display:flex;flex-direction:column;gap:4px;padding:14px 0}
+.rail nav a{position:relative;z-index:1;display:flex;align-items:center;gap:16px;height:46px;flex:none;padding:0 calc((var(--rw) - 28px)/2);color:var(--dim);text-decoration:none;font:500 15px "Chakra Petch",sans-serif;letter-spacing:.03em}
+.rail nav a:hover,.rail nav a.on{color:var(--text)}
+.rail nav a.on .ic{color:var(--sig)}
+.rail .ind{position:absolute;left:0;top:0;width:100%;height:46px;border-left:3px solid var(--sig);background:linear-gradient(90deg,rgba(255,210,31,.18),transparent 85%);opacity:0;pointer-events:none}
+.rail .ind.go{transition:transform .34s cubic-bezier(.2,.9,.25,1),height .2s,opacity .2s}
+.ic{flex:none;width:28px;height:28px;background:currentColor;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;transition:color .2s,transform .3s}
+.rail nav a:hover .ic{transform:scale(1.1)}
+.rail .rl-pin{display:flex;align-items:center;gap:16px;height:46px;flex:none;width:100%;padding:0 calc((var(--rw) - 28px)/2);background:transparent;color:var(--dim);border-top:1px solid var(--line);font:500 13px "Chakra Petch",sans-serif;text-align:left}
+.rl-pin>span:first-child{width:28px;text-align:center;font-size:20px;line-height:1}
+.rl-pin:hover{color:var(--text);filter:none}
+
+footer{position:fixed;left:var(--rw);right:0;bottom:0;z-index:4;padding:7px 16px;text-align:center;font-size:11px;line-height:1.4;color:var(--dim);background:rgba(8,9,12,.88);border-top:1px solid #1d1f26;pointer-events:none}
+.hero{margin-left:clamp(0px,4vw,70px)}
 
 /* account: empty-state message */
-#st.empty {
-  min-height: 46vh;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 24px;
-  font-size: 18px;
-  max-width: 34ch;
-  margin: 0 auto;
-}
+#st.empty{min-height:46vh;display:grid;place-items:center;text-align:center;padding:24px;font-size:18px;max-width:34ch;margin:0 auto}
 
 /* art: centred operator, duo frame for Endministrator */
-.art.has .mono {
-  display: none;
-}
-.art .pic.fit {
-  will-change: auto;
-}
-.art.duo .pic {
-  right: auto;
-  top: 0;
-  bottom: auto;
-  height: 100%;
-  width: 50%;
-  object-fit: cover;
-  object-position: 50% 14%;
-  transform: none;
-}
-.art.duo .pic[data-duo="0"] {
-  left: 0;
-}
-.art.duo .pic[data-duo="1"] {
-  left: 50%;
-}
-.art.duo .pic.fit {
-  height: auto;
-}
+.art.has .mono{display:none}
+.art .pic.fit{will-change:auto}
+.art.duo .pic{right:auto;top:0;bottom:auto;height:100%;width:50%;object-fit:cover;object-position:50% 14%;transform:none}
+.art.duo .pic[data-duo="0"]{left:0}.art.duo .pic[data-duo="1"]{left:50%}
+.art.duo .pic.fit{height:auto}
 
-@media(max-width:700px) {
-  :root {
-    --rw: 56px;
-  }
-  body {
-    padding-bottom: 84px;
-  }
-  body:not([data-page=home]) main {
-    width: calc(100% - 20px);
-  }
+@media(max-width:700px){
+  :root{--rw:56px}
+  body{padding-bottom:84px}
+  body:not([data-page=home]) main{width:calc(100% - 20px)}
 }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    transition: none !important;
-    animation: none !important;
-  }
-}
+@media(prefers-reduced-motion:reduce){{transition:none!important;animation:none!important}}
 
 
 /* ---- landing circle: still stars, purple operator backdrop, Dijiang ---- */
-.orb canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
+.orb canvas{position:absolute;inset:0;width:100%;height:100%}
 /* Dijiang: the main focus of the circle. Its CENTRE is pinned at --dj-x / --dj-y (share of the circle's width / height), so changing
    --dj-w only grows or shrinks it around that point. --dj-r tilts it, --dj-b dims it. */
-.orb {
-  --dj-x: 59%;
-  --dj-y: 79%;
-  --dj-w: 86%;
-  --dj-r: 13deg;
-  --dj-b: 1;
-}
-.orb .dwrap {
-  position: absolute;
-  left: var(--dj-x);
-  top: var(--dj-y);
-  width: var(--dj-w);
-  translate: -50% -50%;
-  rotate: var(--dj-r);
-  transform: translate3d(calc(var(--px, 0)*-8px), calc(var(--py, 0)*-5px), 0);
-  transition: transform .6s ease-out;
-}
-.orb .dij {
-  position: static;
-  inset: auto;
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: fill;
-  filter: drop-shadow(0 26px 40px rgba(0, 0, 0, .85)) saturate(.95) brightness(var(--dj-b));
-  animation: hover 12s ease-in-out infinite alternate;
-}
-@keyframes hover {
-  0% {
-    transform: translate(0, 4px) rotate(-.5deg);
-  }
-  100% {
-    transform: translate(-8px, -6px) rotate(.5deg);
-  }
-}
-@media(max-width:820px) {
-  .orb {
-    --dj-x: 63%;
-    --dj-y: 76%;
-    --dj-w: 98%;
-  }
-}
+.orb{--dj-x:59%;--dj-y:79%;--dj-w:86%;--dj-r:13deg;--dj-b:1}
+.orb .dwrap{position:absolute;left:var(--dj-x);top:var(--dj-y);width:var(--dj-w);translate:-50% -50%;rotate:var(--dj-r);transform:translate3d(calc(var(--px,0)*-8px),calc(var(--py,0)*-5px),0);transition:transform .6s ease-out}
+.orb .dij{position:static;inset:auto;display:block;width:100%;height:auto;object-fit:fill;filter:drop-shadow(0 26px 40px rgba(0,0,0,.85)) saturate(.95) brightness(var(--dj-b));animation:hover 12s ease-in-out infinite alternate}
+@keyframes hover{0%{transform:translate(0,4px) rotate(-.5deg)}100%{transform:translate(-8px,-6px) rotate(.5deg)}}
+@media(max-width:820px){.orb{--dj-x:63%;--dj-y:76%;--dj-w:98%}}
 
 /* ---- sidebar sections ---- */
-.rail nav .sec {
-  position: relative;
-  flex: none;
-  height: 34px;
-  display: flex;
-  align-items: flex-end;
-  padding: 0 calc((var(--rw) - 28px)/2) 6px;
-  margin-top: 10px;
-  color: #6b6f7b;
-  font: 700 11px "Chakra Petch", sans-serif;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-}
-.rail nav .sec::after {
-  content: "";
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 0;
-  height: 1px;
-  background: var(--line);
-}
+.rail nav .sec{position:relative;flex:none;height:34px;display:flex;align-items:flex-end;padding:0 calc((var(--rw) - 28px)/2) 6px;margin-top:10px;color:#6b6f7b;font:700 11px "Chakra Petch",sans-serif;letter-spacing:.22em;text-transform:uppercase}
+.rail nav .sec::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:1px;background:var(--line)}
+
 /* ================= 1.7: character boxes (Team Builder + Operators) ================= */
-body[data-page=team] .grid, body[data-page=operators] .grid {
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-}
-@media(max-width:760px) {
-  body[data-page=team] .grid, body[data-page=operators] .grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-}
-.oc {
-  aspect-ratio: 3/4.1;
-  border-radius: 0;
-}
-.oc .meta {
-  padding: 14px 15px 13px;
-}
-.oc .meta b {
-  font-size: clamp(18px, 1.9vw, 24px);
-}
-.oc .meta small {
-  font-size: 13px;
-  margin-top: 3px;
-}
-.oc .meta .st {
-  font-size: 13px;
-}
-.oc .shade {
-  height: 52%;
-}
+body[data-page=team] .grid,body[data-page=operators] .grid{grid-template-columns:repeat(4,1fr);gap:18px}
+@media(max-width:760px){body[data-page=team] .grid,body[data-page=operators] .grid{grid-template-columns:repeat(2,1fr);gap:12px}}
+.oc{aspect-ratio:3/4.1;border-radius:0}
+.oc .meta{padding:14px 15px 13px}
+.oc .meta b{font-size:clamp(18px,1.9vw,24px)}
+.oc .meta small{font-size:13px;margin-top:3px}
+.oc .meta .st{font-size:13px}
+.oc .shade{height:52%}
 /* class + element icons, top-left */
-.oc .tags {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  z-index: 3;
-}
-.oc .tags .el, .slot .el {
-  position: static;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 9px 2px 6px;
-  font: 700 12px "Chakra Petch";
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  background: rgba(6, 7, 10, .8);
-  color: var(--c);
-  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
-}
-.oc .tags .cls {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 24px;
-  background: rgba(6, 7, 10, .8);
-  color: #e8e4d6;
-  border: 1px solid var(--line);
-}
-.ico {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  flex: none;
-  line-height: 0;
-}
-.ico svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.oc .tags .cls .ico {
-  width: 15px;
-  height: 15px;
-}
-.slot .el {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-}
-.chip .ico {
-  width: 12px;
-  height: 12px;
-  vertical-align: -1px;
-  margin-right: 5px;
-}
-.chip[data-fe] .ico {
-  color: var(--c);
-}
+.oc .tags{position:absolute;top:10px;left:10px;display:flex;gap:6px;align-items:center;z-index:3}
+.oc .tags .el,.slot .el{position:static;display:inline-flex;align-items:center;gap:5px;padding:2px 9px 2px 6px;font:700 12px "Chakra Petch";letter-spacing:.06em;text-transform:uppercase;background:rgba(6,7,10,.8);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
+.oc .tags .cls{display:grid;place-items:center;width:26px;height:24px;background:rgba(6,7,10,.8);color:#e8e4d6;border:1px solid var(--line)}
+.ico{display:inline-block;width:14px;height:14px;flex:none;line-height:0}.ico svg{display:block;width:100%;height:100%}.oc .tags .cls .ico{width:15px;height:15px}
+.slot .el{position:absolute;top:8px;left:8px}
+.chip .ico{width:12px;height:12px;vertical-align:-1px;margin-right:5px}
+.chip[data-fe] .ico{color:var(--c)}
 /* ================= 1.8: whole splash art, centred lock, scan-line reveal ================= */
-.art.whole {
-  background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--c, #555) 30%, #16171d), #0a0b0f 80%);
-}
-.art.whole .pic {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: contain;
-  object-position: 50% 40%;
-  transform: none;
-  transform-origin: 50% 50%;
-}
-.art.whole .pic.ico {
-  object-fit: contain;
-  padding: 16%;
-}
-.art.whole.duo .pic {
-  width: 50%;
-  object-fit: cover;
-  object-position: 50% 12%;
-}
-.art.whole.duo .pic[data-duo="0"] {
-  left: 0;
-  right: auto;
-}
-.art.whole.duo .pic[data-duo="1"] {
-  left: 50%;
-  right: auto;
-}
-.art.has .mono {
-  display: none;
-}
+.art.whole{background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--c,#555) 30%,#16171d),#0a0b0f 80%)}
+.art.whole .pic{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:contain;object-position:50% 40%;transform:none;transform-origin:50% 50%}
+.art.whole .pic.ico{object-fit:contain;padding:16%}
+.art.whole.duo .pic{width:50%;object-fit:cover;object-position:50% 12%}
+.art.whole.duo .pic[data-duo="0"]{left:0;right:auto}.art.whole.duo .pic[data-duo="1"]{left:50%;right:auto}
+.art.has .mono{display:none}
 /* database (Operators page): plain art */
-.oc.db .art .pic {
-  transition: scale .35s;
-}
-.oc.db:hover .art .pic {
-  scale: 1.03;
-}
+.oc.db .art .pic{transition:scale .35s}
+.oc.db:hover .art .pic{scale:1.03}
 
 /* Team Builder: the silhouette is the splash art flattened to black with an element-colour glow */
-.oc .art .pic.sil {
-  filter: brightness(0) drop-shadow(0 0 1.5px var(--c)) drop-shadow(0 0 14px color-mix(in srgb, var(--c) 50%, transparent));
-}
-.oc .art .pic.sil.ico {
-  display: none;
-}
-.oc .art:has(.pic.sil.ico) .mono {
-  display: grid;
-}
-.oc.lk .art .pic.hi {
-  display: none;
-}
+.oc .art .pic.sil{filter:brightness(0) drop-shadow(0 0 1.5px var(--c)) drop-shadow(0 0 14px color-mix(in srgb,var(--c) 50%,transparent))}
+.oc .art .pic.sil.ico{display:none}
+.oc .art:has(.pic.sil.ico) .mono{display:grid}
+.oc.lk .art .pic.hi{display:none}
 /* locked: sways, leans toward the pointer, glows and flickers on hover, never shows the art */
-.oc.lk .art .pic.sil {
-  translate: calc(var(--mx, 0)*9px) calc(var(--my, 0)*6px);
-  transition: translate .25s ease-out, filter .35s;
-  animation: idle 6s ease-in-out infinite alternate, flick2 11s steps(1) infinite;
-}
-.oc.lk:hover .art .pic.sil {
-  filter: brightness(0) drop-shadow(0 0 2px var(--c)) drop-shadow(0 0 26px color-mix(in srgb, var(--c) 90%, transparent));
-}
-.oc:nth-child(3n) .art .pic.sil {
-  animation-delay: -2s, -3s;
-}
-.oc:nth-child(3n+1) .art .pic.sil {
-  animation-delay: -4s, -7s;
-}
-@keyframes idle {
-  from {
-    rotate: -.7deg;
-  }
-  to {
-    rotate: .7deg;
-  }
-}
-@keyframes flick2 {
-  0%, 93%, 100% {
-    opacity: 1;
-  }
-  94% {
-    opacity: .45;
-  }
-  95% {
-    opacity: 1;
-  }
-  96% {
-    opacity: .7;
-  }
-}
-.oc.lk .art {
-  background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--c) 22%, #14151b), #08090d 78%);
-}
-.oc.lk .art .mono {
-  opacity: .55;
-}
+.oc.lk .art .pic.sil{translate:calc(var(--mx,0)*9px) calc(var(--my,0)*6px);transition:translate .25s ease-out,filter .35s;animation:idle 6s ease-in-out infinite alternate,flick2 11s steps(1) infinite}
+.oc.lk:hover .art .pic.sil{filter:brightness(0) drop-shadow(0 0 2px var(--c)) drop-shadow(0 0 26px color-mix(in srgb,var(--c) 90%,transparent))}
+.oc:nth-child(3n) .art .pic.sil{animation-delay:-2s,-3s}.oc:nth-child(3n+1) .art .pic.sil{animation-delay:-4s,-7s}
+@keyframes idle{from{rotate:-.7deg}to{rotate:.7deg}}
+@keyframes flick2{0%,93%,100%{opacity:1}94%{opacity:.45}95%{opacity:1}96%{opacity:.7}}
+.oc.lk .art{background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--c) 22%,#14151b),#08090d 78%)}
+.oc.lk .art .mono{opacity:.55}
 
 /* unlocked: still a silhouette until hovered (and only when Add mode is off).
    A scan line sweeps up from the bottom revealing the art; on leave it sweeps back down and the silhouette closes over it. */
-@property --t {
-  syntax: '<percentage>';
-  inherits: true;
-  initial-value: 100%;
-}
-@property --n {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 100;
-}
-.oc.ul {
-  transition: transform .15s, border-color .15s, box-shadow .15s, --t .62s cubic-bezier(.45, .05, .25, 1), --n .62s cubic-bezier(.45, .05, .25, 1);
-}
-.oc.ul .art .pic.hi {
-  clip-path: inset(var(--t) 0 0 0);
-}
-.oc .scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  height: 2px;
-  background: var(--c);
-  box-shadow: 0 0 14px 3px var(--c);
-  opacity: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-.oc.ul .scan {
-  top: var(--t);
-  opacity: min(1, calc(var(--n)*(100 - var(--n))/260));
-}
-body:not(.addmode) .oc.ul:hover, .oc.ul.rv {
-  --t: 0%;
-  --n: 0;
-}
-.oc.ul .art .mono {
-  display: none;
-}
+@property --t{syntax:'<percentage>';inherits:true;initial-value:100%}
+@property --n{syntax:'<number>';inherits:true;initial-value:100}
+.oc.ul{transition:transform .15s,border-color .15s,box-shadow .15s,--t .62s cubic-bezier(.45,.05,.25,1),--n .62s cubic-bezier(.45,.05,.25,1)}
+.oc.ul .art .pic.hi{clip-path:inset(var(--t) 0 0 0)}
+.oc .scan{position:absolute;left:0;right:0;top:100%;height:2px;background:var(--c);box-shadow:0 0 14px 3px var(--c);opacity:0;z-index:2;pointer-events:none}
+.oc.ul .scan{top:var(--t);opacity:min(1,calc(var(--n)*(100 - var(--n))/260))}
+body:not(.addmode) .oc.ul:hover,.oc.ul.rv{--t:0%;--n:0}
+.oc.ul .art .mono{display:none}
 
 /* lock: only the lock, centred, no box behind it */
-.oc .lock {
-  position: absolute;
-  left: 50%;
-  top: 46%;
-  width: 46px;
-  height: 46px;
-  margin: -23px 0 0 -23px;
-  display: none;
-  z-index: 4;
-  color: #e9e6dc;
-  pointer-events: none;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .9)) drop-shadow(0 0 10px rgba(0, 0, 0, .6));
-}
-.oc .lock svg {
-  width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  overflow: visible;
-}
-.oc .lock .sh {
-  transform-box: fill-box;
-  transform-origin: 0 100%;
-  transition: transform .25s;
-}
-.oc.lk .lock {
-  display: block;
-}
-.oc.lk:hover .lock {
-  color: var(--c);
-  animation: jig .45s;
-}
-@keyframes jig {
-  25% {
-    transform: rotate(-9deg);
-  }
-  60% {
-    transform: rotate(7deg);
-  }
-}
+.oc .lock{position:absolute;left:50%;top:46%;width:46px;height:46px;margin:-23px 0 0 -23px;display:none;z-index:4;color:#e9e6dc;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.9)) drop-shadow(0 0 10px rgba(0,0,0,.6))}
+.oc .lock svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.oc .lock .sh{transform-box:fill-box;transform-origin:0 100%;transition:transform .25s}
+.oc.lk .lock{display:block}
+.oc.lk:hover .lock{color:var(--c);animation:jig .45s}
+@keyframes jig{25%{transform:rotate(-9deg)}60%{transform:rotate(7deg)}}
 /* unlocked locks only show in Add mode (open, gold) so you can see what you own while editing */
-body.addmode .oc.ul .lock, .oc.unl .lock {
-  display: block;
-  color: var(--sig);
-}
-.oc.ul .lock .sh {
-  transform: translateY(-2px) rotate(-32deg);
-}
+body.addmode .oc.ul .lock,.oc.unl .lock{display:block;color:var(--sig)}
+.oc.ul .lock .sh{transform:translateY(-2px) rotate(-32deg)}
 /* the unlock: click in Add mode. The shackle pops open and the lock glows gold, the silhouette flashes once. */
-.oc.unl .lock {
-  animation: lockGlow 1.05s ease-out;
-}
-.oc.unl .lock .sh {
-  animation: unlock .6s cubic-bezier(.3, 1.5, .5, 1) both;
-}
-@keyframes unlock {
-  0% {
-    transform: none;
-  }
-  35% {
-    transform: translateY(-4px);
-  }
-  100% {
-    transform: translateY(-2px) rotate(-32deg);
-  }
-}
-@keyframes lockGlow {
-  0% {
-    color: #e9e6dc;
-    transform: scale(1);
-  }
-  30% {
-    color: var(--sig);
-    transform: scale(1.28);
-    filter: drop-shadow(0 0 14px var(--sig));
-  }
-  100% {
-    color: var(--sig);
-    transform: scale(1);
-  }
-}
-.oc.unl .art .pic.sil {
-  animation: flashUl .6s ease-out;
-}
-@keyframes flashUl {
-  0% {
-    filter: brightness(0) drop-shadow(0 0 30px var(--sig));
-  }
-  100% {
-  }
-}
+.oc.unl .lock{animation:lockGlow 1.05s ease-out}
+.oc.unl .lock .sh{animation:unlock .6s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes unlock{0%{transform:none}35%{transform:translateY(-4px)}100%{transform:translateY(-2px) rotate(-32deg)}}
+@keyframes lockGlow{0%{color:#e9e6dc;transform:scale(1)}30%{color:var(--sig);transform:scale(1.28);filter:drop-shadow(0 0 14px var(--sig))}100%{color:var(--sig);transform:scale(1)}}
+.oc.unl .art .pic.sil{animation:flashUl .6s ease-out}
+@keyframes flashUl{0%{filter:brightness(0) drop-shadow(0 0 30px var(--sig))}100%{}}
 /* the re-lock: shackle closes (the box is back to .lk, so the lock is already showing) */
-.oc.rel .lock .sh {
-  animation: relock .5s ease-in both;
-}
-@keyframes relock {
-  0% {
-    transform: translateY(-2px) rotate(-32deg);
-  }
-  100% {
-    transform: none;
-  }
-}
+.oc.rel .lock .sh{animation:relock .5s ease-in both}
+@keyframes relock{0%{transform:translateY(-2px) rotate(-32deg)}100%{transform:none}}
 
 /* Add mode */
-body.addmode .oc {
-  cursor: copy;
-  outline: 1px dashed color-mix(in srgb, var(--sig) 55%, transparent);
-  outline-offset: -4px;
-}
-body.addmode .oc.in::after {
-  display: none;
-}
-#am[aria-pressed=true] {
-  background: var(--sig);
-  color: #14120a;
-  border-color: var(--sig);
-}
-.tools #am {
-  margin-left: auto;
-}
+body.addmode .oc{cursor:copy;outline:1px dashed color-mix(in srgb,var(--sig) 55%,transparent);outline-offset:-4px}
+body.addmode .oc.in::after{display:none}
+#am[aria-pressed=true]{background:var(--sig);color:#14120a;border-color:var(--sig)}
+.tools #am{margin-left:auto}
 
 /* ================= 1.5: UID terminal, account switcher, locked slots, team style + fun comps ================= */
-.uhint {
-  font-size: 13px;
-  margin: 10px 0 0;
-  color: #26262a;
-}
-.uhint a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-body:not([data-page=home]) .uhint {
-  color: var(--dim);
-}
-body:not([data-page=home]) .uhint a {
-  color: var(--sig);
-}
-.acsearch {
-  max-width: 560px;
-}
+.uhint{font-size:13px;margin:10px 0 0;color:#26262a}
+.uhint a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+body:not([data-page=home]) .uhint{color:var(--dim)}
+body:not([data-page=home]) .uhint a{color:var(--sig)}
+.acsearch{max-width:560px}
 
 /* ---- Endfield-style terminal ---- */
-.tmhost[hidden] {
-  display: none;
-}
-.tmhost {
-  position: relative;
-  z-index: 6;
-}
-.tmhost.home {
-  position: fixed;
-  right: clamp(16px, 4vw, 64px);
-  top: 50%;
-  transform: translateY(-50%);
-  width: min(560px, calc(100vw - 52vw - 24px));
-  min-width: 420px;
-  display: block;
-}
-.tmhost.home .tm {
-  width: 100%;
-  max-height: calc(100vh - 132px);
-}
-body:not([data-page=home]) .tmhost {
-  margin: 16px 0 4px;
-  max-width: 760px;
-}
-.tm {
-  --k: var(--sig);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  font: 13px/1.5 "IBM Plex Mono", monospace;
-  color: #d7d3c6;
-  background: linear-gradient(180deg, rgba(14, 15, 19, .97), rgba(8, 9, 12, .97));
-  border: 1px solid #3a3d46;
-  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
-  box-shadow: 0 24px 70px rgba(0, 0, 0, .6);
-  animation: tmOpen .35s cubic-bezier(.2, .9, .25, 1) both;
-}
-.tm::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5;
-  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .028) 0 1px, transparent 1px 3px);
-}
-.tm::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 46px;
-  pointer-events: none;
-  z-index: 5;
-  background: linear-gradient(180deg, transparent, rgba(255, 210, 31, .07), transparent);
-  animation: tmSweep 5s linear infinite;
-}
-@keyframes tmOpen {
-  from {
-    opacity: 0;
-    transform: translateX(18px) scaleY(.96);
-    filter: brightness(2);
-  }
-}
-@keyframes tmSweep {
-  from {
-    transform: translateY(-60px);
-  }
-  to {
-    transform: translateY(520px);
-  }
-}
-.tm-c {
-  position: absolute;
-  width: 11px;
-  height: 11px;
-  border: 0 solid var(--k);
-  z-index: 6;
-  pointer-events: none;
-}
-.tm-c.a {
-  left: 5px;
-  top: 5px;
-  border-width: 2px 0 0 2px;
-}
-.tm-c.b {
-  right: 22px;
-  top: 5px;
-  border-width: 2px 2px 0 0;
-}
-.tm-c.c {
-  left: 22px;
-  bottom: 5px;
-  border-width: 0 0 2px 2px;
-}
-.tm-c.d {
-  right: 5px;
-  bottom: 5px;
-  border-width: 0 2px 2px 0;
-}
-.tm-h {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 9px 14px 9px 16px;
-  border-bottom: 1px solid #2c2f37;
-  background: repeating-linear-gradient(-45deg, rgba(255, 210, 31, .08) 0 8px, transparent 8px 16px);
-}
-.tm-ttl {
-  font: 700 12px "Chakra Petch", sans-serif;
-  letter-spacing: .16em;
-  color: var(--sig);
-  white-space: nowrap;
-}
-.tm-ttl em {
-  font-style: normal;
-  color: #8d909a;
-  letter-spacing: .1em;
-}
-.tm-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 9px;
-  background: var(--sig);
-  animation: tmBlink 1.2s steps(1) infinite;
-}
-@keyframes tmBlink {
-  50% {
-    opacity: .25;
-  }
-}
-.tm-x {
-  position: relative;
-  z-index: 7;
-  padding: 3px 10px;
-  background: transparent;
-  color: #b9bcc6;
-  border: 1px solid #3a3d46;
-  font: 700 11px "Chakra Petch", sans-serif;
-  letter-spacing: .12em;
-}
-.tm-x:hover {
-  color: #14120a;
-  background: var(--sig);
-  border-color: var(--sig);
-  filter: none;
-}
-.tm-x b {
-  margin-left: 4px;
-}
-.tm-b {
-  flex: 1 1 auto;
-  padding: 14px 16px 12px;
-  overflow: auto;
-  min-height: 0;
-  scrollbar-width: thin;
-  scrollbar-color: #3a3d46 transparent;
-}
-.tm .tl {
-  margin: 0 0 3px;
-  animation: tmIn .28s both;
-  animation-delay: calc(var(--i, 0)*.16s);
-}
-.tm .tl .pr {
-  color: var(--sig);
-}
-.tm code {
-  color: #fff;
-  background: none;
-  font: inherit;
-}
-.tm .tl b {
-  font-weight: 500;
-  float: right;
-}
-.tm .tl b.ok {
-  color: var(--nat);
-}
-.tm .tl b.er {
-  color: #ff8a7a;
-}
-@keyframes tmIn {
-  from {
-    opacity: 0;
-    transform: translateX(-8px);
-  }
-}
-.tm .dots::after {
-  content: "";
-  animation: tmDots 1.2s steps(4) infinite;
-}
-@keyframes tmDots {
-  0% {
-    content: "";
-  }
-  25% {
-    content: ".";
-  }
-  50% {
-    content: "..";
-  }
-  75% {
-    content: "...";
-  }
-}
-.tm-bar {
-  height: 3px;
-  margin-top: 14px;
-  background: #1d1f26;
-  overflow: hidden;
-}
-.tm-bar i {
-  display: block;
-  width: 34%;
-  height: 100%;
-  background: var(--sig);
-  box-shadow: 0 0 10px var(--sig);
-  animation: tmBar 1s ease-in-out infinite alternate;
-}
-@keyframes tmBar {
-  to {
-    transform: translateX(200%);
-  }
-}
-.tm-err {
-  margin: 12px 0 2px;
-  padding: 8px 12px;
-  border-left: 3px solid #ff6a3d;
-  background: rgba(255, 106, 61, .08);
-  color: #ffb3a2;
-}
-.tm-id {
-  padding-bottom: 10px;
-  border-bottom: 1px dashed #33363f;
-}
-.tm-name {
-  font: 700 clamp(24px, 3vw, 32px)/1.1 "Chakra Petch", sans-serif;
-  color: #fff;
-  letter-spacing: .02em;
-  min-height: 1.1em;
-}
-.tm-sub {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  margin-top: 6px;
-  color: var(--sig);
-  font-size: 12px;
-  letter-spacing: .08em;
-  animation: tmIn .3s both;
-  animation-delay: calc(var(--i, 0)*.06s);
-}
-.tm-sig {
-  margin-top: 6px;
-  color: #8d909a;
-  animation: tmIn .3s both;
-  animation-delay: calc(var(--i, 0)*.06s);
-}
-.tm-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  margin: 12px 0;
-  background: #2c2f37;
-  border: 1px solid #2c2f37;
-}
-.tm .tc {
-  padding: 8px 11px;
-  background: #0d0e13;
-  animation: tmIn .3s both;
-  animation-delay: calc(var(--i, 0)*.06s);
-}
-.tm .tc small {
-  display: block;
-  color: #8d909a;
-  font-size: 10px;
-  letter-spacing: .14em;
-}
-.tm .tc b {
-  font: 700 19px/1.2 "Chakra Petch", sans-serif;
-  color: #fff;
-}
-.tm-sec {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 14px 0 6px;
-  color: var(--sig);
-  font: 700 11px "Chakra Petch", sans-serif;
-  letter-spacing: .2em;
-  animation: tmIn .3s both;
-  animation-delay: calc(var(--i, 0)*.06s);
-}
-.tm-sec::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: #33363f;
-}
-.tm-sec em {
-  order: 2;
-  font-style: normal;
-  color: #fff;
-  border: 1px solid #3a3d46;
-  padding: 0 7px;
-}
-.tm-ops {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 280px;
-  overflow: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #3a3d46 transparent;
-}
-.tm-ops li {
-  --r: var(--line);
-  display: grid;
-  grid-template-columns: 4px minmax(0, 1.5fr) auto auto auto auto;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 10px 5px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .05);
-  animation: tmIn .28s both;
-  animation-delay: calc(var(--i, 0)*.05s);
-}
-.tm-ops li[data-rar="6"] {
-  --r: #ff8a2e;
-}
-.tm-ops li[data-rar="5"] {
-  --r: #ffd21f;
-}
-.tm-ops li[data-rar="4"] {
-  --r: #b58cff;
-}
-.tm-ops li:hover {
-  background: rgba(255, 210, 31, .05);
-}
-.tm-ops .rb {
-  align-self: stretch;
-  background: var(--r);
-}
-.tm-ops b {
-  font: 700 14px "Chakra Petch", sans-serif;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.tm-ops .tg {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--c, #8d909a);
-}
-.tm-ops .tg i {
-  font-style: normal;
-  color: #9b9ea8;
-  font-size: 11px;
-}
-.tm-ops .tg .ico {
-  width: 13px;
-  height: 13px;
-}
-.tm-ops .st {
-  color: var(--r);
-  font-size: 10px;
-  letter-spacing: .04em;
-}
-.tm-ops .lv {
-  color: #d7d3c6;
-}
-.tm-ops .pt {
-  color: var(--sig);
-  min-width: 1.8em;
-  text-align: right;
-}
-.tm-ops li.unk {
-  color: #8d909a;
-}
-.tm-ops li.unk .rb {
-  background: #444;
-}
-.tm-ops li.unk b {
-  color: #8d909a;
-}
-.tm-none {
-  margin: 6px 0 0;
-  color: #ffb3a2;
-}
-.tm-f {
-  position: static;
-  z-index: 7;
-  pointer-events: auto;
-  text-align: left;
-  font-size: inherit;
-  color: inherit;
-  flex: none;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  padding: 10px 16px;
-  border-top: 1px solid #2c2f37;
-  background: rgba(255, 255, 255, .02);
-}
-.tm-hint {
-  color: #8d909a;
-  font-size: 11px;
-  letter-spacing: .06em;
-}
-.tm-add {
-  position: relative;
-  z-index: 7;
-  padding: 9px 22px;
-  font: 700 14px "Chakra Petch", sans-serif;
-  letter-spacing: .14em;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-}
-.tm-add:disabled {
-  background: #23252d;
-  color: var(--nat);
-  cursor: default;
-  filter: none;
-}
-@media(max-width:1000px) {
-  .tmhost.home {
-    position: relative;
-    right: auto;
-    top: auto;
-    transform: none;
-    width: auto;
-    min-width: 0;
-    margin: 18px 16px 90px;
-    display: block;
-  }
-  .tmhost.home .tm {
-    max-height: none;
-  }
-}
-@media(max-width:820px) {
-  .tm-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .tm-ops li {
-    grid-template-columns: 4px minmax(0, 1fr) auto auto;
-  }
-  .tm-ops .tg i, .tm-ops .st {
-    display: none;
-  }
+.tmhost[hidden]{display:none}
+.tmhost{position:relative;z-index:6}
+.tmhost.home{position:fixed;right:clamp(16px,4vw,64px);top:50%;transform:translateY(-50%);width:min(560px,calc(100vw - 52vw - 24px));min-width:420px;display:block}
+.tmhost.home .tm{width:100%;max-height:calc(100vh - 132px)}
+body:not([data-page=home]) .tmhost{margin:16px 0 4px;max-width:760px}
+.tm{--k:var(--sig);position:relative;display:flex;flex-direction:column;min-height:0;font:13px/1.5 "IBM Plex Mono",monospace;color:#d7d3c6;background:linear-gradient(180deg,rgba(14,15,19,.97),rgba(8,9,12,.97));border:1px solid #3a3d46;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));box-shadow:0 24px 70px rgba(0,0,0,.6);animation:tmOpen .35s cubic-bezier(.2,.9,.25,1) both}
+.tm::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:5;background:repeating-linear-gradient(0deg,rgba(255,255,255,.028) 0 1px,transparent 1px 3px)}
+.tm::after{content:"";position:absolute;left:0;right:0;top:0;height:46px;pointer-events:none;z-index:5;background:linear-gradient(180deg,transparent,rgba(255,210,31,.07),transparent);animation:tmSweep 5s linear infinite}
+@keyframes tmOpen{from{opacity:0;transform:translateX(18px) scaleY(.96);filter:brightness(2)}}
+@keyframes tmSweep{from{transform:translateY(-60px)}to{transform:translateY(520px)}}
+.tm-c{position:absolute;width:11px;height:11px;border:0 solid var(--k);z-index:6;pointer-events:none}
+.tm-c.a{left:5px;top:5px;border-width:2px 0 0 2px}.tm-c.b{right:22px;top:5px;border-width:2px 2px 0 0}
+.tm-c.c{left:22px;bottom:5px;border-width:0 0 2px 2px}.tm-c.d{right:5px;bottom:5px;border-width:0 2px 2px 0}
+.tm-h{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 14px 9px 16px;border-bottom:1px solid #2c2f37;background:repeating-linear-gradient(-45deg,rgba(255,210,31,.08) 0 8px,transparent 8px 16px)}
+.tm-ttl{font:700 12px "Chakra Petch",sans-serif;letter-spacing:.16em;color:var(--sig);white-space:nowrap}
+.tm-ttl em{font-style:normal;color:#8d909a;letter-spacing:.1em}
+.tm-dot{display:inline-block;width:8px;height:8px;margin-right:9px;background:var(--sig);animation:tmBlink 1.2s steps(1) infinite}
+@keyframes tmBlink{50%{opacity:.25}}
+.tm-x{position:relative;z-index:7;padding:3px 10px;background:transparent;color:#b9bcc6;border:1px solid #3a3d46;font:700 11px "Chakra Petch",sans-serif;letter-spacing:.12em}
+.tm-x:hover{color:#14120a;background:var(--sig);border-color:var(--sig);filter:none}.tm-x b{margin-left:4px}
+.tm-b{flex:1 1 auto;padding:14px 16px 12px;overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#3a3d46 transparent}
+.tm .tl{margin:0 0 3px;animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.16s)}
+.tm .tl .pr{color:var(--sig)}.tm code{color:#fff;background:none;font:inherit}
+.tm .tl b{font-weight:500;float:right}.tm .tl b.ok{color:var(--nat)}.tm .tl b.er{color:#ff8a7a}
+@keyframes tmIn{from{opacity:0;transform:translateX(-8px)}}
+.tm .dots::after{content:"";animation:tmDots 1.2s steps(4) infinite}
+@keyframes tmDots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.tm-bar{height:3px;margin-top:14px;background:#1d1f26;overflow:hidden}
+.tm-bar i{display:block;width:34%;height:100%;background:var(--sig);box-shadow:0 0 10px var(--sig);animation:tmBar 1s ease-in-out infinite alternate}
+@keyframes tmBar{to{transform:translateX(200%)}}
+.tm-err{margin:12px 0 2px;padding:8px 12px;border-left:3px solid #ff6a3d;background:rgba(255,106,61,.08);color:#ffb3a2}
+.tm-id{padding-bottom:10px;border-bottom:1px dashed #33363f}
+.tm-name{font:700 clamp(24px,3vw,32px)/1.1 "Chakra Petch",sans-serif;color:#fff;letter-spacing:.02em;min-height:1.1em}
+.tm-sub{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;color:var(--sig);font-size:12px;letter-spacing:.08em;animation:tmIn .3s both;animation-delay:calc(var(--i,0)*.06s)}
+.tm-sig{margin-top:6px;color:#8d909a;animation:tmIn .3s both;animation-delay:calc(var(--i,0)*.06s)}
+.tm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin:12px 0;background:#2c2f37;border:1px solid #2c2f37}
+.tm .tc{padding:8px 11px;background:#0d0e13;animation:tmIn .3s both;animation-delay:calc(var(--i,0)*.06s)}
+.tm .tc small{display:block;color:#8d909a;font-size:10px;letter-spacing:.14em}
+.tm .tc b{font:700 19px/1.2 "Chakra Petch",sans-serif;color:#fff}
+.tm-sec{display:flex;align-items:center;gap:10px;margin:14px 0 6px;color:var(--sig);font:700 11px "Chakra Petch",sans-serif;letter-spacing:.2em;animation:tmIn .3s both;animation-delay:calc(var(--i,0)*.06s)}
+.tm-sec::after{content:"";flex:1;height:1px;background:#33363f}
+.tm-sec em{order:2;font-style:normal;color:#fff;border:1px solid #3a3d46;padding:0 7px}
+.tm-ops{list-style:none;margin:0;padding:0;max-height:280px;overflow:auto;scrollbar-width:thin;scrollbar-color:#3a3d46 transparent}
+.tm-ops li{--r:var(--line);display:grid;grid-template-columns:4px minmax(0,1.5fr) auto auto auto auto;align-items:center;gap:10px;padding:5px 10px 5px 0;border-bottom:1px solid rgba(255,255,255,.05);animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.05s)}
+.tm-ops li[data-rar="6"]{--r:#ff8a2e}.tm-ops li[data-rar="5"]{--r:#ffd21f}.tm-ops li[data-rar="4"]{--r:#b58cff}
+.tm-ops li:hover{background:rgba(255,210,31,.05)}
+.tm-ops .rb{align-self:stretch;background:var(--r)}
+.tm-ops b{font:700 14px "Chakra Petch",sans-serif;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-ops .tg{display:flex;align-items:center;gap:6px;color:var(--c,#8d909a)}.tm-ops .tg i{font-style:normal;color:#9b9ea8;font-size:11px}
+.tm-ops .tg .ico{width:13px;height:13px}
+.tm-ops .st{color:var(--r);font-size:10px;letter-spacing:.04em}.tm-ops .lv{color:#d7d3c6}.tm-ops .pt{color:var(--sig);min-width:1.8em;text-align:right}
+.tm-ops li.unk{color:#8d909a}.tm-ops li.unk .rb{background:#444}.tm-ops li.unk b{color:#8d909a}
+.tm-none{margin:6px 0 0;color:#ffb3a2}
+.tm-f{position:static;z-index:7;pointer-events:auto;text-align:left;font-size:inherit;color:inherit;flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;padding:10px 16px;border-top:1px solid #2c2f37;background:rgba(255,255,255,.02)}
+.tm-hint{color:#8d909a;font-size:11px;letter-spacing:.06em}
+.tm-add{position:relative;z-index:7;padding:9px 22px;font:700 14px "Chakra Petch",sans-serif;letter-spacing:.14em;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.tm-add:disabled{background:#23252d;color:var(--nat);cursor:default;filter:none}
+@media(max-width:1000px){
+  .tmhost.home{position:relative;right:auto;top:auto;transform:none;width:auto;min-width:0;margin:18px 16px 90px;display:block}
+  .tmhost.home .tm{max-height:none}
+}
+@media(max-width:820px){
+  .tm-grid{grid-template-columns:repeat(2,1fr)}
+  .tm-ops li{grid-template-columns:4px minmax(0,1fr) auto auto}.tm-ops .tg i,.tm-ops .st{display:none}
 }
 
 /* ---- account bar + switch dropdown ---- */
-.acct {
-  margin: 16px 0 4px;
-  padding: 12px 16px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--sig);
-  background: var(--panel);
-}
-.acct .who small {
-  display: block;
-  color: var(--sig);
-  font: 700 10px "Chakra Petch", sans-serif;
-  letter-spacing: .2em;
-}
-.acct .who b {
-  font: 700 20px "Chakra Petch", sans-serif;
-  margin-right: 12px;
-}
-.acct .who span {
-  color: var(--dim);
-  font: 13px "IBM Plex Mono", monospace;
-}
-.acct .acts {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-.sw {
-  position: relative;
-}
-.sw #swb {
-  border-color: var(--sig);
-  color: var(--sig);
-}
-.swm {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
-  z-index: 30;
-  min-width: 260px;
-  max-height: 320px;
-  overflow: auto;
-  background: #0b0c10;
-  border: 1px solid #3a3d46;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, .65);
-  animation: tmOpen .2s both;
-}
-.swm[hidden] {
-  display: none;
-}
-.swi {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  width: 100%;
-  text-align: left;
-  padding: 9px 14px;
-  background: transparent;
-  color: var(--text);
-  border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .06);
-  font-weight: 400;
-  gap: 0 10px;
-}
-.swi:last-child {
-  border-bottom: 0;
-}
-.swi:hover {
-  background: rgba(255, 210, 31, .08);
-  filter: none;
-}
-.swi b {
-  font: 700 15px "Chakra Petch", sans-serif;
-}
-.swi small {
-  grid-column: 1;
-  color: var(--dim);
-  font: 12px "IBM Plex Mono", monospace;
-}
-.swi i {
-  grid-row: 1/3;
-  grid-column: 2;
-  align-self: center;
-  font: 700 10px "Chakra Petch", sans-serif;
-  letter-spacing: .14em;
-  color: #14120a;
-  background: var(--sig);
-  padding: 1px 7px;
-  font-style: normal;
-}
-.swi.on {
-  box-shadow: inset 3px 0 0 var(--sig);
-}
-#st.empty {
-  min-height: 26vh;
-}
+.acct{margin:16px 0 4px;padding:12px 16px;border:1px solid var(--line);border-left:3px solid var(--sig);background:var(--panel)}
+.acct .who small{display:block;color:var(--sig);font:700 10px "Chakra Petch",sans-serif;letter-spacing:.2em}
+.acct .who b{font:700 20px "Chakra Petch",sans-serif;margin-right:12px}.acct .who span{color:var(--dim);font:13px "IBM Plex Mono",monospace}
+.acct .acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sw{position:relative}.sw #swb{border-color:var(--sig);color:var(--sig)}
+.swm{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:260px;max-height:320px;overflow:auto;background:#0b0c10;border:1px solid #3a3d46;box-shadow:0 18px 50px rgba(0,0,0,.65);animation:tmOpen .2s both}
+.swm[hidden]{display:none}
+.swi{display:grid;grid-template-columns:1fr auto;width:100%;text-align:left;padding:9px 14px;background:transparent;color:var(--text);border:0;border-bottom:1px solid rgba(255,255,255,.06);font-weight:400;gap:0 10px}
+.swi:last-child{border-bottom:0}.swi:hover{background:rgba(255,210,31,.08);filter:none}
+.swi b{font:700 15px "Chakra Petch",sans-serif}.swi small{grid-column:1;color:var(--dim);font:12px "IBM Plex Mono",monospace}
+.swi i{grid-row:1/3;grid-column:2;align-self:center;font:700 10px "Chakra Petch",sans-serif;letter-spacing:.14em;color:#14120a;background:var(--sig);padding:1px 7px;font-style:normal}
+.swi.on{box-shadow:inset 3px 0 0 var(--sig)}
+#st.empty{min-height:26vh}
 
 /* ---- team slots: a locked operator stays locked in its slot ---- */
-.slot.lk .art .pic.hi {
-  display: none;
-}
-.slot .art .pic.sil {
-  filter: brightness(0) drop-shadow(0 0 1.5px var(--c)) drop-shadow(0 0 14px color-mix(in srgb, var(--c) 50%, transparent));
-  animation: idle 6s ease-in-out infinite alternate;
-}
-.slot .art .pic.sil.ico {
-  display: none;
-}
-.slot.lk .art {
-  background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--c) 22%, #14151b), #08090d 78%);
-}
-.slot.lk .art .mono {
-  opacity: .55;
-}
-.slot .lock {
-  position: absolute;
-  left: 50%;
-  top: 44%;
-  width: 46px;
-  height: 46px;
-  margin: -23px 0 0 -23px;
-  display: none;
-  z-index: 2;
-  color: #e9e6dc;
-  pointer-events: none;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .9));
-}
-.slot .lock svg {
-  width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  overflow: visible;
-}
-.slot.lk .lock {
-  display: block;
-}
+.slot.lk .art .pic.hi{display:none}
+.slot .art .pic.sil{filter:brightness(0) drop-shadow(0 0 1.5px var(--c)) drop-shadow(0 0 14px color-mix(in srgb,var(--c) 50%,transparent));animation:idle 6s ease-in-out infinite alternate}
+.slot .art .pic.sil.ico{display:none}
+.slot.lk .art{background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--c) 22%,#14151b),#08090d 78%)}
+.slot.lk .art .mono{opacity:.55}
+.slot .lock{position:absolute;left:50%;top:44%;width:46px;height:46px;margin:-23px 0 0 -23px;display:none;z-index:2;color:#e9e6dc;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.9))}
+.slot .lock svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.slot.lk .lock{display:block}
 
 /* ---- team style banner + flair ---- */
-.arch {
-  margin: 0 0 12px;
-  padding: 9px 12px;
-  border: 1px solid #2c2f37;
-  border-left: 3px solid var(--sig);
-  background: rgba(255, 210, 31, .05);
-}
-.arch .ah {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px 16px;
-}
-.arch b {
-  font: 700 18px "Chakra Petch", sans-serif;
-  letter-spacing: .03em;
-}
-.arch p {
-  margin: 3px 0 0;
-  font-size: 13px;
-  color: #b9bcc6;
-}
-.fl {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font: 700 10px "Chakra Petch", sans-serif;
-  letter-spacing: .16em;
-  color: var(--dim);
-}
-.fl .fb {
-  display: block;
-  width: 84px;
-  height: 5px;
-  background: #23252d;
-}
-.fl .fb i {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, var(--ember), var(--sig));
-}
-.fl em {
-  font: 700 13px "Chakra Petch", sans-serif;
-  font-style: normal;
-  color: var(--sig);
-  letter-spacing: 0;
-}
-.sg em.sty {
-  color: var(--ember);
-}
+.arch{margin:0 0 12px;padding:9px 12px;border:1px solid #2c2f37;border-left:3px solid var(--sig);background:rgba(255,210,31,.05)}
+.arch .ah{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px}
+.arch b{font:700 18px "Chakra Petch",sans-serif;letter-spacing:.03em}
+.arch p{margin:3px 0 0;font-size:13px;color:#b9bcc6}
+.fl{display:inline-flex;align-items:center;gap:8px;font:700 10px "Chakra Petch",sans-serif;letter-spacing:.16em;color:var(--dim)}
+.fl .fb{display:block;width:84px;height:5px;background:#23252d}.fl .fb i{display:block;height:100%;background:linear-gradient(90deg,var(--ember),var(--sig))}
+.fl em{font:700 13px "Chakra Petch",sans-serif;font-style:normal;color:var(--sig);letter-spacing:0}
+.sg em.sty{color:var(--ember)}
 
 /* ---- fun comps ---- */
-.fun {
-  margin: 14px 0 4px;
-}
-.funh {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 14px;
-  margin-bottom: 8px;
-}
-.funh b {
-  font: 700 17px "Chakra Petch", sans-serif;
-}
-.funh .ghost.on {
-  border-color: var(--sig);
-  color: var(--sig);
-}
-.fcards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 12px;
-}
-.fc {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-top: 3px solid var(--sig);
-  background: var(--panel);
-  animation: tmIn .3s both;
-}
-.fc:nth-child(2) {
-  animation-delay: .07s;
-}
-.fc:nth-child(3) {
-  animation-delay: .14s;
-}
-.fc .fa {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.fc .fa b {
-  font: 700 17px "Chakra Petch", sans-serif;
-}
-.fc p {
-  margin: 0;
-  font-size: 13px;
-  color: #b9bcc6;
-  flex: 1;
-}
-.fc .fm {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.fc .m {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 9px 2px 7px;
-  font: 13px "IBM Plex Mono", monospace;
-  color: #e8e4d6;
-  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
-  background: rgba(255, 255, 255, .03);
-}
-.fc .m .ico {
-  width: 12px;
-  height: 12px;
-  color: var(--c);
-}
-.fc .ff {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 13px;
-}
-.fc .use {
-  padding: 6px 14px;
-  font-size: 13px;
-}
+.fun{margin:14px 0 4px}
+.funh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;margin-bottom:8px}
+.funh b{font:700 17px "Chakra Petch",sans-serif}
+.funh .ghost.on{border-color:var(--sig);color:var(--sig)}
+.fcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.fc{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px solid var(--line);border-top:3px solid var(--sig);background:var(--panel);animation:tmIn .3s both}
+.fc:nth-child(2){animation-delay:.07s}.fc:nth-child(3){animation-delay:.14s}
+.fc .fa{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.fc .fa b{font:700 17px "Chakra Petch",sans-serif}
+.fc p{margin:0;font-size:13px;color:#b9bcc6;flex:1}
+.fc .fm{display:flex;flex-wrap:wrap;gap:6px}
+.fc .m{display:inline-flex;align-items:center;gap:6px;padding:2px 9px 2px 7px;font:13px "IBM Plex Mono",monospace;color:#e8e4d6;border:1px solid color-mix(in srgb,var(--c) 55%,transparent);background:rgba(255,255,255,.03)}
+.fc .m .ico{width:12px;height:12px;color:var(--c)}
+.fc .ff{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
+.fc .use{padding:6px 14px;font-size:13px}
 
 /* ---- 1.5: no fallback flash, fluid art ---- */
-.art .mono {
-  visibility: hidden;
-}
-/* initials only when every picture source has failed */
-.art.lost .mono {
-  visibility: visible;
-}
-.oc .art:has(.pic.sil.ico) .mono {
-  visibility: visible;
-}
-.oc.lk .art.lost .mono {
-  opacity: .55;
-}
-.art .pic {
-  opacity: 0;
-  transition: opacity .45s ease;
-}
-.art .pic.on {
-  opacity: 1;
-}
-.orb .dij {
-  opacity: 0;
-  transition: opacity .6s ease;
-}
-.orb .dij.on {
-  opacity: 1;
-}
-.oc.lk .art .pic.sil.on {
-  opacity: 1;
-}
+.art .mono{visibility:hidden}                       /* initials only when every picture source has failed */
+.art.lost .mono{visibility:visible}
+.oc .art:has(.pic.sil.ico) .mono{visibility:visible}
+.oc.lk .art.lost .mono{opacity:.55}
+.art .pic{opacity:0;transition:opacity .45s ease}
+.art .pic.on{opacity:1}
+.orb .dij{opacity:0;transition:opacity .6s ease}
+.orb .dij.on{opacity:1}
+.oc.lk .art .pic.sil.on{opacity:1}
 
 /* ================= 1.5: terminal UID error, wiki icons, operator detail page ================= */
 /* UID error in the terminal: one message, hazard-striped, in the panel's own voice */
-.tm-deny {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 6px 0 2px;
-  padding: 16px 18px 16px 16px;
-  border: 1px solid rgba(255, 106, 61, .45);
-  border-left: 4px solid #ff6a3d;
-  background: linear-gradient(90deg, rgba(255, 106, 61, .16), rgba(255, 106, 61, .05) 70%), repeating-linear-gradient(135deg, rgba(255, 255, 255, .03) 0 6px, transparent 6px 12px);
-  color: #ffd9cf;
-  font: 700 clamp(16px, 1.7vw, 19px)/1.3 "Chakra Petch", sans-serif;
-  letter-spacing: .04em;
-  animation: tmDeny .45s steps(1) both;
-}
-.tm-deny .tm-dg {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  background: #ffd21f;
-  color: #14120a;
-  font: 700 20px/1 "Chakra Petch", sans-serif;
-  font-style: normal;
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  padding-top: 7px;
-  box-sizing: border-box;
-}
-@keyframes tmDeny {
-  0% {
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  30% {
-    opacity: .35;
-  }
-  45% {
-    opacity: 1;
-  }
-  60% {
-    opacity: .6;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-@media(prefers-reduced-motion:reduce) {
-  .tm-deny {
-    animation: none;
-  }
-}
+.tm-deny{position:relative;display:flex;align-items:center;gap:14px;margin:6px 0 2px;padding:16px 18px 16px 16px;border:1px solid rgba(255,106,61,.45);border-left:4px solid #ff6a3d;background:linear-gradient(90deg,rgba(255,106,61,.16),rgba(255,106,61,.05) 70%),repeating-linear-gradient(135deg,rgba(255,255,255,.03) 0 6px,transparent 6px 12px);color:#ffd9cf;font:700 clamp(16px,1.7vw,19px)/1.3 "Chakra Petch",sans-serif;letter-spacing:.04em;animation:tmDeny .45s steps(1) both}
+.tm-deny .tm-dg{flex:none;display:grid;place-items:center;width:30px;height:30px;background:#ffd21f;color:#14120a;font:700 20px/1 "Chakra Petch",sans-serif;font-style:normal;clip-path:polygon(50% 0,100% 100%,0 100%);padding-top:7px;box-sizing:border-box}
+@keyframes tmDeny{0%{opacity:0}20%{opacity:1}30%{opacity:.35}45%{opacity:1}60%{opacity:.6}100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.tm-deny{animation:none}}
 /* rarity stars are icons now (wiki Star.svg, or the glyph) */
-.ico.rs {
-  width: 1em;
-  height: 1em;
-  margin-right: 1px;
-  vertical-align: -.14em;
-}
-.chip .ico.rs {
-  width: 12px;
-  height: 12px;
-  margin: 0 0 0 2px;
-  vertical-align: -1px;
-}
-.tm-ops .st .ico.rs {
-  width: 10px;
-  height: 10px;
-}
-.tm-ops .st {
-  letter-spacing: 0;
-}
-.oc .meta .st {
-  letter-spacing: 0;
-}
+.ico.rs{width:1em;height:1em;margin-right:1px;vertical-align:-.14em}
+.chip .ico.rs{width:12px;height:12px;margin:0 0 0 2px;vertical-align:-1px}
+.tm-ops .st .ico.rs{width:10px;height:10px}
+.tm-ops .st{letter-spacing:0}
+.oc .meta .st{letter-spacing:0}
 
 /* operators list: cards are links */
-a.oc {
-  text-decoration: none;
-  color: var(--text);
-}
+a.oc{text-decoration:none;color:var(--text)}
 
 /* ---- /operators/<name> ---- */
-.od-back {
-  display: inline-block;
-  color: var(--dim);
-  text-decoration: none;
-  font: 500 13px "IBM Plex Mono", monospace;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-.od-back:hover {
-  color: var(--sig);
-}
-.od-hero {
-  --r: var(--sig);
-  display: grid;
-  grid-template-columns: minmax(220px, 340px) 1fr;
-  gap: 28px;
-  margin: 6px 0 10px;
-}
-.od-hero[data-rar="6"] {
-  --r: #ff8a2e;
-}
-.od-hero[data-rar="5"] {
-  --r: #ffd21f;
-}
-.od-hero[data-rar="4"] {
-  --r: #b58cff;
-}
-.od-art {
-  position: relative;
-  aspect-ratio: 3/4.1;
-  border: 1px solid var(--line);
-  overflow: hidden;
-  background: #0b0c10;
-}
-.od-bar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 4px;
-  background: var(--r);
-  z-index: 3;
-}
-.od-stars {
-  color: var(--r);
-  font-size: 18px;
-  letter-spacing: 0;
-  line-height: 1;
-}
-.od-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 12px 0;
-}
-.od-tags span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px 4px 9px;
-  font: 700 13px "Chakra Petch", sans-serif;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  background: rgba(6, 7, 10, .8);
-  border: 1px solid var(--line);
-  color: #e8e4d6;
-}
-.od-tags .el {
-  color: var(--c);
-  border-color: color-mix(in srgb, var(--c) 55%, transparent);
-}
-.od-tags .ico {
-  width: 16px;
-  height: 16px;
-}
-.od-quote {
-  margin: 0 0 14px;
-  color: var(--dim);
-  font-style: italic;
-  max-width: 56ch;
-}
-.od-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 1px;
-  margin: 0;
-  background: var(--line);
-  border: 1px solid var(--line);
-}
-.od-facts > div {
-  background: var(--panel);
-  padding: 9px 12px;
-}
-.od-facts dt {
-  color: var(--dim);
-  font: 500 11px "IBM Plex Mono", monospace;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-}
-.od-facts dd {
-  margin: 2px 0 0;
-  font-weight: 500;
-}
-.od-facts code, .od-line code {
-  font: 12px "IBM Plex Mono", monospace;
-  color: var(--sig);
-}
-.od-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-}
-.od-btn {
-  display: inline-block;
-  padding: 10px 18px;
-  background: var(--sig);
-  color: #14120a;
-  font-weight: 700;
-  text-decoration: none;
-}
-.od-btn.ghost {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--line);
-}
-.od-btn:hover {
-  filter: brightness(1.1);
-}
-.od-sec {
-  border: 1px solid var(--line);
-  background: var(--panel);
-  padding: 18px 22px;
-  margin: 16px 0;
-}
-.od-sec h3 {
-  margin: 0 0 10px;
-  font: 700 14px "Chakra Petch", sans-serif;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  color: var(--sig);
-}
-.od-sec h4 {
-  margin: 18px 0 6px;
-  font: 700 13px "Chakra Petch", sans-serif;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: #c9c5b8;
-}
-.od-sec p {
-  margin: 0 0 10px;
-}
-.od-line {
-  color: #d7d3c6;
-}
-.od-line a {
-  color: var(--text);
-}
-.od-fine {
-  font-size: 13px;
-}
-.od-kit {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-  margin-top: 12px;
-}
-.od-kit small {
-  display: block;
-  color: var(--dim);
-  font: 500 11px "IBM Plex Mono", monospace;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-.od-chip {
-  display: inline-block;
-  margin: 0 6px 6px 0;
-  padding: 3px 10px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, .03);
-  font-size: 13px;
-  color: var(--text);
-  text-decoration: none;
-}
-a.od-chip:hover {
-  border-color: var(--sig);
-  color: var(--sig);
-}
-.od-skills {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 14px;
-}
-.od-sk {
-  display: flex;
-  gap: 14px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--sig);
-  background: rgba(255, 255, 255, .02);
-}
-.od-sk .ic {
-  flex: none;
-  width: 56px;
-  height: 56px;
-  display: grid;
-  place-items: center;
-  background: #0b0c10;
-  border: 1px solid var(--line);
-}
-.od-sk .ic img {
-  max-width: 100%;
-  max-height: 100%;
-  display: block;
-}
-.od-sk small {
-  display: block;
-  color: var(--dim);
-  font: 500 11px "IBM Plex Mono", monospace;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-}
-.od-sk b {
-  display: block;
-  font: 700 18px/1.2 "Chakra Petch", sans-serif;
-  margin: 1px 0 6px;
-}
-.od-sk p {
-  margin: 0;
-  font-size: 14px;
-  color: #cfcbbf;
-}
-.od-sk[data-t="Ultimate"] {
-  border-left-color: #ff8a2e;
-}
-.od-sk[data-t="Combo Skill"] {
-  border-left-color: #6fc3e8;
-}
-.od-sk[data-t="Battle Skill"] {
-  border-left-color: #8fd16a;
-}
-.od-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 10px;
-}
-.od-stats > div {
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, .02);
-}
-.od-stats small {
-  display: block;
-  color: var(--dim);
-  font: 500 11px "IBM Plex Mono", monospace;
-  letter-spacing: .14em;
-}
-.od-stats b {
-  font: 700 24px "Chakra Petch", sans-serif;
-}
-.od-pot {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-}
-.od-pot li {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-}
-.od-pot li > span {
-  flex: none;
-  width: 38px;
-  padding: 3px 0;
-  text-align: center;
-  background: var(--sig);
-  color: #14120a;
-  font: 700 13px "Chakra Petch", sans-serif;
-}
-.od-pot b {
-  font-family: "Chakra Petch", sans-serif;
-}
-.od-pot p {
-  margin: 0;
-  color: #cfcbbf;
-  font-size: 14px;
-}
-.od-picks {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
-}
-.od-pick {
-  display: block;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--c);
-  background: rgba(255, 255, 255, .02);
-  text-decoration: none;
-  color: var(--text);
-}
-.od-pick:hover {
-  border-color: var(--c);
-  background: rgba(255, 255, 255, .05);
-}
-.od-pick b {
-  display: block;
-  font: 700 16px "Chakra Petch", sans-serif;
-}
-.od-pick small {
-  color: var(--dim);
-  font-size: 12px;
-}
-.od-nav {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 22px 0 10px;
-}
-.od-nav a {
-  color: var(--text);
-  text-decoration: none;
-  padding: 8px 14px;
-  border: 1px solid var(--line);
-  font: 700 14px "Chakra Petch", sans-serif;
-}
-.od-nav a:hover {
-  border-color: var(--sig);
-  color: var(--sig);
-}
-@media(max-width:760px) {
-  .od-hero {
-    grid-template-columns: 1fr;
-  }
-  .od-art {
-    max-width: 340px;
-  }
-}
+.od-back{display:inline-block;color:var(--dim);text-decoration:none;font:500 13px "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase}
+.od-back:hover{color:var(--sig)}
+.od-hero{--r:var(--sig);display:grid;grid-template-columns:minmax(220px,340px) 1fr;gap:28px;margin:6px 0 10px}
+.od-hero[data-rar="6"]{--r:#ff8a2e}.od-hero[data-rar="5"]{--r:#ffd21f}.od-hero[data-rar="4"]{--r:#b58cff}
+.od-art{position:relative;aspect-ratio:3/4.1;border:1px solid var(--line);overflow:hidden;background:#0b0c10}
+.od-bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--r);z-index:3}
+.od-stars{color:var(--r);font-size:18px;letter-spacing:0;line-height:1}
+.od-tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.od-tags span{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 9px;font:700 13px "Chakra Petch",sans-serif;letter-spacing:.06em;text-transform:uppercase;background:rgba(6,7,10,.8);border:1px solid var(--line);color:#e8e4d6}
+.od-tags .el{color:var(--c);border-color:color-mix(in srgb,var(--c) 55%,transparent)}
+.od-tags .ico{width:16px;height:16px}
+.od-quote{margin:0 0 14px;color:var(--dim);font-style:italic;max-width:56ch}
+.od-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1px;margin:0;background:var(--line);border:1px solid var(--line)}
+.od-facts>div{background:var(--panel);padding:9px 12px}
+.od-facts dt{color:var(--dim);font:500 11px "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase}
+.od-facts dd{margin:2px 0 0;font-weight:500}
+.od-facts code,.od-line code{font:12px "IBM Plex Mono",monospace;color:var(--sig)}
+.od-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.od-btn{display:inline-block;padding:10px 18px;background:var(--sig);color:#14120a;font-weight:700;text-decoration:none}
+.od-btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.od-btn:hover{filter:brightness(1.1)}
+.od-sec{border:1px solid var(--line);background:var(--panel);padding:18px 22px;margin:16px 0}
+.od-sec h3{margin:0 0 10px;font:700 14px "Chakra Petch",sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--sig)}
+.od-sec h4{margin:18px 0 6px;font:700 13px "Chakra Petch",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#c9c5b8}
+.od-sec p{margin:0 0 10px}
+.od-line{color:#d7d3c6}.od-line a{color:var(--text)}
+.od-fine{font-size:13px}
+.od-kit{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:12px}
+.od-kit small{display:block;color:var(--dim);font:500 11px "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.od-chip{display:inline-block;margin:0 6px 6px 0;padding:3px 10px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:13px;color:var(--text);text-decoration:none}
+a.od-chip:hover{border-color:var(--sig);color:var(--sig)}
+.od-skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.od-sk{display:flex;gap:14px;padding:14px;border:1px solid var(--line);border-left:3px solid var(--sig);background:rgba(255,255,255,.02)}
+.od-sk .ic{flex:none;width:56px;height:56px;display:grid;place-items:center;background:#0b0c10;border:1px solid var(--line)}
+.od-sk .ic img{max-width:100%;max-height:100%;display:block}
+.od-sk small{display:block;color:var(--dim);font:500 11px "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase}
+.od-sk b{display:block;font:700 18px/1.2 "Chakra Petch",sans-serif;margin:1px 0 6px}
+.od-sk p{margin:0;font-size:14px;color:#cfcbbf}
+.od-sk[data-t="Ultimate"]{border-left-color:#ff8a2e}.od-sk[data-t="Combo Skill"]{border-left-color:#6fc3e8}.od-sk[data-t="Battle Skill"]{border-left-color:#8fd16a}
+.od-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.od-stats>div{padding:10px 12px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+.od-stats small{display:block;color:var(--dim);font:500 11px "IBM Plex Mono",monospace;letter-spacing:.14em}
+.od-stats b{font:700 24px "Chakra Petch",sans-serif}
+.od-pot{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.od-pot li{display:flex;gap:14px;align-items:flex-start}
+.od-pot li>span{flex:none;width:38px;padding:3px 0;text-align:center;background:var(--sig);color:#14120a;font:700 13px "Chakra Petch",sans-serif}
+.od-pot b{font-family:"Chakra Petch",sans-serif}.od-pot p{margin:0;color:#cfcbbf;font-size:14px}
+.od-picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.od-pick{display:block;padding:10px 14px;border:1px solid var(--line);border-left:3px solid var(--c);background:rgba(255,255,255,.02);text-decoration:none;color:var(--text)}
+.od-pick:hover{border-color:var(--c);background:rgba(255,255,255,.05)}
+.od-pick b{display:block;font:700 16px "Chakra Petch",sans-serif}.od-pick small{color:var(--dim);font-size:12px}
+.od-nav{display:flex;justify-content:space-between;gap:12px;margin:22px 0 10px}
+.od-nav a{color:var(--text);text-decoration:none;padding:8px 14px;border:1px solid var(--line);font:700 14px "Chakra Petch",sans-serif}
+.od-nav a:hover{border-color:var(--sig);color:var(--sig)}
+@media(max-width:760px){.od-hero{grid-template-columns:1fr}.od-art{max-width:340px}}
 
 /* ================= 1.6: operator page from synced wiki data ================= */
 /* basic info: the account terminal's look, reused (frame, header, section rules) with key / value rows */
-.od-tm {
-  margin: 16px 0;
-  animation: none;
-}
-.od-tm .tm-b {
-  padding: 14px 18px 16px;
-}
-.tm-cols {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-  gap: 0 36px;
-}
-.tm-kv {
-  display: grid;
-  grid-template-columns: minmax(120px, 17em) 1fr;
-  gap: 0 16px;
-  padding: 4px 0;
-  border-bottom: 1px dotted rgba(255, 255, 255, .08);
-  animation: tmIn .28s both;
-  animation-delay: calc(var(--i, 0)*.04s);
-}
-.tm-kv .k, .tm-xp .k {
-  color: var(--sig);
-  font-size: 11.5px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  padding-top: 1px;
-}
-.tm-kv .k::before {
-  content: "> ";
-  opacity: .6;
-}
-.tm-kv .v {
-  color: #fff;
-  overflow-wrap: anywhere;
-}
-.tm-tx {
-  margin: 3px 0 8px;
-  color: #b9b5a8;
-  animation: tmIn .28s both;
-  animation-delay: calc(var(--i, 0)*.04s);
-}
-.tm-tx::before {
-  content: "// ";
-  color: #6b6e78;
-}
-.tm-xp {
-  margin: 0 0 8px;
-  animation: tmIn .28s both;
-  animation-delay: calc(var(--i, 0)*.04s);
-}
-.tm-xp .h {
-  color: #fff;
-}
-.tm-xp .sl {
-  color: #6b6e78;
-}
-.tm-xp .tm-tx {
-  margin: 2px 0 0;
-}
-.tm-wg {
-  margin: 2px 0 6px;
-}
-.tm-wg small {
-  display: block;
-  color: #8d909a;
-  font-size: 10px;
-  letter-spacing: .16em;
-  margin: 6px 0 2px;
-}
-.tm-wl {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 22px;
-}
-.tm-wp {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 3px 0;
-  color: #fff;
-  text-decoration: none;
-  animation: tmIn .28s both;
-  animation-delay: calc(var(--i, 0)*.04s);
-}
-.tm-wp img {
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
-  background: #0b0c10;
-  border: 1px solid #2c2f37;
-}
-.tm-wp:hover span {
-  color: var(--sig);
-  text-decoration: underline;
-}
-.tm-wp::before {
-  content: ">";
-  color: var(--sig);
-  opacity: .6;
-}
-.od-tm .tm-none code {
-  background: none;
-  color: #fff;
-}
-.od-ai {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  vertical-align: -4px;
-  margin-right: 6px;
-}
+.od-tm{margin:16px 0;animation:none}
+.od-tm .tm-b{padding:14px 18px 16px}
+.tm-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:0 36px}
+.tm-kv{display:grid;grid-template-columns:minmax(120px,17em) 1fr;gap:0 16px;padding:4px 0;border-bottom:1px dotted rgba(255,255,255,.08);animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.04s)}
+.tm-kv .k,.tm-xp .k{color:var(--sig);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;padding-top:1px}
+.tm-kv .k::before{content:"> ";opacity:.6}
+.tm-kv .v{color:#fff;overflow-wrap:anywhere}
+.tm-tx{margin:3px 0 8px;color:#b9b5a8;animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.04s)}
+.tm-tx::before{content:"// ";color:#6b6e78}
+.tm-xp{margin:0 0 8px;animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.04s)}
+.tm-xp .h{color:#fff}.tm-xp .sl{color:#6b6e78}
+.tm-xp .tm-tx{margin:2px 0 0}
+.tm-wg{margin:2px 0 6px}.tm-wg small{display:block;color:#8d909a;font-size:10px;letter-spacing:.16em;margin:6px 0 2px}
+.tm-wl{display:flex;flex-wrap:wrap;gap:4px 22px}
+.tm-wp{display:inline-flex;align-items:center;gap:9px;padding:3px 0;color:#fff;text-decoration:none;animation:tmIn .28s both;animation-delay:calc(var(--i,0)*.04s)}
+.tm-wp img{width:26px;height:26px;object-fit:contain;background:#0b0c10;border:1px solid #2c2f37}
+.tm-wp:hover span{color:var(--sig);text-decoration:underline}
+.tm-wp::before{content:">";color:var(--sig);opacity:.6}
+.od-tm .tm-none code{background:none;color:#fff}
+.od-ai{width:18px;height:18px;object-fit:contain;vertical-align:-4px;margin-right:6px}
 /* section heading with a button on the right */
-.od-hd {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.od-hd h3 {
-  margin: 0 !important;
-}
-.od-xa {
-  padding: 6px 12px;
-  font-size: 12px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-.od-xa:hover {
-  border-color: var(--sig);
-  color: var(--sig);
-  filter: none;
-}
+.od-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.od-hd h3{margin:0!important}
+.od-xa{padding:6px 12px;font-size:12px;letter-spacing:.08em;text-transform:uppercase}.od-xa:hover{border-color:var(--sig);color:var(--sig);filter:none}
 /* combat skills: icon + type + name, description folds open */
-.od-skl {
-  display: grid;
-  gap: 10px;
-}
-details.od-sk {
-  display: block;
-  padding: 0;
-}
-details.od-sk > summary {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  padding: 12px 14px;
-  cursor: pointer;
-  list-style: none;
-}
-details.od-sk > summary::-webkit-details-marker {
-  display: none;
-}
-details.od-sk > summary:hover b {
-  color: var(--sig);
-}
-details.od-sk summary b {
-  margin: 0;
-}
-details.od-sk .chev {
-  flex: none;
-  margin-left: auto;
-  width: 9px;
-  height: 9px;
-  border-right: 2px solid var(--dim);
-  border-bottom: 2px solid var(--dim);
-  transform: rotate(45deg) translate(-2px, -2px);
-  transition: transform .15s;
-}
-details[open].od-sk .chev {
-  transform: rotate(225deg) translate(-2px, -2px);
-  border-color: var(--sig);
-}
-details.od-sk[open] {
-  background: rgba(255, 255, 255, .035);
-}
-.od-skd {
-  padding: 0 18px 14px 84px;
-}
-.od-skd p {
-  margin: 0 0 7px;
-  font-size: 14px;
-  color: #cfcbbf;
-}
-.od-skd p:last-child {
-  margin: 0;
-}
-.od-skd .lab {
-  display: inline-block;
-  margin-right: 6px;
-  color: var(--sig);
-  font: 700 11px "Chakra Petch", sans-serif;
-  letter-spacing: .14em;
-}
-.od-sk .ic img, .od-tl .ic img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+.od-skl{display:grid;gap:10px}
+details.od-sk{display:block;padding:0}
+details.od-sk>summary{display:flex;gap:14px;align-items:center;padding:12px 14px;cursor:pointer;list-style:none}
+details.od-sk>summary::-webkit-details-marker{display:none}
+details.od-sk>summary:hover b{color:var(--sig)}
+details.od-sk summary b{margin:0}
+details.od-sk .chev{flex:none;margin-left:auto;width:9px;height:9px;border-right:2px solid var(--dim);border-bottom:2px solid var(--dim);transform:rotate(45deg) translate(-2px,-2px);transition:transform .15s}
+details[open].od-sk .chev{transform:rotate(225deg) translate(-2px,-2px);border-color:var(--sig)}
+details.od-sk[open]{background:rgba(255,255,255,.035)}
+.od-skd{padding:0 18px 14px 84px}
+.od-skd p{margin:0 0 7px;font-size:14px;color:#cfcbbf}.od-skd p:last-child{margin:0}
+.od-skd .lab{display:inline-block;margin-right:6px;color:var(--sig);font:700 11px "Chakra Petch",sans-serif;letter-spacing:.14em}
+.od-sk .ic img,.od-tl .ic img{width:100%;height:100%;object-fit:contain}
 /* talents and base skills: tier by tier */
-.od-tls {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 14px;
-}
-.od-tl {
-  display: flex;
-  gap: 14px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--sig);
-  background: rgba(255, 255, 255, .02);
-}
-.od-tl .ic {
-  flex: none;
-  width: 56px;
-  height: 56px;
-  display: grid;
-  place-items: center;
-  background: #0b0c10;
-  border: 1px solid var(--line);
-}
-.od-tl > div {
-  min-width: 0;
-  flex: 1;
-}
-.od-tl b {
-  display: block;
-  font: 700 18px/1.2 "Chakra Petch", sans-serif;
-}
-.od-tiers {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-.od-tiers li {
-  display: grid;
-  grid-template-columns: 62px 1fr;
-  gap: 12px;
-  align-items: start;
-}
-.od-tiers .lv {
-  padding: 2px 6px;
-  text-align: center;
-  background: var(--sig);
-  color: #14120a;
-  font: 700 12px "Chakra Petch", sans-serif;
-  letter-spacing: .05em;
-  white-space: nowrap;
-}
-.od-tiers .lv.nl {
-  display: none;
-}
-.od-tiers li:has(.lv.nl) {
-  grid-template-columns: 1fr;
-}
-.od-tiers p {
-  margin: 0;
-  font-size: 14px;
-  color: #cfcbbf;
-}
-@media(max-width:760px) {
-  .od-skd {
-    padding-left: 18px;
-  }
-  .tm-kv {
-    grid-template-columns: 1fr;
-  }
-  .od-tls {
-    grid-template-columns: 1fr;
-  }
-}
+.od-tls{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.od-tl{display:flex;gap:14px;padding:14px;border:1px solid var(--line);border-left:3px solid var(--sig);background:rgba(255,255,255,.02)}
+.od-tl .ic{flex:none;width:56px;height:56px;display:grid;place-items:center;background:#0b0c10;border:1px solid var(--line)}
+.od-tl>div{min-width:0;flex:1}
+.od-tl b{display:block;font:700 18px/1.2 "Chakra Petch",sans-serif}
+.od-tiers{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.od-tiers li{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:start}
+.od-tiers .lv{padding:2px 6px;text-align:center;background:var(--sig);color:#14120a;font:700 12px "Chakra Petch",sans-serif;letter-spacing:.05em;white-space:nowrap}
+.od-tiers .lv.nl{display:none}.od-tiers li:has(.lv.nl){grid-template-columns:1fr}
+.od-tiers p{margin:0;font-size:14px;color:#cfcbbf}
+@media(max-width:760px){.od-skd{padding-left:18px}.tm-kv{grid-template-columns:1fr}.od-tls{grid-template-columns:1fr}}
