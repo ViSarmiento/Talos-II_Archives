@@ -286,7 +286,7 @@ body.addmode .oc.in::after{display:none}
 #am[aria-pressed=true]{background:var(--sig);color:#14120a;border-color:var(--sig)}
 .tools #am{margin-left:auto}
 
-/* ================= 1.9.1: UID terminal, account switcher, locked slots, team style + fun comps ================= */
+/* ================= 1.5: UID terminal, account switcher, locked slots, team style + fun comps ================= */
 .uhint{font-size:13px;margin:10px 0 0;color:#26262a}
 .uhint a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 body:not([data-page=home]) .uhint{color:var(--dim)}
@@ -412,7 +412,7 @@ body:not([data-page=home]) .tmhost{margin:16px 0 4px;max-width:760px}
 .fc .ff{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
 .fc .use{padding:6px 14px;font-size:13px}
 
-/* ---- 1.9.4: no fallback flash, fluid art ---- */
+/* ---- 1.5: no fallback flash, fluid art ---- */
 .art .mono{visibility:hidden}                       /* initials only when every picture source has failed */
 .art.lost .mono{visibility:visible}
 .oc .art:has(.pic.sil.ico) .mono{visibility:visible}

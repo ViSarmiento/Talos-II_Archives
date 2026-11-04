@@ -1,6 +1,6 @@
 {
   "name": "talos-ii-archives",
-  "version": "1.9.4-beta.1",
+  "version": "1.5.0-beta.1",
   "private": true,
   "engines": { "node": ">=20" },
   "scripts": {

@@ -44,7 +44,7 @@ t('other operators render a single image', () => { assert.equal((api.artHtml(api
 t('every roster operator produces art markup', () => api.ROSTER.forEach(r => assert(/<img/.test(api.artHtml(r, 360)), r.name)));
 
 
-// ---- 1.9.1: UID query parsing, team styles, diversified suggestions, fun comps ----
+// ---- 1.5: UID query parsing, team styles, diversified suggestions, fun comps ----
 t('parseQuery accepts a UID, spaces and demo, rejects names and short numbers', () => {
   assert.equal(api.parseQuery(' 4225 399080 ').uid, '4225399080'); assert.equal(api.parseQuery('DEMO').uid, 'demo');
   assert(/Name search/.test(api.parseQuery('Endmin').err)); assert(api.parseQuery('123').err); assert(api.parseQuery('').err);
