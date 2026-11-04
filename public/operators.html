@@ -1,43 +1,50 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script src="/js/loader.js"></script><title>Operators – Talos-II Archives</title>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="/js/loader.js"></script>
+  <title>Operators – Talos-II Archives</title>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css">
+</head>
 <body data-page="operators"><main>
-<h2 data-decrypt>Operators</h2>
-<p class="dim" style="margin:0 0 6px">Every operator in the game, with their full splash art. Click one for their skills and details, or use the Team Builder to plan a squad.</p>
-<div class="tools"><div class="uidbar" style="flex:1;min-width:200px"><input id="s" placeholder="Search operators" aria-label="Search operators"></div></div>
-<div class="fbar" id="fl"></div>
-<p class="dim" id="cnt"></p>
-<div class="grid" id="pool"></div>
+  <h2 data-decrypt>Operators</h2>
+  <p class="dim" style="margin:0 0 6px">Every operator in the game, with their full splash art. Click one for their skills and details, or use the Team Builder to plan a squad.</p>
+  <div class="tools"><div class="uidbar" style="flex:1;min-width:200px"><input id="s" placeholder="Search operators" aria-label="Search operators"></div></div>
+  <div class="fbar" id="fl"></div>
+  <p class="dim" id="cnt"></p>
+  <div class="grid" id="pool"></div>
 </main>
 <script src="/js/data.js"></script><script src="/js/core.js"></script><script src="/js/app.js"></script>
 <script>
-const f = { el: '', cls: '', rar: 0 };
-let made = 0;
-const cards = new Map();   // one node per operator, so searching and filtering never reload the art
-function card(o) {
-  let el = cards.get(o.name);
-  if (!el) { const t = document.createElement('template'); t.innerHTML = opBox(o, { db: true, tag: 'a', attrs: `href="/operators/${opSlug(o.name)}"` }).trim(); el = t.content.firstChild; cards.set(o.name, el); if (made++ < 12) artEager(el) }   // the first rows load first, the rest lazily
-  return el;
-}
-function draw() {
-  const q = key($('#s').value);
-  const list = ROSTER.filter(o => (!f.el || o.element === f.el) && (!f.cls || o.cls === f.cls) && (!f.rar || o.rarity === f.rar) && key(o.name).includes(q))
-    .sort((x, y) => y.rarity - x.rarity || x.name.localeCompare(y.name));
-  if (list.length) $('#pool').replaceChildren(...list.map(card)); else $('#pool').innerHTML = '<p class="dim">No operators match those filters.</p>';
-  const chip = (attr, val, label, on, c, ic = '') => `<button class="chip ${on ? 'on' : ''}" data-${attr}="${val}" ${c ? `style="--c:${c}"` : ''}>${ic}${label}</button>`;
-  $('#fl').innerHTML = `<div class="chips">${Object.keys(COL).map(e => chip('fe', e, e, f.el === e, COL[e], icoEl(e))).join('')}</div><span class="sep"></span>
-    <div class="chips">${CLASSES.map(c => chip('fc', c, c, f.cls === c, '', icoCls(c))).join('')}</div><span class="sep"></span>
-    <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + stars(1), f.rar === r)).join('')}</div>`;
-  $('#cnt').textContent = `${list.length} of ${ROSTER.length} operators shown.`;
-}
-document.onclick = e => {
-  const t = e.target, fe = t.closest('[data-fe]'), fc = t.closest('[data-fc]'), fr = t.closest('[data-fr]');
-  if (fe) f.el = f.el === fe.dataset.fe ? '' : fe.dataset.fe;
-  else if (fc) f.cls = f.cls === fc.dataset.fc ? '' : fc.dataset.fc;
-  else if (fr) f.rar = f.rar === +fr.dataset.fr ? 0 : +fr.dataset.fr;
-  else return;
+  const f = { el: '', cls: '', rar: 0 };
+  let made = 0;
+  const cards = new Map();   // one node per operator, so searching and filtering never reload the art
+  function card(o) {
+    let el = cards.get(o.name);
+    if (!el) { const t = document.createElement('template'); t.innerHTML = opBox(o, { db: true, tag: 'a', attrs: `href="/operators/${opSlug(o.name)}"` }).trim(); el = t.content.firstChild; cards.set(o.name, el); if (made++ < 12) artEager(el) }   // the first rows load first, the rest lazily
+    return el;
+  }
+  function draw() {
+    const q = key($('#s').value);
+    const list = ROSTER.filter(o => (!f.el || o.element === f.el) && (!f.cls || o.cls === f.cls) && (!f.rar || o.rarity === f.rar) && key(o.name).includes(q))
+      .sort((x, y) => y.rarity - x.rarity || x.name.localeCompare(y.name));
+    if (list.length) $('#pool').replaceChildren(...list.map(card)); else $('#pool').innerHTML = '<p class="dim">No operators match those filters.</p>';
+    const chip = (attr, val, label, on, c, ic = '') => `<button class="chip ${on ? 'on' : ''}" data-${attr}="${val}" ${c ? `style="--c:${c}"` : ''}>${ic}${label}</button>`;
+    $('#fl').innerHTML = `<div class="chips">${Object.keys(COL).map(e => chip('fe', e, e, f.el === e, COL[e], icoEl(e))).join('')}</div><span class="sep"></span>
+      <div class="chips">${CLASSES.map(c => chip('fc', c, c, f.cls === c, '', icoCls(c))).join('')}</div><span class="sep"></span>
+      <div class="chips">${[6, 5, 4].map(r => chip('fr', r, r + stars(1), f.rar === r)).join('')}</div>`;
+    $('#cnt').textContent = `${list.length} of ${ROSTER.length} operators shown.`;
+  }
+  document.onclick = e => {
+    const t = e.target, fe = t.closest('[data-fe]'), fc = t.closest('[data-fc]'), fr = t.closest('[data-fr]');
+    if (fe) f.el = f.el === fe.dataset.fe ? '' : fe.dataset.fe;
+    else if (fc) f.cls = f.cls === fc.dataset.fc ? '' : fc.dataset.fc;
+    else if (fr) f.rar = f.rar === +fr.dataset.fr ? 0 : +fr.dataset.fr;
+    else return;
+    draw();
+  };
+  $('#s').oninput = draw;
   draw();
-};
-$('#s').oninput = draw;
-draw();
-FL.wait(artReady());   // the loading screen stays until the art on screen is there
+  FL.wait(artReady());   // the loading screen stays until the art on screen is there
 </script></body></html>
