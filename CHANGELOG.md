@@ -1,6 +1,13 @@
 # Changelog
 Newest first. A new minor version is only used for a big change; small fixes are folded into the version they belong to.
 
+## 1.5.9.1 skills terminal
+- **Combat skills, talents and base skills now live in a second terminal** under the art, with the same frame, Prev/Next buttons (Prev hidden on page 1, Next on page 3), arrow keys, swipe and typing animation as the info terminal. Pages: 1 Combat skills, 2 Talents, 3 Base skills.
+- Every entry is a **dropdown**: description, then a **level slider**, then the numbers for that level. Basic attacks list every stat for the chosen level; the other combat skills show the full level table with the chosen level's column lit (click a level number to jump to it). Talents and base skills show the effect text for the chosen tier, with the numbers that change by tier highlighted. Sliders start at the highest level and keep their level and open state while you flip pages.
+- Slider range follows the data: combat skills have **12** ranks on the wiki, talents and base skills have 1 to 4 tiers (Elite 1 to 4).
+- **Data:** `operators.json` skills now carry `scaling` (`levels` plus `rows` of `{ label, values }`), read from the wiki's rank tables. Talents and base skills are read one table per entry, which also fixes talents being merged into one another (for example Laevatain's Scorching Heart sat inside Keen Mind). Run `npm run sync` online once more to download the talent icons that are not in `public/img/wiki/` yet.
+- `npm run sync -- --offline` rebuilds `operators.json` from `scripts/.cache` without touching the network (icons already on disk are kept). Per-level arrays are written on one line so the file stays small.
+
 ## 1.5.9 operator page rework
 - **Operator page trimmed to the splash art, a paged terminal and Combat skills.** The metadata table, wiki buttons, Overview, Team play, Element/Class notes, Talents, Base skills, Stats and Potentials sections are gone. The splash art is larger (about 1.1x the terminal's width, capped to the window height).
 - **Terminal carousel** with Prev/Next buttons (also arrow keys when the terminal is focused, and swipe on touch): 1 Top badges (rarity, class, weapon, element, faction, role tags, main and sub attribute), 2 Basic info (basic info, Oripathy status, physical exam), 3 Expertise and hobbies, 4 Recommended weapons (matching skills and stats, with icons). Prev is hidden on page 1, Next on the last page. Every page change replays the account terminal's row slide-in and the glyph-decrypt typing on short values.

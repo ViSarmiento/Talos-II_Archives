@@ -22,70 +22,35 @@
   // description paragraphs: a leading "LABEL:" (BASIC ATTACK:, COMBO TRIGGER: ...) is shown as a small caps tag
   const para = t => { const m = /^([A-Z][A-Z' -]{2,}):\s*(.*)$/.exec(t); return m ? `<p><b class="lab">${esc(m[1])}</b> ${esc(m[2])}</p>` : `<p>${esc(t)}</p>` };
   const icImg = u => u ? `<img alt="" loading="lazy" src="${esc(u)}" onerror="this.remove()">` : '';
-  // one collapsible combat skill: icon, type and name in the summary, the description folds open below
-  const skillItem = s => `<details class="od-sk" data-t="${esc(s.label || SKILL_LABEL[s.type] || s.type)}"><summary><span class="ic">${icImg(s.icon)}</span><div><small>${esc(s.label || SKILL_LABEL[s.type] || s.type)}</small><b>${esc(s.name || '…')}</b></div><i class="chev" aria-hidden="true"></i></summary><div class="od-skd">${(s.desc || []).map(para).join('') || '<p class="dim">No description.</p>'}</div></details>`;
-  // ---- terminal carousel: four pages, same frame, rows and text animation as the account terminal ----
+  // ---- shared terminal pieces: the account terminal's frame and rows, plus its text animation ----
   let tmN = 0;
   // data-dc marks short text that is decrypted (scrambled glyphs locking in left to right) on top of the row's tmIn slide-in
   const dc = t => `<span data-dc>${esc(t)}</span>`;
   const kvh = (k, html) => html ? `<div class="tm-kv" style="--i:${++tmN}"><span class="k">${esc(k)}</span><span class="v">${html}</span></div>` : '';
   const kv = (k, v) => v ? kvh(k, dc(v)) : '';
-  const tmSec = t => `<div class="tm-sec" style="--i:${++tmN}"><span data-dc>${esc(t)}</span></div>`;
+  const tmSec = (t, extra = '') => `<div class="tm-sec" style="--i:${++tmN}"><span data-dc>${esc(t)}</span>${extra}</div>`;
   const tmTx = t => t ? `<p class="tm-tx" style="--i:${++tmN}">${esc(t)}</p>` : '';
   const tmEntry = (lab, e) => `<div class="tm-xp" style="--i:${++tmN}"><div class="h"><span class="k">${esc(lab)} ${e.n || ''}</span> ${dc(e.category)}${e.name ? ` <span class="sl">//</span> ${dc(e.name)}` : ''}</div>${e.desc ? `<p class="tm-tx">${esc(e.desc)}</p>` : ''}</div>`;
   const noFile = (o, what) => `<p class="tm-none" style="--i:${++tmN}">NO SYNCED ${what} FOR ${esc(o.name.toUpperCase())}. Run <code>npm run sync</code> to pull it from the wiki.</p>`;
 
-  // returns [{ id, title, html() }]; html() restarts the row counter so every page staggers in from the top
-  function tmPages(o, d, x) {
-    const P = d && d.profile, ex = (P && P.exam) || {};
-    const wp = P && P.weapons && P.weapons.length ? P.weapons : (x.weapons || []).map(n => ({ name: n, icon: '', match: '' }));
-    const withIcon = (ic, t) => `${ic ? `<img class="od-ai" alt="" src="${esc(ic)}" onerror="this.remove()">` : ''}${dc(t)}`;
-    const attr = (n, ic) => n ? withIcon(ic, n) : '';
-    const tags = (d && d.tags && d.tags.length ? d.tags : x.tags) || [];
-    const wRow = w => `<a class="tm-wp" style="--i:${++tmN}" target="_blank" rel="noopener" href="${esc(WIKI_PAGE + '/' + encodeURIComponent(w.name.replace(/ /g, '_')))}">${icImg(w.icon)}<span>${esc(w.name)}</span></a>`;
-    const groups = ['Skills', 'Stats', ''].map(g => [g, wp.filter(w => (w.match || '') === g)]).filter(([, l]) => l.length);
-    return [
-      { id: 'badges', title: 'TOP BADGES', html: () => (tmN = 0, tmSec('TOP BADGES')
-        + kvh('Rarity', `<span class="tm-stars" aria-label="${o.rarity}-star">${stars(o.rarity)}</span>`)
-        + kvh('Class', icoCls(o.cls) + dc(o.cls))
-        + kvh('Weapon', dc(o.weapon))
-        + kvh('Element', icoEl(o.element) + dc(o.element))
-        + kvh('Faction', d && d.faction ? withIcon(d.factionIcon, d.faction) : (x.faction ? dc(x.faction) : ''))
-        + kvh('Role tags', tags.length ? `<span class="tm-chips">${tags.map(t => `<span>${dc(t)}</span>`).join('')}</span>` : '')
-        + kvh('Main attribute', attr(d && d.mainAttr, d && d.mainAttrIcon))
-        + kvh('Sub attribute', attr(d && d.subAttr, d && d.subAttrIcon))) },
-      { id: 'basic', title: 'BASIC INFO', html: () => (tmN = 0, !P ? tmSec('BASIC INFO') + noFile(o, 'PROFILE')
-        : tmSec('BASIC INFO') + kv('Codename', o.name) + kv('Gender', P.gender) + kv('Authentication', P.authentication) + kv('Date of birth', P.dob) + kv('Race', P.race)
-        + (P.oripathy ? tmSec('ORIPATHY INFECTION STATUS') + tmTx(P.oripathy) : '')
-        + (Object.values(ex).some(Boolean) ? tmSec('INTEGRATED PHYSICAL EXAM') + kv('Physiological strength', ex.physiologicalStrength) + kv('Combat skill', ex.combatSkill) + kv('Tactical acumen', ex.tacticalAcumen) + kv('Originium arts assimilation', ex.originiumArtsAssimilation) : '')) },
-      { id: 'expertise', title: 'EXPERTISE & HOBBIES', html: () => (tmN = 0, !P ? tmSec('EXPERTISE') + noFile(o, 'PROFILE')
-        : ((P.expertise || []).length ? tmSec('EXPERTISE') + P.expertise.map(e => tmEntry('EXP', e)).join('') : '')
-        + ((P.hobbies || []).length ? tmSec('HOBBIES') + P.hobbies.map(e => tmEntry('HOB', e)).join('') : '')
-        || tmSec('EXPERTISE') + '<p class="tm-none">No expertise or hobbies listed.</p>') },
-      { id: 'weapons', title: 'RECOMMENDED WEAPONS', html: () => (tmN = 0, !wp.length ? tmSec('RECOMMENDED WEAPONS') + noFile(o, 'WEAPONS')
-        : tmSec('RECOMMENDED WEAPONS') + groups.map(([g, l]) => `<div class="tm-wg">${g ? `<small style="--i:${++tmN}">MATCHING ${g.toUpperCase()}</small>` : ''}<div class="tm-wl">${l.map(wRow).join('')}</div></div>`).join('')) },
-    ];
-  }
-
-  // frame + carousel wiring. The body is rebuilt on every page change, which restarts the CSS tmIn stagger; decrypt() then types the short values.
-  function terminal(o, d, x) {
-    const pages = tmPages(o, d, x), last = pages.length - 1;
-    const host = document.createElement('section');
-    host.className = 'tm od-tm'; host.tabIndex = 0; host.setAttribute('role', 'region'); host.setAttribute('aria-label', 'Operator file');
+  // Paged terminal. pages: [{ title, html() }]. html() restarts tmN so every page staggers in from the top. setup(pg) runs once (event wiring).
+  // The page body is rebuilt on every change, which restarts the CSS tmIn stagger; decrypt() then types the short values.
+  function carousel({ aria, tail, pages, setup }) {
+    const last = pages.length - 1, host = document.createElement('section');
+    host.className = 'tm od-tm'; host.tabIndex = 0; host.setAttribute('role', 'region'); host.setAttribute('aria-label', aria);
     host.innerHTML = `<i class="tm-c a"></i><i class="tm-c b"></i><i class="tm-c c"></i><i class="tm-c d"></i>
-      <header class="tm-h"><span class="tm-ttl"><i class="tm-dot"></i>TALOS-II TERMINAL<em> // ${esc(o.name.toUpperCase())}</em></span><span class="tm-pn" id="tmpn"></span></header>
-      <div class="tm-b tm-pg" id="tmpg" aria-live="polite"></div>
-      <footer class="tm-f tm-nav"><button type="button" class="tm-nb" id="tmprev" aria-label="Previous page">‹ <span>PREV</span></button><span class="tm-dots" id="tmdots" aria-hidden="true">${pages.map(() => '<i></i>').join('')}</span><button type="button" class="tm-nb" id="tmnext" aria-label="Next page"><span>NEXT</span> ›</button></footer>`;
-    const pg = host.querySelector('#tmpg'), prev = host.querySelector('#tmprev'), next = host.querySelector('#tmnext'), dots = [...host.querySelectorAll('#tmdots i')];
+      <header class="tm-h"><span class="tm-ttl"><i class="tm-dot"></i>TALOS-II TERMINAL<em> // ${esc(tail)}</em></span><span class="tm-pn" aria-live="polite"></span></header>
+      <div class="tm-b tm-pg"></div>
+      <footer class="tm-f tm-nav"><button type="button" class="tm-nb" data-nav="-1" aria-label="Previous page">‹ <span>PREV</span></button><span class="tm-dots" aria-hidden="true">${pages.map(() => '<i></i>').join('')}</span><button type="button" class="tm-nb" data-nav="1" aria-label="Next page"><span>NEXT</span> ›</button></footer>`;
+    const pg = host.querySelector('.tm-pg'), pn = host.querySelector('.tm-pn'), prev = host.querySelector('[data-nav="-1"]'), next = host.querySelector('[data-nav="1"]'), dots = [...host.querySelectorAll('.tm-dots i')];
     let at = 0;
     const show = n => {
       at = Math.max(0, Math.min(last, n));
       const p = pages[at];
-      host.querySelector('#tmpn').textContent = `${String(at + 1).padStart(2, '0')}/${String(pages.length).padStart(2, '0')} // ${p.title}`;
+      pn.textContent = `${String(at + 1).padStart(2, '0')}/${String(pages.length).padStart(2, '0')} // ${p.title}`;
       pg.innerHTML = p.html(); pg.scrollTop = 0;
-      // first page hides Prev, last page hides Next; they come back as soon as there is somewhere to go
-      prev.style.visibility = at === 0 ? 'hidden' : 'visible'; prev.tabIndex = at === 0 ? -1 : 0; prev.setAttribute('aria-hidden', at === 0);
-      next.style.visibility = at === last ? 'hidden' : 'visible'; next.tabIndex = at === last ? -1 : 0; next.setAttribute('aria-hidden', at === last);
+      // first page hides Prev, last page hides Next; each comes back as soon as there is somewhere to go
+      for (const [b, off] of [[prev, at === 0], [next, at === last]]) { b.style.visibility = off ? 'hidden' : 'visible'; b.tabIndex = off ? -1 : 0; b.setAttribute('aria-hidden', off) }
       dots.forEach((el, i) => el.classList.toggle('on', i === at));
       // same typing effect as the account terminal: each short value scrambles, then locks in left to right as its row slides in
       pg.querySelectorAll('[data-dc]').forEach(el => {
@@ -96,12 +61,120 @@
     };
     prev.onclick = () => show(at - 1);
     next.onclick = () => show(at + 1);
-    host.addEventListener('keydown', e => { if (e.key === 'ArrowLeft' && at > 0) { e.preventDefault(); show(at - 1) } else if (e.key === 'ArrowRight' && at < last) { e.preventDefault(); show(at + 1) } });
-    let sx = null;   // swipe on touch screens
-    pg.addEventListener('pointerdown', e => { sx = e.pointerType === 'touch' ? e.clientX : null });
+    host.addEventListener('keydown', e => {
+      if (e.target.closest('input')) return;   // arrow keys belong to a focused slider
+      if (e.key === 'ArrowLeft' && at > 0) { e.preventDefault(); show(at - 1) } else if (e.key === 'ArrowRight' && at < last) { e.preventDefault(); show(at + 1) }
+    });
+    let sx = null;   // swipe on touch screens (not on sliders or the scrolling level tables)
+    pg.addEventListener('pointerdown', e => { sx = e.pointerType === 'touch' && !e.target.closest('input, .tm-gw') ? e.clientX : null });
     pg.addEventListener('pointerup', e => { if (sx == null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 60) show(at + (dx < 0 ? 1 : -1)) });
+    if (setup) setup(pg, host);
     host._show = show;
     return host;
+  }
+
+  // ---- terminal 1 (beside the art): badges, basic info, expertise & hobbies, recommended weapons ----
+  function infoPages(o, d, x) {
+    const P = d && d.profile, ex = (P && P.exam) || {};
+    const wp = P && P.weapons && P.weapons.length ? P.weapons : (x.weapons || []).map(n => ({ name: n, icon: '', match: '' }));
+    const withIcon = (ic, t) => `${ic ? `<img class="od-ai" alt="" src="${esc(ic)}" onerror="this.remove()">` : ''}${dc(t)}`;
+    const attr = (n, ic) => n ? withIcon(ic, n) : '';
+    const tags = (d && d.tags && d.tags.length ? d.tags : x.tags) || [];
+    const wRow = w => `<a class="tm-wp" style="--i:${++tmN}" target="_blank" rel="noopener" href="${esc(WIKI_PAGE + '/' + encodeURIComponent(w.name.replace(/ /g, '_')))}">${icImg(w.icon)}<span>${esc(w.name)}</span></a>`;
+    const groups = ['Skills', 'Stats', ''].map(g => [g, wp.filter(w => (w.match || '') === g)]).filter(([, l]) => l.length);
+    return [
+      { title: 'TOP BADGES', html: () => (tmN = 0, tmSec('TOP BADGES')
+        + kvh('Rarity', `<span class="tm-stars" aria-label="${o.rarity}-star">${stars(o.rarity)}</span>`)
+        + kvh('Class', icoCls(o.cls) + dc(o.cls))
+        + kvh('Weapon', dc(o.weapon))
+        + kvh('Element', icoEl(o.element) + dc(o.element))
+        + kvh('Faction', d && d.faction ? withIcon(d.factionIcon, d.faction) : (x.faction ? dc(x.faction) : ''))
+        + kvh('Role tags', tags.length ? `<span class="tm-chips">${tags.map(t => `<span>${dc(t)}</span>`).join('')}</span>` : '')
+        + kvh('Main attribute', attr(d && d.mainAttr, d && d.mainAttrIcon))
+        + kvh('Sub attribute', attr(d && d.subAttr, d && d.subAttrIcon))) },
+      { title: 'BASIC INFO', html: () => (tmN = 0, !P ? tmSec('BASIC INFO') + noFile(o, 'PROFILE')
+        : tmSec('BASIC INFO') + kv('Codename', o.name) + kv('Gender', P.gender) + kv('Authentication', P.authentication) + kv('Date of birth', P.dob) + kv('Race', P.race)
+        + (P.oripathy ? tmSec('ORIPATHY INFECTION STATUS') + tmTx(P.oripathy) : '')
+        + (Object.values(ex).some(Boolean) ? tmSec('INTEGRATED PHYSICAL EXAM') + kv('Physiological strength', ex.physiologicalStrength) + kv('Combat skill', ex.combatSkill) + kv('Tactical acumen', ex.tacticalAcumen) + kv('Originium arts assimilation', ex.originiumArtsAssimilation) : '')) },
+      { title: 'EXPERTISE & HOBBIES', html: () => (tmN = 0, !P ? tmSec('EXPERTISE') + noFile(o, 'PROFILE')
+        : ((P.expertise || []).length ? tmSec('EXPERTISE') + P.expertise.map(e => tmEntry('EXP', e)).join('') : '')
+        + ((P.hobbies || []).length ? tmSec('HOBBIES') + P.hobbies.map(e => tmEntry('HOB', e)).join('') : '')
+        || tmSec('EXPERTISE') + '<p class="tm-none">No expertise or hobbies listed.</p>') },
+      { title: 'RECOMMENDED WEAPONS', html: () => (tmN = 0, !wp.length ? tmSec('RECOMMENDED WEAPONS') + noFile(o, 'WEAPONS')
+        : tmSec('RECOMMENDED WEAPONS') + groups.map(([g, l]) => `<div class="tm-wg">${g ? `<small style="--i:${++tmN}">MATCHING ${g.toUpperCase()}</small>` : ''}<div class="tm-wl">${l.map(wRow).join('')}</div></div>`).join('')) },
+    ];
+  }
+
+  // ---- terminal 2 (below): combat skills, talents, base skills. Every entry is a dropdown: text, a level slider, then the numbers for that level ----
+  const NUM = /\d+(?:\.\d+)?%?/g;
+  // an effect text with the numbers that change between levels marked (all numbers when the levels are worded differently)
+  function effectHtml(tiers, i) {
+    const t = tiers[i].text, per = tiers.map(x => x.text.match(NUM) || []), same = per.every(a => a.length === per[0].length);
+    let out = '', last = 0, k = 0, m; NUM.lastIndex = 0;
+    while ((m = NUM.exec(t))) {
+      const vary = tiers.length > 1 && (!same || per.some(a => a[k] !== per[i][k])); k++;
+      out += esc(t.slice(last, m.index)) + (vary ? `<mark>${esc(m[0])}</mark>` : esc(m[0])); last = m.index + m[0].length;
+    }
+    return out + esc(t.slice(last));
+  }
+  // basic attacks: one line per stat for the chosen level. Other skills: the whole level table, the chosen level's column lit.
+  function scalingHtml(s, lv) {
+    const sc = s.scaling;
+    if (!sc) return '<p class="tm-dim">No level data for this skill yet. Run <code>npm run sync</code>.</p>';
+    if (s.type === 'Basic') return `<div class="tm-ls">${sc.rows.map(r => `<div class="tm-lr"><span>${esc(r.label)}</span><b>${esc(r.values[lv - 1] ?? '–')}</b></div>`).join('')}</div>`;
+    const on = i => i + 1 === lv ? ' class="on"' : '';
+    return `<div class="tm-gw"><table class="tm-gt"><thead><tr><th></th>${sc.levels.map((l, i) => `<th${on(i)} data-lv="${i + 1}" title="Level ${esc(l)}">${esc(l)}</th>`).join('')}</tr></thead>
+      <tbody>${sc.rows.map(r => `<tr><th scope="row">${esc(r.label)}</th>${r.values.map((v, i) => `<td${on(i)} data-lv="${i + 1}">${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+  function skillPages(o, d, x) {
+    // synced record first; the hand-written OP_DETAIL entry (Laevatain, Si) fills in whatever the record lacks
+    const skills = d && d.skills.length ? d.skills : (x.skills || []).map(([t, n, desc]) => ({ label: t, type: '', name: n, desc: [desc], icon: '' }));
+    const talents = d && d.talents.length ? d.talents : (x.talents || []).map(([n, t]) => ({ name: n, icon: '', tiers: [{ label: '', text: t }] }));
+    const baseSk = d ? d.baseSkills : [];
+    const st = new Map();   // key -> { open, lv }: kept while the person flips pages
+    const reg = new Map();  // key -> entry, so a slider move can redraw just its numbers
+    const make = (prefix, list, mk) => list.map((e, i) => { const en = { key: prefix + i, ...mk(e) }; reg.set(en.key, en); return en });
+    const sk = make('s', skills, s => { const sc = s.scaling, max = sc ? sc.levels.length : 0;
+      return { small: s.label || SKILL_LABEL[s.type] || s.type, name: s.name || '…', icon: s.icon, cap: 'SKILL LEVEL', max, lab: lv => 'Lv ' + sc.levels[lv - 1],
+        desc: `<div class="tm-desc">${(s.desc || []).map(para).join('') || '<p class="tm-dim">No description.</p>'}</div>`, body: lv => scalingHtml(s, lv) } });
+    const tier = (e, kind) => { const t = e.tiers || [], max = t.length;
+      return { small: kind, name: e.name, icon: e.icon, cap: 'TIER', max: max > 1 ? max : 0, lab: lv => t[lv - 1].label || 'Lv ' + lv,
+        desc: '', body: lv => `<p class="tm-eff">${t[lv - 1].label ? `<span class="tg">${esc(t[lv - 1].label)}</span> ` : ''}${effectHtml(t, lv - 1)}</p>` } };
+    const tl = make('t', talents, e => tier(e, 'TALENT')), bs = make('b', baseSk, e => tier(e, 'BASE SKILL'));
+    const lvOf = e => (st.get(e.key) || {}).lv || (e.max ? e.max : 1);   // starts at the highest level, like the wiki's tables
+    const ctl = (e, lv) => !e.max ? '' : `<div class="tm-lvl" style="--p:${e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100}%"><span class="cap">${e.cap}</span><output>${esc(e.lab(lv))}</output>
+      <input type="range" class="tm-rng" min="1" max="${e.max}" step="1" value="${lv}" data-k="${e.key}" aria-label="${esc(e.name)} ${e.cap.toLowerCase()}"><span class="mn">${esc(e.lab(1))}</span><span class="mx">${esc(e.lab(e.max))}</span></div>`;
+    const item = e => { const lv = lvOf(e), open = (st.get(e.key) || {}).open;
+      return `<details class="tm-dd" data-k="${e.key}"${open ? ' open' : ''} style="--i:${++tmN}"><summary><span class="ic">${icImg(e.icon)}</span><span class="tt"><small>${esc(e.small)}</small><b>${dc(e.name)}</b></span><i class="chev" aria-hidden="true"></i></summary>
+        <div class="tm-ddb">${e.desc}${ctl(e, lv)}<div class="tm-lvd">${e.body(lv)}</div></div></details>` };
+    const xa = n => n ? '<button type="button" class="tm-xa" data-xa>EXPAND ALL</button>' : '';
+    const page = (title, list, empty, what) => ({ title: title.toUpperCase(), html: () => (tmN = 0, tmSec(title.toUpperCase(), xa(list.length)) + (list.length ? `<div class="tm-dl">${list.map(item).join('')}</div>` : `<p class="tm-none" style="--i:${++tmN}">${empty}</p>`)) });
+    const pages = [
+      page('Combat skills', sk, `NO SKILL DATA FOR ${esc(o.name.toUpperCase())}. Run <code>npm run sync</code>.`),
+      page('Talents', tl, `NO TALENT DATA FOR ${esc(o.name.toUpperCase())}.`),
+      page('Base skills', bs, `NO BASE SKILL DATA FOR ${esc(o.name.toUpperCase())}.`),
+    ];
+    // one set of listeners on the page body (it is rebuilt on every page change)
+    const setup = pg => {
+      const redraw = key => {
+        const e = reg.get(key), box = pg.querySelector(`.tm-dd[data-k="${key}"]`); if (!e || !box) return;
+        const lv = lvOf(e), lvd = box.querySelector('.tm-lvd'), gw = lvd.querySelector('.tm-gw'), sl = gw ? gw.scrollLeft : 0;
+        const r = box.querySelector('.tm-rng');
+        if (r) { r.value = lv; box.querySelector('.tm-lvl').style.setProperty('--p', (e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100) + '%'); box.querySelector('output').textContent = e.lab(lv) }
+        lvd.innerHTML = e.body(lv);
+        const g2 = lvd.querySelector('.tm-gw'); if (g2) g2.scrollLeft = sl;
+      };
+      const setLv = (key, v) => { const e = reg.get(key); if (!e) return; st.set(key, { ...(st.get(key) || {}), lv: Math.max(1, Math.min(e.max, +v || 1)) }); redraw(key) };
+      pg.addEventListener('input', e => { const r = e.target.closest('.tm-rng'); if (r) setLv(r.dataset.k, r.value) });
+      pg.addEventListener('click', e => {
+        const c = e.target.closest('[data-lv]');   // a level number in a table also moves the slider
+        if (c) { const k = c.closest('.tm-dd').dataset.k; setLv(k, c.dataset.lv); return }
+        const b = e.target.closest('[data-xa]');
+        if (b) { const ds = [...pg.querySelectorAll('.tm-dd')], open = ds.some(x => !x.open); ds.forEach(x => { x.open = open }); b.textContent = open ? 'COLLAPSE ALL' : 'EXPAND ALL' }
+      });
+      pg.addEventListener('toggle', e => { const dd = e.target; if (dd.classList && dd.classList.contains('tm-dd')) st.set(dd.dataset.k, { ...(st.get(dd.dataset.k) || {}), open: dd.open }) }, true);
+    };
+    return { pages, setup };
   }
 
   if (!o) {
@@ -120,8 +193,6 @@
     const x = OP_DETAIL[o.name] || {};
     const idx = sorted.findIndex(r => r.name === o.name), prev = sorted[(idx + sorted.length - 1) % sorted.length], next = sorted[(idx + 1) % sorted.length];
     const d = opRecord(db, o);
-    // synced record first; the hand-written OP_DETAIL entry (Laevatain, Si) fills in whatever the record lacks
-    const skills = d && d.skills.length ? d.skills : (x.skills || []).map(([t, n, desc]) => ({ label: t, name: n, desc: [desc], icon: '' }));
     const synced = db && db.generatedAt ? fmtDate(Date.parse(db.generatedAt)) : '';
 
     root.innerHTML = `<section class="od-hero" style="--c:${COL[o.element]}" data-rar="${o.rarity}">
@@ -129,21 +200,17 @@
         <div class="od-term" id="tmhost"></div>
       </section>
 
-      <section class="od-sec"><div class="od-hd"><h3>Combat skills</h3>${skills.length ? '<button type="button" class="ghost od-xa" id="xa" data-open="0">Expand all</button>' : ''}</div>
-        ${skills.length ? `<div class="od-skl" id="sk">${skills.map(skillItem).join('')}</div>` : `<p class="dim">No skill data for ${esc(o.name)} yet. Run <code>npm run sync</code>, or read them <a href="${esc(wikiUrl(o, '#Combat_Skills'))}" target="_blank" rel="noopener">on the wiki ↗</a>.</p>`}
-      </section>
+      <div class="od-skt" id="skhost" style="--c:${COL[o.element]}"></div>
 
       <nav class="od-nav"><a href="/operators/${opSlug(prev.name)}">‹ ${esc(prev.name)}</a><a href="/operators">All operators</a><a href="/operators/${opSlug(next.name)}">${esc(next.name)} ›</a></nav>
       <p class="dim od-fine">Operator data from the Endfield Talos Wiki (CC BY-SA)${synced ? `, synced ${esc(synced)}` : ''}. Always check the wiki for exact skill numbers.</p>`;
 
-    const tm = terminal(o, d, x);
-    $('#tmhost').appendChild(tm);
-    // the first page types in once the loading screen has cleared, like the title decrypt
+    const info = carousel({ aria: 'Operator file', tail: o.name.toUpperCase(), pages: infoPages(o, d, x) });
+    const sp = skillPages(o, d, x), skills = carousel({ aria: 'Skills, talents and base skills', tail: 'COMBAT FILE', pages: sp.pages, setup: sp.setup });
+    $('#tmhost').appendChild(info); $('#skhost').appendChild(skills);
+    // both terminals type their first page in once the loading screen has cleared, like the title decrypt
     let shown = false;
-    const go = () => { if (!shown) { shown = true; tm._show(0) } };
+    const go = () => { if (!shown) { shown = true; info._show(0); skills._show(0) } };
     if (window.__flDone || !window.FL) go(); else { addEventListener('fl:done', () => setTimeout(go, 260), { once: true }); setTimeout(go, 9000) }
-
-    const xa = $('#xa');
-    if (xa) xa.onclick = () => { const open = xa.dataset.open !== '1'; $('#sk').querySelectorAll('details').forEach(el => { el.open = open }); xa.dataset.open = open ? '1' : '0'; xa.textContent = open ? 'Collapse all' : 'Expand all' };
   }
 </script></body></html>

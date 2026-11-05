@@ -3201,7 +3201,289 @@ details.od-sk[open] {
   padding-right: 30px;
 }
 @media(max-width:1180px) {
-  .od-tm .tm-ttl em {
+  .od-term .od-tm .tm-ttl em {
     display: none;
   }
+}
+
+/* ================= skills / talents / base skills terminal ================= */
+.od-skt .od-tm {
+  margin: 8px 0 16px;
+}
+.od-skt .tm-b {
+  min-height: 300px;
+}
+.tm-xa {
+  order: 3;
+  position: relative;
+  z-index: 7;
+  padding: 2px 10px;
+  background: transparent;
+  color: #b9bcc6;
+  border: 1px solid #3a3d46;
+  font: 700 10px "Chakra Petch", sans-serif;
+  letter-spacing: .14em;
+}
+.tm-xa:hover {
+  color: #14120a;
+  background: var(--sig);
+  border-color: var(--sig);
+  filter: none;
+}
+.tm-dl {
+  display: grid;
+  gap: 8px;
+}
+.tm-dd {
+  border: 1px solid #2c2f37;
+  border-left: 3px solid var(--sig);
+  background: rgba(255, 255, 255, .02);
+  animation: tmIn .28s both;
+  animation-delay: calc(var(--i, 0)*.04s);
+}
+.tm-dd[open] {
+  background: rgba(255, 255, 255, .035);
+}
+.tm-dd > summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.tm-dd > summary::-webkit-details-marker {
+  display: none;
+}
+.tm-dd > summary:hover .tt b {
+  color: var(--sig);
+}
+.tm-dd .ic {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: #0b0c10;
+  border: 1px solid #2c2f37;
+}
+.tm-dd .ic:empty {
+  display: none;
+}
+.tm-dd .ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.tm-dd .tt {
+  min-width: 0;
+}
+.tm-dd .tt small {
+  display: block;
+  color: #8d909a;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.tm-dd .tt b {
+  font: 700 17px/1.25 "Chakra Petch", sans-serif;
+  color: #fff;
+}
+.tm-dd .chev {
+  flex: none;
+  margin-left: auto;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #8d909a;
+  border-bottom: 2px solid #8d909a;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform .15s;
+}
+.tm-dd[open] > summary .chev {
+  transform: rotate(225deg) translate(-2px, -2px);
+  border-color: var(--sig);
+}
+.tm-ddb {
+  padding: 2px 16px 14px;
+  border-top: 1px dotted rgba(255, 255, 255, .1);
+}
+.tm-desc {
+  margin: 10px 0 4px;
+}
+.tm-desc p {
+  margin: 0 0 6px;
+  color: #b9b5a8;
+}
+.tm-desc .lab {
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--sig);
+  font: 700 11px "Chakra Petch", sans-serif;
+  letter-spacing: .14em;
+}
+.tm-dim {
+  margin: 8px 0 0;
+  color: #8d909a;
+}
+.tm-dim code, .tm-desc code {
+  color: #fff;
+}
+/* level slider (label + level readout, track, min / max) */
+.tm-lvl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  margin: 12px 0 6px;
+  padding: 10px 12px 8px;
+  border: 1px solid #2c2f37;
+  background: #0d0e13;
+}
+.tm-lvl .cap {
+  align-self: center;
+  color: #8d909a;
+  font: 700 10px "Chakra Petch", sans-serif;
+  letter-spacing: .2em;
+}
+.tm-lvl output {
+  color: #fff;
+  font: 700 18px/1 "Chakra Petch", sans-serif;
+  letter-spacing: .04em;
+}
+.tm-rng {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 20px;
+  margin: 2px 0 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+.tm-rng::-webkit-slider-runnable-track {
+  height: 4px;
+  background: linear-gradient(90deg, var(--sig) var(--p), #33363f var(--p));
+}
+.tm-rng::-moz-range-track {
+  height: 4px;
+  background: #33363f;
+}
+.tm-rng::-moz-range-progress {
+  height: 4px;
+  background: var(--sig);
+}
+.tm-rng::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--sig);
+  box-shadow: 0 0 8px rgba(255, 210, 31, .5);
+}
+.tm-rng::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--sig);
+}
+.tm-rng:focus-visible {
+  outline: 1px solid var(--sig);
+  outline-offset: 3px;
+}
+.tm-lvl .mn, .tm-lvl .mx {
+  color: #6b6e78;
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+.tm-lvl .mx {
+  text-align: right;
+}
+.tm-lvd {
+  margin-top: 8px;
+}
+/* basic attack: label on the left, value for the chosen level on the right */
+.tm-lr {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+.tm-lr span {
+  color: #b9bcc6;
+}
+.tm-lr b {
+  color: #fff;
+  font: 700 14px "Chakra Petch", sans-serif;
+}
+/* other skills: every level at once, the chosen level lit */
+.tm-gw {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3d46 transparent;
+}
+.tm-gt {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 12.5px;
+}
+.tm-gt th, .tm-gt td {
+  padding: 6px 4px;
+  border: 1px solid #2c2f37;
+}
+.tm-gt thead th {
+  color: #fff;
+  font: 700 13px "Chakra Petch", sans-serif;
+  background: #15161b;
+  cursor: pointer;
+}
+.tm-gt tbody th {
+  min-width: 150px;
+  padding: 6px 10px;
+  text-align: left;
+  color: #d7d3c6;
+  font-weight: 500;
+  background: #121318;
+  position: sticky;
+  left: 0;
+}
+.tm-gt td {
+  color: #cfcbbf;
+  cursor: pointer;
+}
+.tm-gt td:hover, .tm-gt thead th:hover {
+  background: rgba(255, 210, 31, .08);
+}
+.tm-gt .on {
+  background: rgba(255, 210, 31, .14);
+  color: #fff;
+}
+.tm-gt thead th.on {
+  background: var(--sig);
+  color: #14120a;
+}
+/* talents and base skills: the effect text, with the numbers that change by level lit */
+.tm-eff {
+  margin: 6px 0 0;
+  color: #cfcbbf;
+}
+.tm-eff .tg {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 7px;
+  background: var(--sig);
+  color: #14120a;
+  font: 700 11px "Chakra Petch", sans-serif;
+  letter-spacing: .06em;
+}
+.tm-eff mark {
+  background: none;
+  color: var(--sig);
+  font-weight: 700;
 }

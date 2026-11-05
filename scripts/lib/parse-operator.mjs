@@ -1,7 +1,7 @@
 // wiki operator page (HTML from api.php?action=parse) -> one operator record. Pure: no network, no files.
 // The page is read by its visible labels ("Class", "Gender", "Combat Skills" ...) and heading ids, not by CSS classes,
 // so a restyle of the wiki does not break it. Everything that could not be found is left empty and reported in `warnings`.
-import { parseHTML, tokens, section, clean } from './wiki-dom.mjs';
+import { parseHTML, tokens, section, clean, findAll } from './wiki-dom.mjs';
 
 export const BASE = 'https://endfield.wiki.gg';
 export const SKILL_TYPES = { 'basic attack': 'Basic', 'battle skill': 'Battle', 'combo skill': 'Combo', 'ultimate': 'Ultimate', 'ultimate skill': 'Ultimate' };
@@ -41,6 +41,70 @@ function scan(lines, labels, end = lines.length, from = 0) {
 const val = (o, k) => (o[k]?.lines || []).join(' ').trim();
 
 const tierFromAlt = alt => { const m = TIER_ALT.exec(alt || ''); return m ? clean(`${m[1]} ${m[2]}`).replace(/^./, c => c.toUpperCase()) : null };
+
+
+// ---- tables: per-level skill scaling, and talents / base skills as one table each ----
+const BLK = new Set(['div', 'p', 'li', 'ul', 'ol', 'tr', 'td', 'th', 'dd', 'dt', 'table']);
+// text of a node with a space at every line break or block edge, so "a<br>b" reads "a b" (textOf would glue them)
+const cellText = n => clean((function t(x) {
+  if (x.text !== undefined) return x.text;
+  if (x.tag === 'br') return ' ';
+  if (x.attrs && /mw-editsection|reference/.test(x.attrs.class || '')) return '';
+  const inner = (x.children || []).map(t).join('');
+  return BLK.has(x.tag) ? ` ${inner} ` : inner;
+})(n));
+const imgsIn = n => findAll(n, x => x.tag === 'img').map(i => ({ alt: i.attrs.alt || i.attrs.title || '', src: i.attrs.src || '' }));
+const rowsOf = t => findAll(t, r => r.tag === 'tr').map(r => (r.children || []).filter(c => c.tag === 'td' || c.tag === 'th'));
+
+// every top-level table in document order with the id of the heading it sits under
+function tablesByHeading(root) {
+  const out = []; let head = '';
+  (function go(n) {
+    if (n.text !== undefined) return;
+    if (/^h[2-4]$/.test(n.tag)) { head = n.attrs.id || (findAll(n, x => x.attrs && x.attrs.id)[0] || { attrs: {} }).attrs.id || ''; return }
+    if (n.tag === 'table') { out.push({ head, node: n }); return }
+    (n.children || []).forEach(go);
+  })(root);
+  return out;
+}
+// "Rank 7.png" -> "7"; a plain number cell stays as it is; anything else falls back to its position
+const levelLabel = (c, i) => { const a = imgsIn(c).map(x => /(\d+)/.exec(x.alt)).find(Boolean); const t = cellText(c); return a ? a[1] : /^\d+$/.test(t) ? t : String(i + 1) };
+
+// one skill's level table: { levels:['1'..'12'], rows:[{ label, values:[...] }] }, or null when the table is not a level table
+function parseScaling(table) {
+  const rows = rowsOf(table);
+  if (rows.length < 2 || rows[0].length < 3) return null;
+  const levels = rows[0].slice(1).map(levelLabel);
+  if (!rows[0].slice(1).some(c => imgsIn(c).some(i => /rank|lv|level/i.test(i.alt)) || /^\d+$/.test(cellText(c)))) return null;
+  const out = [];
+  for (const r of rows.slice(1)) {
+    const label = cellText(r[0]), values = r.slice(1).map(cellText);
+    if (!label || !values.some(Boolean)) continue;
+    while (values.length < levels.length) values.push('');
+    out.push({ label, values: values.slice(0, levels.length) });
+  }
+  return out.length ? { levels, rows: out } : null;
+}
+
+// talents / base skills: a table whose first row is the name (with its icon) and whose other rows are [tier icon | effect text]
+function parseEntryTables(tables) {
+  const out = [];
+  for (const { node } of tables) {
+    const rows = rowsOf(node);
+    if (rows.length < 2 || rows[0].length !== 1) continue;
+    const name = cellText(rows[0][0]); if (!name) continue;
+    const ic = imgsIn(rows[0][0]).find(i => !/\bicon\.png$/i.test(i.alt)) || imgsIn(rows[0][0])[0];
+    const tiers = [];
+    for (const r of rows.slice(1)) {
+      if (r.length < 2) continue;
+      const text = cellText(r[r.length - 1]); if (!text) continue;
+      const a = imgsIn(r[0]).map(i => tierFromAlt(i.alt)).find(Boolean);
+      tiers.push({ label: a || cellText(r[0]), text });
+    }
+    if (tiers.length) out.push({ name, icon: ic ? fullSize(ic.src) : '', tiers });
+  }
+  return out;
+}
 
 // skills: [{ type, label, name, icon, desc[] }] from the "Combat Skills" section (rank tables are skipped)
 function parseSkills(sec, warnings) {
@@ -182,8 +246,15 @@ export function parseOperator(html, hint = {}) {
 
   // ---- sections ----
   const skills = parseSkills(section(toks, 'Combat_Skills', ['Skill_upgrades', 'Talents', 'Base_Skills']), warnings);
-  const talents = parseEntries(section(toks, 'Talents', ['Talent_upgrades', 'Base_Skills', 'Base_Skill_upgrades', 'Changelog', 'Navigation']));
-  const baseSkills = parseEntries(section(toks, 'Base_Skills', ['Base_Skill_upgrades', 'Changelog', 'Navigation']));
+  const tbls = tablesByHeading(root);
+  // level tables under "Combat Skills", in page order = basic attack, battle skill, combo skill, ultimate
+  const scal = tbls.filter(t => t.head === 'Combat_Skills').map(t => parseScaling(t.node)).filter(Boolean);
+  if (scal.length !== skills.length) warnings.push(`combat skills: ${scal.length} level tables for ${skills.length} skills`);
+  skills.forEach((sk, i) => { if (scal[i]) sk.scaling = scal[i] });
+  // talents and base skills are one table each; the line-by-line reader is the fallback when a page has none
+  const tTables = parseEntryTables(tbls.filter(t => t.head === 'Talents')), bTables = parseEntryTables(tbls.filter(t => t.head === 'Base_Skills'));
+  const talents = tTables.length ? tTables : parseEntries(section(toks, 'Talents', ['Talent_upgrades', 'Base_Skills', 'Base_Skill_upgrades', 'Changelog', 'Navigation']));
+  const baseSkills = bTables.length ? bTables : parseEntries(section(toks, 'Base_Skills', ['Base_Skill_upgrades', 'Changelog', 'Navigation']));
   if (!talents.length) warnings.push('talents: nothing parsed');
   if (!baseSkills.length) warnings.push('base skills: nothing parsed');
 

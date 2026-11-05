@@ -10,6 +10,7 @@
 //   Laevatain Si   only those; the other operators already in operators.json are kept
 //   --refresh      ignore the saved wiki HTML in scripts/.cache and fetch again
 //   --no-icons     skip icon downloads (keeps the remote URLs out of the JSON: icons are left empty)
+//   --offline      never touch the network: read pages from scripts/.cache only, and keep only the icons already in public/img/wiki
 //   --debug        also write scripts/.cache/<Name>.tokens.txt, the flat line-by-line view the parser reads (for fixing a parse)
 //   --delay=<ms>   pause between wiki requests (default 500)
 //
@@ -22,6 +23,7 @@ import { parseHTML, tokens } from './lib/wiki-dom.mjs';
 const root = new URL('../', import.meta.url);
 const OUT_JSON = new URL('public/data/operators.json', root), ICON_DIR = new URL('public/img/wiki/', root), CACHE = new URL('scripts/.cache/', root);
 const args = process.argv.slice(2), flag = n => args.includes('--' + n), opt = (n, d) => (args.find(a => a.startsWith(`--${n}=`)) || '').split('=')[1] ?? d;
+const OFFLINE = flag('offline');
 const names = args.filter(a => !a.startsWith('--'));
 const DELAY = +opt('delay', 500), UA = process.env.WIKI_UA || 'Talos-II-Archives-sync/1.0 (unofficial Endfield fan site; operator data sync)';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -47,6 +49,7 @@ async function http(url, tries = 4) {
 async function pageHtml(o) {
   const file = new URL(slug(o.name) + '.html', CACHE);
   if (!flag('refresh') && existsSync(file)) return readFileSync(file, 'utf8');
+  if (OFFLINE) throw new Error('no saved page in scripts/.cache (--offline)');
   const u = `${BASE}/api.php?action=parse&page=${encodeURIComponent(o.name.replace(/ /g, '_'))}&prop=text&format=json&formatversion=2&redirects=1&maxlag=5`;
   const j = await (await http(u)).json();
   if (j.error) throw new Error(`${j.error.code}: ${j.error.info}`);
@@ -66,6 +69,7 @@ async function downloadIcons(urls) {
     for (let u; (u = q.shift());) {
       const f = localName(u), file = new URL(f, ICON_DIR);
       if (existsSync(file)) { map.set(u, '/img/wiki/' + f); had++; continue }
+      if (OFFLINE) { fails.push(`${u}  (not downloaded, --offline)`); continue }
       try {
         const r = await http(u, 3), type = r.headers.get('content-type') || '';
         if (!/^image\//.test(type)) throw new Error('not an image: ' + type);
@@ -110,7 +114,10 @@ else {
 }
 
 const sorted = Object.fromEntries(Object.entries(ops).sort(([a], [b]) => a.localeCompare(b)));
-writeFileSync(OUT_JSON, JSON.stringify({ generatedAt: new Date().toISOString(), source: `${BASE} (CC BY-SA)`, count: Object.keys(sorted).length, operators: sorted }, null, 1) + '\n');
+// pretty-printed, but arrays of plain strings/numbers (the per-level values) stay on one line so the file does not balloon
+const pretty = JSON.stringify({ generatedAt: new Date().toISOString(), source: `${BASE} (CC BY-SA)`, count: Object.keys(sorted).length, operators: sorted }, null, 1)
+  .replace(/\[\n\s*((?:\"(?:[^\"\\\n]|\\.)*\"|-?[\d.]+)(?:,\n\s*(?:\"(?:[^\"\\\n]|\\.)*\"|-?[\d.]+))*)\n\s*\]/g, (_, b) => '[' + b.replace(/,\n\s*/g, ', ') + ']');
+writeFileSync(OUT_JSON, pretty + '\n');
 console.log(`\nWrote public/data/operators.json (${Object.keys(sorted).length} operators).`);
 
 const empty = report.filter(r => !r[1] || !r[2] || !r[3]);
