@@ -10,6 +10,8 @@ for (const [slug, o] of Object.entries(db.operators || {})) {
   (o.talents || []).forEach(t => check(slug, `talent "${t.name}"`, t.icon));
   (o.baseSkills || []).forEach(b => check(slug, `base skill "${b.name}"`, b.icon));
 }
+// the Mastery icons on the level slider (levels 10-12) come from the wiki's Rank 10 / 11 / 12 files
+[10, 11, 12].forEach(n => check('(slider)', `Mastery rank ${n}`, `/img/wiki/Rank_${n}.png`));
 console.log(`${total} skill / talent / base skill icons checked, ${bad.length} problem(s)`);
 bad.forEach(b => console.log('  ' + b));
 if (bad.length) { console.log('\nRun `npm run sync` with a network connection; icons already on disk are kept. If a talent icon stays empty, run `npm run sync -- --debug <Name>` and look at scripts/.cache/<name>.tokens.txt for that talent.'); process.exitCode = 1 }

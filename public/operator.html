@@ -68,11 +68,11 @@
     prev.onclick = () => show(at - 1);
     next.onclick = () => show(at + 1);
     host.addEventListener('keydown', e => {
-      if (e.target.closest('input')) return;   // arrow keys belong to a focused slider
+      if (e.target.closest('input, [role="switch"]')) return;   // arrow keys belong to a focused slider
       if (e.key === 'ArrowLeft' && at > 0) { e.preventDefault(); show(at - 1) } else if (e.key === 'ArrowRight' && at < last) { e.preventDefault(); show(at + 1) }
     });
     let sx = null;   // swipe on touch screens (not on sliders or the scrolling level tables)
-    pg.addEventListener('pointerdown', e => { sx = e.pointerType === 'touch' && !e.target.closest('input, .tm-gw') ? e.clientX : null });
+    pg.addEventListener('pointerdown', e => { sx = e.pointerType === 'touch' && !e.target.closest('input, .tm-gw, .tm-sw') ? e.clientX : null });
     pg.addEventListener('pointerup', e => { if (sx == null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 60) show(at + (dx < 0 ? 1 : -1)) });
     if (setup) setup(pg, host);
     host._show = show;
@@ -123,15 +123,62 @@
     }
     return out + esc(t.slice(last));
   }
-  // Mastery: levels 10-12 are Mastery 1-3 and are drawn as hexagon icons (slider thumb, readout and end label), not numbers
+  // Mastery: levels 10-12 are Rank 10-12 on the wiki (Rank_10.png ... Rank_12.png) and are drawn as those hexagon icons (slider thumb, readout, end label, table header).
+  // Source order: our own copy in /img/wiki/ (npm run sync), then the wiki's copy once, then a drawn hexagon so the slot is never empty.
   const MAX_LV = 12, mastery = lv => lv >= 10 ? lv - 9 : 0;
-  const hex = n => `<svg class="hex" viewBox="0 0 28 30" role="img" aria-label="Mastery ${n}"><polygon points="14,1 26,8 26,22 14,29 2,22 2,8"/><text x="14" y="19">M${n}</text></svg>`;
-  const lvHtml = lv => mastery(lv) ? hex(mastery(lv)) : 'Lv ' + lv;
+  const hexSvg = n => `<svg class="hex" viewBox="0 0 28 30" role="img" aria-label="Mastery ${n}"><polygon points="14,1 26,8 26,22 14,29 2,22 2,8"/><text x="14" y="19">M${n}</text></svg>`;
+  const rkWiki = n => `https://endfield.wiki.gg/wiki/Special:FilePath/Rank_${n}.png`;
+  function rkFail(img) {
+    const n = +img.dataset.rk;
+    if (!img.dataset.r) { img.dataset.r = 1; img.src = rkWiki(n); return }
+    img.outerHTML = hexSvg(n - 9);
+  }
+  const rankImg = m => `<img class="hex rk" alt="Mastery ${m}" data-rk="${m + 9}" src="/img/wiki/Rank_${m + 9}.png" onerror="rkFail(this)">`;
+  // the slider thumb is a CSS background, so find a working URL once (local, then wiki) and publish it as --rk10 / --rk11 / --rk12
+  [10, 11, 12].forEach(n => {
+    const set = u => document.documentElement.style.setProperty('--rk' + n, `url("${u}")`);
+    const im = new Image(), wk = new Image();
+    im.onload = () => set(im.src); wk.onload = () => set(wk.src);
+    im.onerror = () => { wk.src = rkWiki(n) };
+    im.src = `/img/wiki/Rank_${n}.png`;
+  });
+  const lvHtml = lv => mastery(lv) ? rankImg(mastery(lv)) : 'Lv ' + lv;
   const lvText = lv => mastery(lv) ? 'Mastery ' + mastery(lv) : 'Level ' + lv;
-  // every stat / multiplier row for the chosen level as one clean table (stat | value). The level is on the slider, so there is no Level column or header.
-  function scalingHtml(sc, lv) {
+  // the standard level grid: stat rows x level columns. The chosen level's column is lit and a level number in the header jumps the slider to it.
+  // Basic attacks use the same grid as every other combat skill. mast = levels 10-12 show their Mastery icon in the header.
+  function scalingHtml(sc, lv, mast, key) {
     if (!sc || !sc.rows || !sc.rows.length) return '<p class="tm-dim">No level data for this entry yet. Run <code>npm run sync</code>.</p>';
-    return `<table class="tm-st"><tbody>${sc.rows.map(r => `<tr><th scope="row">${esc(r.label)}</th><td>${esc(r.values[lv - 1] ?? '–')}</td></tr>`).join('')}</tbody></table>`;
+    const n = Array.isArray(sc.levels) ? sc.levels.length : (+sc.levels || Math.max(...sc.rows.map(r => r.values.length)));
+    const cols = Array.from({ length: n }, (_, i) => i + 1), c = i => i === lv ? ' class="cur"' : '';
+    return `<div class="tm-gw"><table class="tm-gt"><thead><tr><th class="lh" scope="col"></th>${cols.map(i => `<th scope="col"${c(i)}><button type="button" class="tm-lj" data-lj="${key}" data-lv="${i}" aria-label="${esc(lvText(i))}"${i === lv ? ' aria-current="true"' : ''}>${mast && mastery(i) ? rankImg(mastery(i)) : i}</button></th>`).join('')}</tr></thead>`
+      + `<tbody>${sc.rows.map(r => `<tr><th scope="row">${esc(r.label)}</th>${cols.map(i => `<td${c(i)}>${esc(r.values[i - 1] ?? '–')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+  // Arcane has two effect states (Array Arcana: Int / Will). Returns { int: { desc, rows }, will: { ... } } or null when a skill has only one.
+  // Preferred data shape: skill.variants = [{ label: 'Array Arcana: Int', desc: [...], rows: [...] }, { label: '...Will', ... }].
+  // Otherwise it is read from the text: description paragraphs and table rows that start with / contain "Array Arcana: Int|Will" belong to that state, everything else is shared.
+  const arcKey = t => /^w/i.test(t) ? 'will' : 'int';
+  const AR_START = /^\s*[\[(]?\s*array\s+arcana\s*[:\-–—]?\s*[\])]?\s*[\[(]?\s*(int(?:ellect)?|will(?:power)?)\b[\])]?\s*[:\-–—]?\s*/i;
+  const AR_ANY = /[\[(]?\s*array\s+arcana\s*[:\-–—]?\s*[\[(]?\s*(int(?:ellect)?|will(?:power)?)\b[\])]?\s*[:\-–—]?\s*/i;
+  function arcanaVariants(s) {
+    if (s.variants && s.variants.length >= 2) {
+      const out = {};
+      s.variants.forEach(v => { const k = arcKey(/will/i.test(v.label || v.name || '') ? 'will' : 'int'); out[k] = { desc: v.desc || [], rows: (v.scaling && v.scaling.rows) || v.rows || (s.scaling && s.scaling.rows) || [] } });
+      return out.int && out.will ? out : null;
+    }
+    const out = { int: { desc: [], rows: [] }, will: { desc: [], rows: [] } };
+    let any = false, cur = null;
+    (s.desc || []).forEach(p => {
+      const m = AR_START.exec(p);
+      if (m) { any = true; cur = arcKey(m[1]); const rest = p.slice(m[0].length).trim(); if (rest) out[cur].desc.push(rest); return }
+      if (cur) out[cur].desc.push(p); else { out.int.desc.push(p); out.will.desc.push(p) }
+    });
+    ((s.scaling && s.scaling.rows) || []).forEach(r => {
+      const m = AR_ANY.exec(r.label || '');
+      if (!m) { out.int.rows.push(r); out.will.rows.push(r); return }
+      any = true; const k = arcKey(m[1]);
+      out[k].rows.push({ ...r, label: (r.label.replace(AR_ANY, ' ').replace(/^[\s:\-–—]+|[\s:\-–—]+$/g, '').replace(/\s{2,}/g, ' ')) || r.label });
+    });
+    return any && out.int.desc.concat(out.int.rows).length && out.will.desc.concat(out.will.rows).length ? out : null;
   }
   function skillPages(o, d, x) {
     // synced record first; the hand-written OP_DETAIL entry (Laevatain, Si) fills in whatever the record lacks
@@ -141,20 +188,24 @@
     const st = new Map();   // key -> { open, lv }: kept while the person flips pages
     const reg = new Map();  // key -> entry, so a slider move can redraw just its numbers
     const make = (prefix, list, mk) => list.map((e, i) => { const en = { key: prefix + i, ...mk(e) }; reg.set(en.key, en); return en });
-    const sk = make('s', skills, s => { const sc = s.scaling;
-      return { small: s.label || SKILL_LABEL[s.type] || s.type, name: s.name || '…', icon: s.icon, cap: 'SKILL LEVEL', max: sc ? MAX_LV : 0, mast: true, lab: lvHtml, txt: lvText,
-        desc: `<div class="tm-desc">${(s.desc || []).map(para).join('') || '<p class="tm-dim">No description.</p>'}</div>`, body: lv => scalingHtml(sc, lv) } });
+    const descHtml = ps => `<div class="tm-desc">${(ps || []).map(para).join('') || '<p class="tm-dim">No description.</p>'}</div>`;
+    const sk = make('s', skills, s => { const sc = s.scaling, av = arcanaVariants(s), pick = arc => av ? av[arc] : null;
+      return { small: s.label || SKILL_LABEL[s.type] || s.type, name: s.name || '…', icon: s.icon, cap: 'SKILL LEVEL', max: sc ? MAX_LV : 0, mast: true, lab: lvHtml, txt: lvText, av,
+        descF: arc => descHtml(pick(arc) ? pick(arc).desc : s.desc),
+        body: (lv, en) => scalingHtml(pick(arcOf(en)) ? { ...sc, rows: pick(arcOf(en)).rows } : sc, lv, true, en.key) } });
     const tier = (e, kind) => { const t = e.tiers || [], max = t.length;
       const tl = lv => t[Math.min(lv, max) - 1] || { label: '', text: '' };   // talents and base skills have 1-4 tiers, not 12 levels
       return { small: kind, name: e.name, icon: e.icon, cap: 'TIER', max: max > 1 ? max : 0, lab: lv => esc(tl(lv).label || 'Lv ' + lv), txt: lv => tl(lv).label || 'Level ' + lv,
-        desc: '', body: lv => `<p class="tm-eff">${tl(lv).label ? `<span class="tg">${esc(tl(lv).label)}</span> ` : ''}${max ? effectHtml(t, Math.min(lv, max) - 1) : ''}</p>${e.scaling ? scalingHtml(e.scaling, lv) : ''}` } };
+        descF: () => '', body: (lv, en) => `<p class="tm-eff">${tl(lv).label ? `<span class="tg">${esc(tl(lv).label)}</span> ` : ''}${max ? effectHtml(t, Math.min(lv, max) - 1) : ''}</p>${e.scaling ? scalingHtml(e.scaling, lv, false, e.key) : ''}` } };
     const tl = make('t', talents, e => tier(e, 'TALENT')), bs = make('b', baseSk, e => tier(e, 'BASE SKILL'));
+    const arcOf = e => (st.get(e.key) || {}).arc || 'int';
+    const arcCtl = e => !e.av ? '' : `<div class="tm-arc" data-arc="${arcOf(e)}"><span class="a i">ARRAY ARCANA: INT</span><button type="button" class="tm-sw" role="switch" aria-checked="${arcOf(e) === 'will'}" aria-label="Array Arcana: Will" data-sw="${e.key}"><i></i></button><span class="a w">ARRAY ARCANA: WILL</span></div>`;
     const lvOf = e => (st.get(e.key) || {}).lv || (e.max ? e.max : 1);   // starts at the highest level, like the wiki's tables
     const ctl = (e, lv) => !e.max ? '' : `<div class="tm-lvl" data-m="${e.mast ? mastery(lv) : 0}" style="--p:${e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100}%"><span class="cap">${e.cap}</span><output>${e.lab(lv)}</output>
       <input type="range" class="tm-rng" min="1" max="${e.max}" step="1" value="${lv}" data-k="${e.key}" aria-label="${esc(e.name)} ${e.cap.toLowerCase()}" aria-valuetext="${esc(e.txt(lv))}"><span class="mn">${e.lab(1)}</span><span class="mx">${e.lab(e.max)}</span></div>`;
     const item = e => { const lv = lvOf(e), open = (st.get(e.key) || {}).open;
       return `<details class="tm-dd" data-k="${e.key}"${open ? ' open' : ''} style="--i:${++tmN}"><summary><span class="ic">${icImg(e.icon, 1)}</span><span class="tt"><small>${esc(e.small)}</small><b>${dc(e.name)}</b></span><i class="chev" aria-hidden="true"></i></summary>
-        <div class="tm-ddb">${e.desc}${ctl(e, lv)}<div class="tm-lvd">${e.body(lv)}</div></div></details>` };
+        <div class="tm-ddb">${arcCtl(e)}<div class="tm-dw">${e.descF(arcOf(e))}</div>${ctl(e, lv)}<div class="tm-lvd">${e.body(lv, e)}</div></div></details>` };
     const xa = n => n ? '<button type="button" class="tm-xa" data-xa>EXPAND ALL</button>' : '';
     const page = (title, list, empty, what) => ({ title: title.toUpperCase(), html: () => (tmN = 0, tmSec(title.toUpperCase(), xa(list.length)) + (list.length ? `<div class="tm-dl">${list.map(item).join('')}</div>` : `<p class="tm-none" style="--i:${++tmN}">${empty}</p>`)) });
     const pages = [
@@ -168,15 +219,22 @@
         const e = reg.get(key), box = pg.querySelector(`.tm-dd[data-k="${key}"]`); if (!e || !box) return;
         const lv = lvOf(e), lvd = box.querySelector('.tm-lvd'), r = box.querySelector('.tm-rng');
         if (r) { const w = box.querySelector('.tm-lvl'); r.value = lv; r.setAttribute('aria-valuetext', e.txt(lv)); w.dataset.m = e.mast ? mastery(lv) : 0; w.style.setProperty('--p', (e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100) + '%'); box.querySelector('output').innerHTML = e.lab(lv) }
-        lvd.innerHTML = e.body(lv);
+        lvd.innerHTML = e.body(lv, e);
+        const dw = box.querySelector('.tm-dw'); if (dw) dw.innerHTML = e.descF(arcOf(e));
+        focusCur(box);
       };
+      // keep the lit column in view inside the scrolling grid
+      const focusCur = box => { const gw = box.querySelector('.tm-gw'), c = gw && gw.querySelector('th.cur'); if (c) gw.scrollLeft = c.offsetLeft - (gw.clientWidth - c.offsetWidth) / 2 };
       const setLv = (key, v) => { const e = reg.get(key); if (!e) return; st.set(key, { ...(st.get(key) || {}), lv: Math.max(1, Math.min(e.max, +v || 1)) }); redraw(key) };
       pg.addEventListener('input', e => { const r = e.target.closest('.tm-rng'); if (r) setLv(r.dataset.k, r.value) });
       pg.addEventListener('click', e => {
+        const lj = e.target.closest('[data-lj]'); if (lj) { setLv(lj.dataset.lj, lj.dataset.lv); return }
+        const sw = e.target.closest('[data-sw]');
+        if (sw) { const k = sw.dataset.sw, w = (st.get(k) || {}).arc === 'will' ? 'int' : 'will'; st.set(k, { ...(st.get(k) || {}), arc: w }); const bar = sw.closest('.tm-arc'); bar.dataset.arc = w; sw.setAttribute('aria-checked', w === 'will'); redraw(k); return }
         const b = e.target.closest('[data-xa]');
         if (b) { const ds = [...pg.querySelectorAll('.tm-dd')], open = ds.some(x => !x.open); ds.forEach(x => { x.open = open }); b.textContent = open ? 'COLLAPSE ALL' : 'EXPAND ALL' }
       });
-      pg.addEventListener('toggle', e => { const dd = e.target; if (dd.classList && dd.classList.contains('tm-dd')) st.set(dd.dataset.k, { ...(st.get(dd.dataset.k) || {}), open: dd.open }) }, true);
+      pg.addEventListener('toggle', e => { const dd = e.target; if (dd.classList && dd.classList.contains('tm-dd')) { st.set(dd.dataset.k, { ...(st.get(dd.dataset.k) || {}), open: dd.open }); if (dd.open) focusCur(dd) } }, true);
     };
     return { pages, setup };
   }
