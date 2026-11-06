@@ -127,17 +127,17 @@
   // Source order: our own copy in /img/wiki/ (npm run sync), then the wiki's copy once, then a drawn hexagon so the slot is never empty.
   const MAX_LV = 12, mastery = lv => lv >= 10 ? lv - 9 : 0;
   const hexSvg = n => `<svg class="hex" viewBox="0 0 28 30" role="img" aria-label="Mastery ${n}"><polygon points="14,1 26,8 26,22 14,29 2,22 2,8"/><text x="14" y="19">M${n}</text></svg>`;
-  const rkWiki = n => `https://endfield.wiki.gg/wiki/Special:FilePath/Rank_${n}.png`;
+  const rkWiki = n => `https://endfield.wiki.gg/images/Rank_${n}.png`;
   function rkFail(img) {
     const n = +img.dataset.rk;
     if (!img.dataset.r) { img.dataset.r = 1; img.src = rkWiki(n); return }
     img.outerHTML = hexSvg(n - 9);
   }
-  const rankImg = m => `<img class="hex rk" alt="Mastery ${m}" data-rk="${m + 9}" src="/img/wiki/Rank_${m + 9}.png" onerror="rkFail(this)">`;
+  const rankImg = m => `<img class="hex rk" alt="Mastery ${m}" data-rk="${m + 9}" src="/img/wiki/Rank_${m + 9}.png" referrerpolicy="no-referrer" onerror="rkFail(this)">`;
   // the slider thumb is a CSS background, so find a working URL once (local, then wiki) and publish it as --rk10 / --rk11 / --rk12
   [10, 11, 12].forEach(n => {
     const set = u => document.documentElement.style.setProperty('--rk' + n, `url("${u}")`);
-    const im = new Image(), wk = new Image();
+    const im = new Image(), wk = new Image(); im.referrerPolicy = wk.referrerPolicy = 'no-referrer';
     im.onload = () => set(im.src); wk.onload = () => set(wk.src);
     im.onerror = () => { wk.src = rkWiki(n) };
     im.src = `/img/wiki/Rank_${n}.png`;
@@ -153,32 +153,30 @@
     return `<div class="tm-gw"><table class="tm-gt"><thead><tr><th class="lh" scope="col"></th>${cols.map(i => `<th scope="col"${c(i)}><button type="button" class="tm-lj" data-lj="${key}" data-lv="${i}" aria-label="${esc(lvText(i))}"${i === lv ? ' aria-current="true"' : ''}>${mast && mastery(i) ? rankImg(mastery(i)) : i}</button></th>`).join('')}</tr></thead>`
       + `<tbody>${sc.rows.map(r => `<tr><th scope="row">${esc(r.label)}</th>${cols.map(i => `<td${c(i)}>${esc(r.values[i - 1] ?? '–')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   }
-  // Arcane has two effect states (Array Arcana: Int / Will). Returns { int: { desc, rows }, will: { ... } } or null when a skill has only one.
-  // Preferred data shape: skill.variants = [{ label: 'Array Arcana: Int', desc: [...], rows: [...] }, { label: '...Will', ... }].
-  // Otherwise it is read from the text: description paragraphs and table rows that start with / contain "Array Arcana: Int|Will" belong to that state, everything else is shared.
-  const arcKey = t => /^w/i.test(t) ? 'will' : 'int';
-  const AR_START = /^\s*[\[(]?\s*array\s+arcana\s*[:\-–—]?\s*[\])]?\s*[\[(]?\s*(int(?:ellect)?|will(?:power)?)\b[\])]?\s*[:\-–—]?\s*/i;
-  const AR_ANY = /[\[(]?\s*array\s+arcana\s*[:\-–—]?\s*[\[(]?\s*(int(?:ellect)?|will(?:power)?)\b[\])]?\s*[:\-–—]?\s*/i;
-  function arcanaVariants(s) {
-    if (s.variants && s.variants.length >= 2) {
-      const out = {};
-      s.variants.forEach(v => { const k = arcKey(/will/i.test(v.label || v.name || '') ? 'will' : 'int'); out[k] = { desc: v.desc || [], rows: (v.scaling && v.scaling.rows) || v.rows || (s.scaling && s.scaling.rows) || [] } });
-      return out.int && out.will ? out : null;
-    }
-    const out = { int: { desc: [], rows: [] }, will: { desc: [], rows: [] } };
-    let any = false, cur = null;
-    (s.desc || []).forEach(p => {
-      const m = AR_START.exec(p);
-      if (m) { any = true; cur = arcKey(m[1]); const rest = p.slice(m[0].length).trim(); if (rest) out[cur].desc.push(rest); return }
-      if (cur) out[cur].desc.push(p); else { out.int.desc.push(p); out.will.desc.push(p) }
+  // Arcane's data lists every combat skill twice, once per Array Arcana state (the wiki's Int tab, then its Will tab). Merge each pair into ONE entry
+  // { ...first, arc: { int, will } } so the list shows each skill once and the switch picks the state. Same type + name = a pair; a skill whose text
+  // mentions "Array Arcana" pairs by type alone (in case the name differs). Everything else, including every other operator, is untouched.
+  const isWill = s => /array arcana:\s*will\s+is\s+active|^\s*will\s*\(n\)/i.test((s.desc || []).join(' ')) || /\bwill\b/i.test(s.arcana || '');
+  const isInt = s => /array arcana:\s*int\w*\s+is\s+active|^\s*intellect\s*\(n\)/i.test((s.desc || []).join(' ')) || /\bint/i.test(s.arcana || '');
+  const mentions = s => /array arcana/i.test((s.desc || []).join(' '));
+  function mergeArcana(list) {
+    const out = [], by = new Map();
+    list.forEach(s => {
+      const k = (s.type || s.label || '') + '|' + (mentions(s) ? '' : s.name || '');
+      const f = by.get(k);
+      if (f && !f.arc && f !== s) {
+        let a = f.src, b = s;
+        if (isWill(a) && !isWill(b) || isInt(b) && !isInt(a) && !isWill(b)) [a, b] = [b, a];   // order by text when it says which state it is, else keep list order (Int first)
+        f.arc = { int: a, will: b };
+        return;
+      }
+      if (!f && (mentions(s) || list.filter(x => (x.type || x.label || '') === (s.type || s.label || '')).length === 2)) {
+        const e = { ...s, src: s }; by.set(k, e); out.push(e); return;
+      }
+      out.push(s);
     });
-    ((s.scaling && s.scaling.rows) || []).forEach(r => {
-      const m = AR_ANY.exec(r.label || '');
-      if (!m) { out.int.rows.push(r); out.will.rows.push(r); return }
-      any = true; const k = arcKey(m[1]);
-      out[k].rows.push({ ...r, label: (r.label.replace(AR_ANY, ' ').replace(/^[\s:\-–—]+|[\s:\-–—]+$/g, '').replace(/\s{2,}/g, ' ')) || r.label });
-    });
-    return any && out.int.desc.concat(out.int.rows).length && out.will.desc.concat(out.will.rows).length ? out : null;
+    // a lone "Array Arcana" skill (no pair found) stays as a plain skill
+    return out.map(e => e.src && !e.arc ? e.src : e);
   }
   function skillPages(o, d, x) {
     // synced record first; the hand-written OP_DETAIL entry (Laevatain, Si) fills in whatever the record lacks
@@ -189,10 +187,10 @@
     const reg = new Map();  // key -> entry, so a slider move can redraw just its numbers
     const make = (prefix, list, mk) => list.map((e, i) => { const en = { key: prefix + i, ...mk(e) }; reg.set(en.key, en); return en });
     const descHtml = ps => `<div class="tm-desc">${(ps || []).map(para).join('') || '<p class="tm-dim">No description.</p>'}</div>`;
-    const sk = make('s', skills, s => { const sc = s.scaling, av = arcanaVariants(s), pick = arc => av ? av[arc] : null;
-      return { small: s.label || SKILL_LABEL[s.type] || s.type, name: s.name || '…', icon: s.icon, cap: 'SKILL LEVEL', max: sc ? MAX_LV : 0, mast: true, lab: lvHtml, txt: lvText, av,
-        descF: arc => descHtml(pick(arc) ? pick(arc).desc : s.desc),
-        body: (lv, en) => scalingHtml(pick(arcOf(en)) ? { ...sc, rows: pick(arcOf(en)).rows } : sc, lv, true, en.key) } });
+    const sk = make('s', mergeArcana(skills), s => { const av = s.arc || null, V = a => av ? av[a] : s, any = V('int').scaling || (av && V('will').scaling);
+      return { small: s.label || SKILL_LABEL[s.type] || s.type, name: s.name || '…', icon: V('int').icon, iconOf: a => V(a).icon, cap: 'SKILL LEVEL', max: any ? MAX_LV : 0, mast: true, lab: lvHtml, txt: lvText, av,
+        descF: a => descHtml(V(a).desc),
+        body: (lv, en) => scalingHtml(V(arcOf(en)).scaling, lv, true, en.key) } });
     const tier = (e, kind) => { const t = e.tiers || [], max = t.length;
       const tl = lv => t[Math.min(lv, max) - 1] || { label: '', text: '' };   // talents and base skills have 1-4 tiers, not 12 levels
       return { small: kind, name: e.name, icon: e.icon, cap: 'TIER', max: max > 1 ? max : 0, lab: lv => esc(tl(lv).label || 'Lv ' + lv), txt: lv => tl(lv).label || 'Level ' + lv,
@@ -204,7 +202,7 @@
     const ctl = (e, lv) => !e.max ? '' : `<div class="tm-lvl" data-m="${e.mast ? mastery(lv) : 0}" style="--p:${e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100}%"><span class="cap">${e.cap}</span><output>${e.lab(lv)}</output>
       <input type="range" class="tm-rng" min="1" max="${e.max}" step="1" value="${lv}" data-k="${e.key}" aria-label="${esc(e.name)} ${e.cap.toLowerCase()}" aria-valuetext="${esc(e.txt(lv))}"><span class="mn">${e.lab(1)}</span><span class="mx">${e.lab(e.max)}</span></div>`;
     const item = e => { const lv = lvOf(e), open = (st.get(e.key) || {}).open;
-      return `<details class="tm-dd" data-k="${e.key}"${open ? ' open' : ''} style="--i:${++tmN}"><summary><span class="ic">${icImg(e.icon, 1)}</span><span class="tt"><small>${esc(e.small)}</small><b>${dc(e.name)}</b></span><i class="chev" aria-hidden="true"></i></summary>
+      return `<details class="tm-dd" data-k="${e.key}"${open ? ' open' : ''} style="--i:${++tmN}"><summary><span class="ic">${icImg(e.iconOf ? e.iconOf(arcOf(e)) : e.icon, 1)}</span><span class="tt"><small>${esc(e.small)}</small><b>${dc(e.name)}</b></span><i class="chev" aria-hidden="true"></i></summary>
         <div class="tm-ddb">${arcCtl(e)}<div class="tm-dw">${e.descF(arcOf(e))}</div>${ctl(e, lv)}<div class="tm-lvd">${e.body(lv, e)}</div></div></details>` };
     const xa = n => n ? '<button type="button" class="tm-xa" data-xa>EXPAND ALL</button>' : '';
     const page = (title, list, empty, what) => ({ title: title.toUpperCase(), html: () => (tmN = 0, tmSec(title.toUpperCase(), xa(list.length)) + (list.length ? `<div class="tm-dl">${list.map(item).join('')}</div>` : `<p class="tm-none" style="--i:${++tmN}">${empty}</p>`)) });
@@ -221,6 +219,7 @@
         if (r) { const w = box.querySelector('.tm-lvl'); r.value = lv; r.setAttribute('aria-valuetext', e.txt(lv)); w.dataset.m = e.mast ? mastery(lv) : 0; w.style.setProperty('--p', (e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100) + '%'); box.querySelector('output').innerHTML = e.lab(lv) }
         lvd.innerHTML = e.body(lv, e);
         const dw = box.querySelector('.tm-dw'); if (dw) dw.innerHTML = e.descF(arcOf(e));
+        if (e.av) { const ic = box.querySelector('summary .ic'); if (ic) ic.innerHTML = icImg(e.iconOf(arcOf(e)), 1) }
         focusCur(box);
       };
       // keep the lit column in view inside the scrolling grid
