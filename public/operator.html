@@ -21,7 +21,13 @@
 
   // description paragraphs: a leading "LABEL:" (BASIC ATTACK:, COMBO TRIGGER: ...) is shown as a small caps tag
   const para = t => { const m = /^([A-Z][A-Z' -]{2,}):\s*(.*)$/.exec(t); return m ? `<p><b class="lab">${esc(m[1])}</b> ${esc(m[2])}</p>` : `<p>${esc(t)}</p>` };
-  const icImg = u => u ? `<img alt="" loading="lazy" src="${esc(u)}" onerror="this.remove()">` : '';
+  // ph = this icon sits in a skill / talent tile: if the file is missing, try the wiki's copy of the same file name once, then show a placeholder tile
+  const icImg = (u, ph) => u ? `<img alt="" loading="lazy" referrerpolicy="no-referrer" src="${esc(u)}" onerror="icFail(this${ph ? ',1' : ''})">` : (ph ? '<span class="ph" aria-hidden="true"></span>' : '');
+  function icFail(img, ph) {
+    const u = img.getAttribute('src') || '';
+    if (!img.dataset.r && u.startsWith('/img/wiki/')) { img.dataset.r = 1; img.src = 'https://endfield.wiki.gg/images/' + u.split('/').pop(); return }
+    if (ph) { const s = document.createElement('span'); s.className = 'ph'; s.setAttribute('aria-hidden', 'true'); img.replaceWith(s) } else img.remove();
+  }
   // ---- shared terminal pieces: the account terminal's frame and rows, plus its text animation ----
   let tmN = 0;
   // data-dc marks short text that is decrypted (scrambled glyphs locking in left to right) on top of the row's tmIn slide-in
@@ -117,14 +123,15 @@
     }
     return out + esc(t.slice(last));
   }
-  // basic attacks: one line per stat for the chosen level. Other skills: the whole level table, the chosen level's column lit.
-  function scalingHtml(s, lv) {
-    const sc = s.scaling;
-    if (!sc) return '<p class="tm-dim">No level data for this skill yet. Run <code>npm run sync</code>.</p>';
-    if (s.type === 'Basic') return `<div class="tm-ls">${sc.rows.map(r => `<div class="tm-lr"><span>${esc(r.label)}</span><b>${esc(r.values[lv - 1] ?? '–')}</b></div>`).join('')}</div>`;
-    const on = i => i + 1 === lv ? ' class="on"' : '';
-    return `<div class="tm-gw"><table class="tm-gt"><thead><tr><th></th>${sc.levels.map((l, i) => `<th${on(i)} data-lv="${i + 1}" title="Level ${esc(l)}">${esc(l)}</th>`).join('')}</tr></thead>
-      <tbody>${sc.rows.map(r => `<tr><th scope="row">${esc(r.label)}</th>${r.values.map((v, i) => `<td${on(i)} data-lv="${i + 1}">${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  // Mastery: levels 10-12 are Mastery 1-3 and are drawn as hexagon icons (slider thumb, readout and end label), not numbers
+  const MAX_LV = 12, mastery = lv => lv >= 10 ? lv - 9 : 0;
+  const hex = n => `<svg class="hex" viewBox="0 0 28 30" role="img" aria-label="Mastery ${n}"><polygon points="14,1 26,8 26,22 14,29 2,22 2,8"/><text x="14" y="19">M${n}</text></svg>`;
+  const lvHtml = lv => mastery(lv) ? hex(mastery(lv)) : 'Lv ' + lv;
+  const lvText = lv => mastery(lv) ? 'Mastery ' + mastery(lv) : 'Level ' + lv;
+  // every stat / multiplier row for the chosen level as one clean table (stat | value). The level is on the slider, so there is no Level column or header.
+  function scalingHtml(sc, lv) {
+    if (!sc || !sc.rows || !sc.rows.length) return '<p class="tm-dim">No level data for this entry yet. Run <code>npm run sync</code>.</p>';
+    return `<table class="tm-st"><tbody>${sc.rows.map(r => `<tr><th scope="row">${esc(r.label)}</th><td>${esc(r.values[lv - 1] ?? '–')}</td></tr>`).join('')}</tbody></table>`;
   }
   function skillPages(o, d, x) {
     // synced record first; the hand-written OP_DETAIL entry (Laevatain, Si) fills in whatever the record lacks
@@ -134,18 +141,19 @@
     const st = new Map();   // key -> { open, lv }: kept while the person flips pages
     const reg = new Map();  // key -> entry, so a slider move can redraw just its numbers
     const make = (prefix, list, mk) => list.map((e, i) => { const en = { key: prefix + i, ...mk(e) }; reg.set(en.key, en); return en });
-    const sk = make('s', skills, s => { const sc = s.scaling, max = sc ? sc.levels.length : 0;
-      return { small: s.label || SKILL_LABEL[s.type] || s.type, name: s.name || '…', icon: s.icon, cap: 'SKILL LEVEL', max, lab: lv => 'Lv ' + sc.levels[lv - 1],
-        desc: `<div class="tm-desc">${(s.desc || []).map(para).join('') || '<p class="tm-dim">No description.</p>'}</div>`, body: lv => scalingHtml(s, lv) } });
+    const sk = make('s', skills, s => { const sc = s.scaling;
+      return { small: s.label || SKILL_LABEL[s.type] || s.type, name: s.name || '…', icon: s.icon, cap: 'SKILL LEVEL', max: sc ? MAX_LV : 0, mast: true, lab: lvHtml, txt: lvText,
+        desc: `<div class="tm-desc">${(s.desc || []).map(para).join('') || '<p class="tm-dim">No description.</p>'}</div>`, body: lv => scalingHtml(sc, lv) } });
     const tier = (e, kind) => { const t = e.tiers || [], max = t.length;
-      return { small: kind, name: e.name, icon: e.icon, cap: 'TIER', max: max > 1 ? max : 0, lab: lv => t[lv - 1].label || 'Lv ' + lv,
-        desc: '', body: lv => `<p class="tm-eff">${t[lv - 1].label ? `<span class="tg">${esc(t[lv - 1].label)}</span> ` : ''}${effectHtml(t, lv - 1)}</p>` } };
+      const tl = lv => t[Math.min(lv, max) - 1] || { label: '', text: '' };   // talents and base skills have 1-4 tiers, not 12 levels
+      return { small: kind, name: e.name, icon: e.icon, cap: 'TIER', max: max > 1 ? max : 0, lab: lv => esc(tl(lv).label || 'Lv ' + lv), txt: lv => tl(lv).label || 'Level ' + lv,
+        desc: '', body: lv => `<p class="tm-eff">${tl(lv).label ? `<span class="tg">${esc(tl(lv).label)}</span> ` : ''}${max ? effectHtml(t, Math.min(lv, max) - 1) : ''}</p>${e.scaling ? scalingHtml(e.scaling, lv) : ''}` } };
     const tl = make('t', talents, e => tier(e, 'TALENT')), bs = make('b', baseSk, e => tier(e, 'BASE SKILL'));
     const lvOf = e => (st.get(e.key) || {}).lv || (e.max ? e.max : 1);   // starts at the highest level, like the wiki's tables
-    const ctl = (e, lv) => !e.max ? '' : `<div class="tm-lvl" style="--p:${e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100}%"><span class="cap">${e.cap}</span><output>${esc(e.lab(lv))}</output>
-      <input type="range" class="tm-rng" min="1" max="${e.max}" step="1" value="${lv}" data-k="${e.key}" aria-label="${esc(e.name)} ${e.cap.toLowerCase()}"><span class="mn">${esc(e.lab(1))}</span><span class="mx">${esc(e.lab(e.max))}</span></div>`;
+    const ctl = (e, lv) => !e.max ? '' : `<div class="tm-lvl" data-m="${e.mast ? mastery(lv) : 0}" style="--p:${e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100}%"><span class="cap">${e.cap}</span><output>${e.lab(lv)}</output>
+      <input type="range" class="tm-rng" min="1" max="${e.max}" step="1" value="${lv}" data-k="${e.key}" aria-label="${esc(e.name)} ${e.cap.toLowerCase()}" aria-valuetext="${esc(e.txt(lv))}"><span class="mn">${e.lab(1)}</span><span class="mx">${e.lab(e.max)}</span></div>`;
     const item = e => { const lv = lvOf(e), open = (st.get(e.key) || {}).open;
-      return `<details class="tm-dd" data-k="${e.key}"${open ? ' open' : ''} style="--i:${++tmN}"><summary><span class="ic">${icImg(e.icon)}</span><span class="tt"><small>${esc(e.small)}</small><b>${dc(e.name)}</b></span><i class="chev" aria-hidden="true"></i></summary>
+      return `<details class="tm-dd" data-k="${e.key}"${open ? ' open' : ''} style="--i:${++tmN}"><summary><span class="ic">${icImg(e.icon, 1)}</span><span class="tt"><small>${esc(e.small)}</small><b>${dc(e.name)}</b></span><i class="chev" aria-hidden="true"></i></summary>
         <div class="tm-ddb">${e.desc}${ctl(e, lv)}<div class="tm-lvd">${e.body(lv)}</div></div></details>` };
     const xa = n => n ? '<button type="button" class="tm-xa" data-xa>EXPAND ALL</button>' : '';
     const page = (title, list, empty, what) => ({ title: title.toUpperCase(), html: () => (tmN = 0, tmSec(title.toUpperCase(), xa(list.length)) + (list.length ? `<div class="tm-dl">${list.map(item).join('')}</div>` : `<p class="tm-none" style="--i:${++tmN}">${empty}</p>`)) });
@@ -158,17 +166,13 @@
     const setup = pg => {
       const redraw = key => {
         const e = reg.get(key), box = pg.querySelector(`.tm-dd[data-k="${key}"]`); if (!e || !box) return;
-        const lv = lvOf(e), lvd = box.querySelector('.tm-lvd'), gw = lvd.querySelector('.tm-gw'), sl = gw ? gw.scrollLeft : 0;
-        const r = box.querySelector('.tm-rng');
-        if (r) { r.value = lv; box.querySelector('.tm-lvl').style.setProperty('--p', (e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100) + '%'); box.querySelector('output').textContent = e.lab(lv) }
+        const lv = lvOf(e), lvd = box.querySelector('.tm-lvd'), r = box.querySelector('.tm-rng');
+        if (r) { const w = box.querySelector('.tm-lvl'); r.value = lv; r.setAttribute('aria-valuetext', e.txt(lv)); w.dataset.m = e.mast ? mastery(lv) : 0; w.style.setProperty('--p', (e.max > 1 ? (lv - 1) / (e.max - 1) * 100 : 100) + '%'); box.querySelector('output').innerHTML = e.lab(lv) }
         lvd.innerHTML = e.body(lv);
-        const g2 = lvd.querySelector('.tm-gw'); if (g2) g2.scrollLeft = sl;
       };
       const setLv = (key, v) => { const e = reg.get(key); if (!e) return; st.set(key, { ...(st.get(key) || {}), lv: Math.max(1, Math.min(e.max, +v || 1)) }); redraw(key) };
       pg.addEventListener('input', e => { const r = e.target.closest('.tm-rng'); if (r) setLv(r.dataset.k, r.value) });
       pg.addEventListener('click', e => {
-        const c = e.target.closest('[data-lv]');   // a level number in a table also moves the slider
-        if (c) { const k = c.closest('.tm-dd').dataset.k; setLv(k, c.dataset.lv); return }
         const b = e.target.closest('[data-xa]');
         if (b) { const ds = [...pg.querySelectorAll('.tm-dd')], open = ds.some(x => !x.open); ds.forEach(x => { x.open = open }); b.textContent = open ? 'COLLAPSE ALL' : 'EXPAND ALL' }
       });

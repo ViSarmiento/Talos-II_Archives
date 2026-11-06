@@ -3405,68 +3405,99 @@ details.od-sk[open] {
 .tm-lvd {
   margin-top: 8px;
 }
-/* basic attack: label on the left, value for the chosen level on the right */
-.tm-lr {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 5px 2px;
+/* stats for the chosen level: one clean table (stat | value). The level lives on the slider, so the table has no Level column or header */
+.tm-st {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.tm-st th, .tm-st td {
+  padding: 6px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
-.tm-lr span {
+.tm-st tr:first-child > * {
+  border-top: 1px solid #2c2f37;
+}
+.tm-st th {
+  text-align: left;
+  font-weight: 500;
   color: #b9bcc6;
 }
-.tm-lr b {
+.tm-st td {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
   color: #fff;
   font: 700 14px "Chakra Petch", sans-serif;
 }
-/* other skills: every level at once, the chosen level lit */
-.tm-gw {
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #3a3d46 transparent;
+.tm-st tbody tr:hover {
+  background: rgba(255, 210, 31, .06);
 }
-.tm-gt {
-  width: 100%;
-  min-width: 620px;
-  border-collapse: collapse;
-  text-align: center;
-  font-size: 12.5px;
+/* Mastery (levels 10-12): hexagon icons on the readout, the end label and the slider thumb */
+.hex {
+  display: inline-block;
+  width: 30px;
+  height: 32px;
+  vertical-align: middle;
+  overflow: visible;
 }
-.tm-gt th, .tm-gt td {
-  padding: 6px 4px;
-  border: 1px solid #2c2f37;
+.hex polygon {
+  fill: var(--sig);
+  stroke: #fff;
+  stroke-width: 1.5;
 }
-.tm-gt thead th {
-  color: #fff;
-  font: 700 13px "Chakra Petch", sans-serif;
-  background: #15161b;
-  cursor: pointer;
+.hex text {
+  fill: #14120a;
+  font: 700 11px "Chakra Petch", Arial, sans-serif;
+  text-anchor: middle;
 }
-.tm-gt tbody th {
-  min-width: 150px;
-  padding: 6px 10px;
-  text-align: left;
-  color: #d7d3c6;
-  font-weight: 500;
-  background: #121318;
-  position: sticky;
-  left: 0;
+.tm-lvl output {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  justify-content: flex-end;
 }
-.tm-gt td {
-  color: #cfcbbf;
-  cursor: pointer;
+.tm-lvl .mn, .tm-lvl .mx {
+  display: inline-flex;
+  align-items: center;
 }
-.tm-gt td:hover, .tm-gt thead th:hover {
-  background: rgba(255, 210, 31, .08);
+.tm-lvl .mx {
+  justify-content: flex-end;
 }
-.tm-gt .on {
-  background: rgba(255, 210, 31, .14);
-  color: #fff;
+.tm-lvl .mx .hex {
+  width: 22px;
+  height: 24px;
 }
-.tm-gt thead th.on {
-  background: var(--sig);
-  color: #14120a;
+.tm-lvl[data-m="1"] { --th: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 30'%3E%3Cpolygon points='14,1 26,8 26,22 14,29 2,22 2,8' fill='%23ffd21f' stroke='%23fff' stroke-width='1.5'/%3E%3Ctext x='14' y='19' text-anchor='middle' font-family='Arial,sans-serif' font-weight='700' font-size='11' fill='%2314120a'%3EM1%3C/text%3E%3C/svg%3E"); }
+.tm-lvl[data-m="2"] { --th: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 30'%3E%3Cpolygon points='14,1 26,8 26,22 14,29 2,22 2,8' fill='%23ffd21f' stroke='%23fff' stroke-width='1.5'/%3E%3Ctext x='14' y='19' text-anchor='middle' font-family='Arial,sans-serif' font-weight='700' font-size='11' fill='%2314120a'%3EM2%3C/text%3E%3C/svg%3E"); }
+.tm-lvl[data-m="3"] { --th: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 30'%3E%3Cpolygon points='14,1 26,8 26,22 14,29 2,22 2,8' fill='%23ffd21f' stroke='%23fff' stroke-width='1.5'/%3E%3Ctext x='14' y='19' text-anchor='middle' font-family='Arial,sans-serif' font-weight='700' font-size='11' fill='%2314120a'%3EM3%3C/text%3E%3C/svg%3E"); }
+.tm-lvl[data-m="1"] .tm-rng, .tm-lvl[data-m="2"] .tm-rng, .tm-lvl[data-m="3"] .tm-rng {
+  height: 32px;
+}
+.tm-lvl[data-m="1"] .tm-rng::-webkit-slider-thumb, .tm-lvl[data-m="2"] .tm-rng::-webkit-slider-thumb, .tm-lvl[data-m="3"] .tm-rng::-webkit-slider-thumb {
+  width: 30px;
+  height: 32px;
+  margin-top: -14px;
+  border: 0;
+  border-radius: 0;
+  background: var(--th) center / contain no-repeat;
+  box-shadow: none;
+  filter: drop-shadow(0 0 6px rgba(255, 210, 31, .6));
+}
+.tm-lvl[data-m="1"] .tm-rng::-moz-range-thumb, .tm-lvl[data-m="2"] .tm-rng::-moz-range-thumb, .tm-lvl[data-m="3"] .tm-rng::-moz-range-thumb {
+  width: 30px;
+  height: 32px;
+  border: 0;
+  border-radius: 0;
+  background: var(--th) center / contain no-repeat;
+  filter: drop-shadow(0 0 6px rgba(255, 210, 31, .6));
+}
+/* icon tile: placeholder when an icon file is missing, so a tile is never empty or broken */
+.tm-dd .ic .ph {
+  width: 42%;
+  height: 42%;
+  border: 2px solid #3a3d46;
+  transform: rotate(45deg);
 }
 /* talents and base skills: the effect text, with the numbers that change by level lit */
 .tm-eff {
@@ -3486,4 +3517,46 @@ details.od-sk[open] {
   background: none;
   color: var(--sig);
   font-weight: 700;
+}
+
+/* ================= info terminal (beside the splash art): larger, still terminal ================= */
+.od-term .od-tm {
+  font-size: 15px;
+  line-height: 1.55;
+}
+.od-term .tm-pn {
+  font-size: 12px;
+}
+.od-term .tm-kv {
+  padding: 5px 0;
+}
+.od-term .tm-kv .k, .od-term .tm-xp .k {
+  font-size: 13px;
+}
+.od-term .tm-sec {
+  font-size: 13px;
+}
+.od-term .tm-pg .tm-kv {
+  grid-template-columns: minmax(120px, 14em) 1fr;
+}
+.od-term .tm-chips > span {
+  font-size: 14px;
+}
+.od-term .tm-wg small {
+  font-size: 11.5px;
+}
+.od-term .tm-nb {
+  font-size: 15px;
+}
+.od-term .tm-stars {
+  font-size: 19px;
+}
+.od-term .tm-kv .v .ico {
+  width: 18px;
+  height: 18px;
+}
+@media(max-width:760px) {
+  .od-term .tm-pg .tm-kv {
+    grid-template-columns: 1fr;
+  }
 }

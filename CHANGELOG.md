@@ -1,6 +1,12 @@
 # Changelog
 Newest first. A new minor version is only used for a big change; small fixes are folded into the version they belong to.
 
+## 1.5.9.2 skill tables, Mastery levels, talent icons
+- **Level tables:** every dropdown with level data now shows one clean two-column table (stat | value) for the chosen level. There is no Level column or header any more (the slider carries the level), and the old wide all-levels table is gone, including its click-a-level-number behaviour.
+- **Sliders to 12 with Mastery icons:** skill-level sliders always run 1 to 12. Levels 10, 11 and 12 show **M1, M2, M3 hexagon icons** instead of numbers on the slider thumb, the level readout and the end label. Talent and base skill sliders still run over their own 1 to 4 tiers (Elite 1 to 4), because those entries only have that many tiers.
+- **Talent icons:** icon tiles never show empty or broken any more. If an icon file is missing locally the page tries the wiki's copy of the same file name once, then shows a placeholder tile. `node scripts/check-icons.mjs` lists every skill, talent and base skill icon that is empty or missing on disk; `npm run sync` (online) fills them in.
+- **Info terminal text** (the terminal beside the splash art) is larger: 15px body text, bigger labels, section titles, tag chips and Prev / Next.
+
 ## 1.5.9.1 skills terminal
 - **Combat skills, talents and base skills now live in a second terminal** under the art, with the same frame, Prev/Next buttons (Prev hidden on page 1, Next on page 3), arrow keys, swipe and typing animation as the info terminal. Pages: 1 Combat skills, 2 Talents, 3 Base skills.
 - Every entry is a **dropdown**: description, then a **level slider**, then the numbers for that level. Basic attacks list every stat for the chosen level; the other combat skills show the full level table with the chosen level's column lit (click a level number to jump to it). Talents and base skills show the effect text for the chosen tier, with the numbers that change by tier highlighted. Sliders start at the highest level and keep their level and open state while you flip pages.
