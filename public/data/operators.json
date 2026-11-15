@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06T03:26:16.572Z",
+ "generatedAt": "2026-11-15T08:30:31.340Z",
  "source": "https://endfield.wiki.gg (CC BY-SA)",
  "count": 34,
  "operators": {
@@ -2137,38 +2137,309 @@
    "faction": "Hongshan Academy of Sciences (HAS)",
    "factionIcon": "",
    "tags": ["Electrify", "Crush"],
-   "mainAttr": "",
+   "mainAttr": "Will",
    "mainAttrIcon": "",
-   "subAttr": "",
+   "subAttr": "Strength",
    "subAttrIcon": "",
    "obtain": "Chartered Headhunting",
-   "quote": "Argent Flow of HAS, at your service. Captain of Pacified Skies? That title serves little purpose here, so let's just drop it and avoid confusion.",
-   "internalId": "",
+   "quote": "Minghe of HAS, at your service. Captain of Pacified Skies? That title serves little purpose here, so let's just drop it and avoid confusion.",
+   "internalId": "chr_0037_minghe",
    "profile": {
     "gender": "Male",
     "authentication": "Hongshan Academy of Sciences",
     "dob": "October 23",
     "race": "Lung",
-    "oripathy": "",
+    "oripathy": "Oripathy negative, based on medical examination reports.",
     "exam": {
-     "physiologicalStrength": "",
-     "combatSkill": "",
-     "tacticalAcumen": "",
-     "originiumArtsAssimilation": ""
+     "physiologicalStrength": "Excellent",
+     "combatSkill": "Outstanding",
+     "tacticalAcumen": "Excellent",
+     "originiumArtsAssimilation": "Standard"
     },
-    "expertise": [],
-    "hobbies": [],
+    "expertise": [
+     {
+      "n": 1,
+      "category": "Combat Technique",
+      "name": "Razor of Autumn",
+      "desc": "The spear is the wandering lung, the sword is the mirror razor of autumn. A cascade of streams and rivers, flows from a heart once cold and solemn."
+     },
+     {
+      "n": 2,
+      "category": "Erudite",
+      "name": "Entering the World",
+      "desc": "A campaign's worth of marching reveals much of the world. Having gazed upon its natural beauty, I invite thee, o starry flow."
+     }
+    ],
+    "hobbies": [
+     {
+      "n": 1,
+      "category": "Lifestyle",
+      "name": "In Touch with Life",
+      "desc": "All manners of skills, all flavors of life. A street lined with stoves, a return lit up bright."
+     },
+     {
+      "n": 2,
+      "category": "Nature",
+      "name": "Down to Earth",
+      "desc": "A walk amongst the fields, a nap upon the hills. A galloper heeds my call, a ride of speed and thrill."
+     }
+    ],
     "weapons": [
      {
-      "name": "Lunar Calling (page does not exist)",
-      "icon": "",
+      "name": "Lunar Calling",
+      "icon": "/img/wiki/Lunar_Calling_icon.png",
+      "match": "Skills"
+     },
+     {
+      "name": "Complexed Industry",
+      "icon": "/img/wiki/Complexed_Industry_icon.png",
+      "match": "Skills"
+     },
+     {
+      "name": "White Night Nova",
+      "icon": "/img/wiki/White_Night_Nova_icon.png",
       "match": "Skills"
      }
     ]
    },
-   "skills": [],
-   "talents": [],
-   "baseSkills": []
+   "skills": [
+    {
+     "type": "Basic",
+     "label": "Basic Attack",
+     "name": "Dust Resplendent",
+     "icon": "/img/wiki/Attack-Sword.png",
+     "desc": ["BASIC ATTACK: An attack with up to 5 sequences that deals Physical DMG. As the controlled operator, Final Strike also deals 23 Stagger.", "DIVE ATTACK: Basic attack performed in mid-air becomes a dive attack that deals Physical DMG to nearby enemies.", "FINISHER: Basic attack performed near a Staggered enemy becomes a finisher attack that deals massive Physical DMG and recovers some SP."],
+     "scaling": {
+      "levels": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+      "rows": [
+       {
+        "label": "BATK SEQ 1 Multiplier",
+        "values": ["22%", "24%", "27%", "29%", "31%", "33%", "36%", "38%", "40%", "43%", "46%", "50%"]
+       },
+       {
+        "label": "BATK SEQ 2 Multiplier",
+        "values": ["24%", "27%", "29%", "32%", "34%", "37%", "39%", "42%", "44%", "47%", "51%", "55%"]
+       },
+       {
+        "label": "BATK SEQ 3 Multiplier",
+        "values": ["45%", "49%", "53%", "58%", "62%", "67%", "71%", "76%", "80%", "86%", "92%", "100%"]
+       },
+       {
+        "label": "BATK SEQ 4 Multiplier",
+        "values": ["62%", "68%", "75%", "81%", "87%", "93%", "100%", "106%", "112%", "120%", "129%", "140%"]
+       },
+       {
+        "label": "BATK SEQ 5 Multiplier",
+        "values": ["60%", "66%", "72%", "78%", "84%", "90%", "96%", "102%", "108%", "116%", "125%", "135%"]
+       },
+       {
+        "label": "Finisher ATK Multiplier",
+        "values": ["400%", "440%", "480%", "520%", "560%", "600%", "640%", "680%", "720%", "770%", "830%", "900%"]
+       },
+       {
+        "label": "Dive ATK Multiplier",
+        "values": ["80%", "88%", "96%", "104%", "112%", "120%", "128%", "136%", "144%", "154%", "166%", "180%"]
+       }
+      ]
+     }
+    },
+    {
+     "type": "Battle",
+     "label": "Battle Skill",
+     "name": "Darkness Cowed",
+     "icon": "/img/wiki/Skill-Argentflow.png",
+     "desc": ["Argent Flow sweeps his lance and deals Physical DMG to nearby enemies and applies Lift to target(s) in front of him.", "After Argent Flow casts his combo skill, his battle skill is temporarily changed to Bolt Rush.", "Bolt Rush: Argent Flow mounts his galloper Nuli to leap into mid-air, powers up quickly, and then charges at the target to forcibly apply Electrification and deal Electric DMG to enemies within a large area in front of him. When this Electrification is applied on a target with Electric Infliction, it consumes all Electric Infliction stacks from the target and grants Electrification Status Level +1 per 1 stack consumed. After consuming the target's Electric Infliction, Argent Flow also applies 1 stack of Vulnerability."],
+     "scaling": {
+      "levels": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+      "rows": [
+       {
+        "label": "SP Cost",
+        "values": ["100", "100", "100", "100", "100", "100", "100", "100", "100", "100", "100", "100"]
+       },
+       {
+        "label": "Base DMG Multiplier",
+        "values": ["156%", "171%", "187%", "202%", "218%", "233%", "249%", "264%", "280%", "299%", "323%", "350%"]
+       },
+       {
+        "label": "Base Stagger",
+        "values": ["10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"]
+       },
+       {
+        "label": "Bolt Rush DMG Multiplier",
+        "values": ["311%", "342%", "373%", "404%", "436%", "467%", "498%", "529%", "560%", "599%", "646%", "700%"]
+       },
+       {
+        "label": "Bolt Rush Stagger",
+        "values": ["10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"]
+       }
+      ]
+     }
+    },
+    {
+     "type": "Combo",
+     "label": "Combo Skill",
+     "name": "Stars Shifted",
+     "icon": "/img/wiki/Combo-Argentflow.png",
+     "desc": ["COMBO TRIGGER: When an enemy becomes Vulnerable.", "Argent Flow wields his blade with lightning speed to unleash a multi-sequence attack that deals Electric DMG to enemies along his path. When the final sequence scores a hit, it also applies Electric Infliction. Argent Flow's battle skill is then temporarily changed to Bolt Rush."],
+     "scaling": {
+      "levels": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+      "rows": [
+       {
+        "label": "Cooldown",
+        "values": ["19", "19", "19", "19", "19", "19", "19", "19", "19", "19", "19", "18"]
+       },
+       {
+        "label": "DMG Multiplier",
+        "values": ["160%", "176%", "192%", "208%", "224%", "240%", "256%", "272%", "288%", "308%", "332%", "360%"]
+       },
+       {
+        "label": "Stagger",
+        "values": ["10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"]
+       },
+       {
+        "label": "Battle Skill Change Duration (s)",
+        "values": ["20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", "20"]
+       },
+       {
+        "label": "Ultimate Energy Gain",
+        "values": ["10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"]
+       }
+      ]
+     }
+    },
+    {
+     "type": "Ultimate",
+     "label": "Ultimate",
+     "name": "Heavens Sundered",
+     "icon": "/img/wiki/Ult-Argentflow.png",
+     "desc": ["Argent Flow mounts Nuli and charges with his lance, dealing continuous Electric DMG to targets in front of him while impaling and carrying weak enemies before him throughout the charge. After the charge ends, Argent Flow leaps into the air and unleashes a Cleansing Cleave at the ground. The slash deals Electric DMG and applies 1 stack of Electric Infliction. Argent Flow then pierces the ground with his lance, applying Crush and dealing Electric DMG to enemies within a large area.", "If Argent Flow's ultimate charges into a non-weak enemy (that cannot be impaled and pushed), his charge will end early."],
+     "scaling": {
+      "levels": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+      "rows": [
+       {
+        "label": "Ultimate Energy Cost",
+        "values": ["80", "80", "80", "80", "80", "80", "80", "80", "80", "80", "80", "80"]
+       },
+       {
+        "label": "Charge DMG Multiplier",
+        "values": ["78%", "86%", "93%", "101%", "109%", "117%", "124%", "132%", "140%", "150%", "161%", "175%"]
+       },
+       {
+        "label": "Cleansing Cleave DMG Multiplier",
+        "values": ["222%", "244%", "267%", "289%", "311%", "333%", "356%", "378%", "400%", "428%", "461%", "500%"]
+       },
+       {
+        "label": "Ground Pierce DMG Multiplier",
+        "values": ["333%", "367%", "400%", "433%", "467%", "500%", "533%", "567%", "600%", "642%", "692%", "750%"]
+       },
+       {
+        "label": "Stagger",
+        "values": ["10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"]
+       }
+      ]
+     }
+    }
+   ],
+   "talents": [
+    {
+     "name": "Stalwart",
+     "icon": "/img/wiki/WIL.png",
+     "tiers": [
+      {
+       "label": "Elite 1",
+       "text": "Operator Will +10."
+      },
+      {
+       "label": "Elite 2",
+       "text": "Operator Will +15."
+      },
+      {
+       "label": "Elite 3",
+       "text": "Operator Will +15."
+      },
+      {
+       "label": "Elite 4",
+       "text": "Operator Will +20."
+      }
+     ]
+    },
+    {
+     "name": "Zenith of Voltmancy",
+     "icon": "/img/wiki/Argent_Flow_Talent_1_icon.png",
+     "tiers": [
+      {
+       "label": "Elite 1",
+       "text": "When Argent Flow applies Electrification, this Electrification also increases all types of DMG Taken of the target for the same duration, and he also applies Sunderization stack(s) on the target, the number of stacks is equal to the Electrification Status Level and maxes out at 12. Sunderization lasts for 60s. When dealing Crush DMG to a target with Sunderization, this Crush DMG is increased to 1.2 times the original and detonates all Sunderization stacks. The explosion deals [Number of Sunderization stacks × 220% ATK] of Electric DMG to the target and 40% of that DMG to other enemies near the said target. When the explosion DMG of Sunderization is dealt to another enemy with Sunderization, it also detonates all Sunderization stacks of that enemy."
+      },
+      {
+       "label": "Elite 2",
+       "text": "When Argent Flow applies Electrification, this Electrification also increases all types of DMG Taken of the target for the same duration, and he also applies Sunderization stack(s) on the target, the number of stacks is equal to the Electrification Status Level and maxes out at 12. Sunderization lasts for 60s. When dealing Crush DMG to a target with Sunderization, this Crush DMG is increased to 1.2 times the original and detonates all Sunderization stacks. The explosion deals [Number of Sunderization stacks × 330% ATK] of Electric DMG to the target and 40% of that DMG to other enemies near the said target. When the explosion DMG of Sunderization is dealt to another enemy with Sunderization, it also detonates all Sunderization stacks of that enemy."
+      }
+     ]
+    },
+    {
+     "name": "Springvolt Galore",
+     "icon": "/img/wiki/Argent_Flow_Talent_2_icon.png",
+     "tiers": [
+      {
+       "label": "Elite 2",
+       "text": "Battle skill Bolt Rush improved: The entire team gains Arts Intensity +30 for 20s. For every point of Arts Intensity that Argent Flow has, increase Sunderization explosion DMG by another 0.4%."
+      },
+      {
+       "label": "Elite 3",
+       "text": "Battle skill Bolt Rush improved: The entire team gains Arts Intensity +45 for 20s. For every point of Arts Intensity that Argent Flow has, increase Sunderization explosion DMG by another 0.6%."
+      }
+     ]
+    },
+    {
+     "name": "Outfitting",
+     "icon": "/img/wiki/Gear_icon.png",
+     "tiers": [
+      {
+       "label": "Elite 1",
+       "text": "Activate this to let the operator equip blue quality gear"
+      },
+      {
+       "label": "Elite 2",
+       "text": "Activate this to let the operator equip purple quality gear"
+      },
+      {
+       "label": "Elite 3",
+       "text": "Activate this to let the operator equip gold quality gear"
+      }
+     ]
+    }
+   ],
+   "baseSkills": [
+    {
+     "name": "Axiom of Combat",
+     "icon": "/img/wiki/MFG-efficiency.png",
+     "tiers": [
+      {
+       "label": "Elite 1",
+       "text": "Assign to Manufacturing Cabin to grant operator EXP material production efficiency +20%"
+      },
+      {
+       "label": "Elite 3",
+       "text": "Assign to Manufacturing Cabin to grant operator EXP material production efficiency +30%"
+      }
+     ]
+    },
+    {
+     "name": "Tools of Momentum",
+     "icon": "/img/wiki/MFG-power_consume.png",
+     "tiers": [
+      {
+       "label": "Elite 2",
+       "text": "Assign to Manufacturing Cabin to slow Mood Drop of all operators in it by 14%"
+      },
+      {
+       "label": "Elite 4",
+       "text": "Assign to Manufacturing Cabin to slow Mood Drop of all operators in it by 18%"
+      }
+     ]
+    }
+   ]
   },
   "avywenna": {
    "slug": "avywenna",
