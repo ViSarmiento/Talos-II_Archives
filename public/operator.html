@@ -6,6 +6,10 @@
   <script src="/js/loader.js"></script>
   <title>Operator – Talos-II Archives</title>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
 <body data-page="operators"><main class="od">
   <a class="od-back" href="/operators">‹ All operators</a>
@@ -123,7 +127,7 @@
     }
     return out + esc(t.slice(last));
   }
-  // Mastery: levels 10-12 are Rank 10-12 on the wiki (Rank_10.png ... Rank_12.png) and are drawn as those hexagon icons (slider thumb, readout, end label, table header).
+  // Mastery: levels 10-12 are Rank 10-12 on the wiki (Rank_10.png ... Rank_12.png) and are drawn as those hexagon icons (slider thumb, readout, end label; the table header keeps plain numbers).
   // Source order: our own copy in /img/wiki/ (npm run sync), then the wiki's copy once, then a drawn hexagon so the slot is never empty.
   const MAX_LV = 12, mastery = lv => lv >= 10 ? lv - 9 : 0;
   const hexSvg = n => `<svg class="hex" viewBox="0 0 28 30" role="img" aria-label="Mastery ${n}"><polygon points="14,1 26,8 26,22 14,29 2,22 2,8"/><text x="14" y="19">M${n}</text></svg>`;
@@ -145,12 +149,12 @@
   const lvHtml = lv => mastery(lv) ? rankImg(mastery(lv)) : 'Lv ' + lv;
   const lvText = lv => mastery(lv) ? 'Mastery ' + mastery(lv) : 'Level ' + lv;
   // the standard level grid: stat rows x level columns. The chosen level's column is lit and a level number in the header jumps the slider to it.
-  // Basic attacks use the same grid as every other combat skill. mast = levels 10-12 show their Mastery icon in the header.
+  // Basic attacks use the same grid as every other combat skill. The grid stays numeric (10, 11, 12): Mastery icons live only on the slider and its readout.
   function scalingHtml(sc, lv, mast, key) {
     if (!sc || !sc.rows || !sc.rows.length) return '<p class="tm-dim">No level data for this entry yet. Run <code>npm run sync</code>.</p>';
     const n = Array.isArray(sc.levels) ? sc.levels.length : (+sc.levels || Math.max(...sc.rows.map(r => r.values.length)));
     const cols = Array.from({ length: n }, (_, i) => i + 1), c = i => i === lv ? ' class="cur"' : '';
-    return `<div class="tm-gw"><table class="tm-gt"><thead><tr><th class="lh" scope="col"></th>${cols.map(i => `<th scope="col"${c(i)}><button type="button" class="tm-lj" data-lj="${key}" data-lv="${i}" aria-label="${esc(lvText(i))}"${i === lv ? ' aria-current="true"' : ''}>${mast && mastery(i) ? rankImg(mastery(i)) : i}</button></th>`).join('')}</tr></thead>`
+    return `<div class="tm-gw"><table class="tm-gt"><thead><tr><th class="lh" scope="col"></th>${cols.map(i => `<th scope="col"${c(i)}><button type="button" class="tm-lj" data-lj="${key}" data-lv="${i}" aria-label="${esc(lvText(i))}"${i === lv ? ' aria-current="true"' : ''}>${i}</button></th>`).join('')}</tr></thead>`
       + `<tbody>${sc.rows.map(r => `<tr><th scope="row">${esc(r.label)}</th>${cols.map(i => `<td${c(i)}>${esc(r.values[i - 1] ?? '–')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   }
   // Arcane's data lists every combat skill twice, once per Array Arcana state (the wiki's Int tab, then its Will tab). Merge each pair into ONE entry
